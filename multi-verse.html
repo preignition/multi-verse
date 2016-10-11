@@ -7,6 +7,7 @@
 When `universe` changes (query or filtering), `registeredItems` (e.g. charts rendering `universe` data) are notified of the change and will render accordingly.
 
 Sample use:  
+
   <multi-verse id="universe" data="[[data]]" universe="{{universe}}">
     <multi-group universe="[[universe]]" data="{{data-chart-distance}}" group-by="distances">
       <multi-verse-bar title="distance" data="[[data-chart-distance]]"> </multi-verse-bar>
@@ -138,7 +139,7 @@ Sample use:
         this.splice('registeredItems', this.registeredItems.indexOf(e.srcElement), 1);
       };
     },
-    
+
     /**
      * `onMultiAttached` add the event's `srcElement` to `registeredItems` 
      */
