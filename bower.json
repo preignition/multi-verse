@@ -9,7 +9,7 @@
     "multi-group.html",
     "multi-verse.html",
     "universe-element.html",
-    "multi-csv.html",
+    "multi-csv.html"
   ],
   "repository": "https://github.com/polymerEl/multi-verse",
   "keywords": [
@@ -27,7 +27,6 @@
   ],
   "dependencies": {
     "polymer": "Polymer/polymer#^1.6.0",
-    "d3-bundle-element": "^1.1.0",
     "universe": "^0.2.0",
     "multi-chart": "^0.5.0",
   },
