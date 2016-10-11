@@ -1,6 +1,6 @@
 # \<multi-poly\>
 
-polymer elements for multivariate analysis (built on top of multi-char.js, d3.js and universe.js)
+polymer elements for multivariate analysis (built on top of [multi-chart](https://github.com/PolymerEl/multi-verse), and [universe](https://github.com/crossfilter/universe)
 
 [Demo and API docs](http://polymerel.github.io/multi-chart/components/multi-verse/)
 
