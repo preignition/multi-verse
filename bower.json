@@ -27,7 +27,7 @@
   ],
   "dependencies": {
     "polymer": "Polymer/polymer#^1.6.0",
-    "universe": "^0.2.0",
+    "universe": "^0.8.0",
     "multi-chart": "PolymerEl/multi-chart#^0.5.0"
   },
   "devDependencies": {
