@@ -1,7 +1,15 @@
 <link rel="import" href="../polymer/polymer.html">
 <!--
-`multi-verse`
-polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
+`multi-group` will group `universe`  by their `groupBy` property and expose the result data set (so that a chart can render it)
+
+`multi-group` are also responsible for listening to `multi-select` events triggered for instance by `multi-chart` instances (e.g. selecting a range of data from a bar chart or clicking on a pie element)
+
+Sample use:  
+  <multi-verse id="universe" data="[[data]]" universe="{{universe}}">
+    <multi-group universe="[[universe]]" data="{{data-chart-distance}}" group-by="distances">
+      <multi-verse-bar title="distance" data="[[data-chart-distance]]"> </multi-verse-bar>
+    </multi-group>
+  </multi-verse>
 
 @demo demo/index.html 
 -->
@@ -15,20 +23,33 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     is: 'multi-group',
 
     properties: {
-      data: {
-        type: Array,
-        notify: true
-      },
 
+      /**
+       * `universe` passed on by a `multi-verse` component
+       */
       universe: {
         type: Object
 
       },
 
-      queryResult : {
+      /**
+       * `queryResult` a result of a `universe` query
+       */
+      queryResult: {
         type: Object
-      },      
+      },
 
+      /**
+       * `data` the data part of `queryResult` (`queryResult.data`)
+       */
+      data: {
+        type: Array,
+        notify: true
+      },
+
+      /**
+       * `queryResult` a result of a `universe` query
+       */
       groupBy: {
         type: String
       }
@@ -41,38 +62,37 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
     listeners: {
       'multi-select': 'onSelect'
-      // 'multi-brush-end': 'onBrush',
-      // 'multi-brush-start': 'onBrushStart',
     },
 
     behaviors: [],
 
+    /**
+     * `observeForQuery` when `universe` and `groupBy` are set, perform a query and set `queryResult` and `data` when the query Promise is resolved.
+     */
     observeForQuery: function(universe, groupBy) {
-      var me = this
+      var me = this;
       universe.query({
           groupBy: groupBy
         })
         .then(function(queryResult) {
-            me.set('queryResult', queryResult);
-            me.set('data',queryResult.data);
+          me.set('queryResult', queryResult);
+          me.set('data', queryResult.data);
         })
         .catch(function(error) {
           console.error(error); // 'oh, no!'
         });
     },
 
-    // onBrushStart: function(e, detail) {
-
-    // },
+    /**
+     * `onSelect` filter the `universe` when a `multi-select` event is captured
+     */
     onSelect: function(e, detail) {
-        if(this.queryResult) {
-          this.queryResult.universe.filter(this.queryResult.column.key, detail.selection, !!detail.isRange);
-            
-        }
-    },
-    // onBrushEnd: function(e, detail) {
+      if (this.queryResult) {
+        this.queryResult.universe.filter(this.queryResult.column.key, detail.selection, !!detail.isRange);
 
-    // }
+      }
+    }
+
 
   });
   </script>

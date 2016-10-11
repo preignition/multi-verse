@@ -3,8 +3,20 @@
 <link rel="import" href="../d3-bundle-element/d3-element-multi-debug.html">
 <!-- <link rel="import" href="../multi-block/multi-observe-nodes-behavior.html"> -->
 <!--
-`multi-verse`
-polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
+`multi-verse` takes data as input and encapsulate a [`universe`](https://github.com/crossfilter/universe#create-a-new-universe) Object. 
+When `universe` changes (query or filtering), `registeredItems` (e.g. charts rendering `universe` data) are notified of the change and will render accordingly.
+
+Sample use:  
+  <multi-verse id="universe" data="[[data]]" universe="{{universe}}">
+    <multi-group universe="[[universe]]" data="{{data-chart-distance}}" group-by="distances">
+      <multi-verse-bar title="distance" data="[[data-chart-distance]]"> </multi-verse-bar>
+    </multi-group>
+    <multi-group universe="[[universe]]" data="{{data-chart-day}}" group-by="day">
+      <multi-verse-pie title="day (pie)" data="[[data-chart-day]]" color-scale="{{colorScale}}" width="{{width}}">
+        <multi-legend legend chart-width="[[width]]" scale="[[colorScale]]" position="top-right"></multi-legend>
+      </multi-verse-pie>
+    </multi-group>
+  </multi-verse>
 
 @demo demo/index.html 
 -->
@@ -18,17 +30,26 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     is: 'multi-verse',
 
     properties: {
+      /**
+       * `data`  the data to pass for creating a new [universe](https://github.com/crossfilter/universe#create-a-new-universe)
+       */
       data: {
         type: Array,
         observer: 'observeData'
       },
 
+      /**
+       * `universe` expose the created universe
+       */
       universe: {
         type: Object,
         notify: true,
         readOnly: true
       },
 
+      /**
+       * `registeredItems` Array of web-components that will be notified when `universe` has been queried/filtered
+       */
       registeredItems: {
         type: Array,
         value: function() {
@@ -36,6 +57,9 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         }
       },
 
+      /**
+       * `groupName` if set will only register webcomponents with the same `groupName`. Otherwise, every web-component that fire a `multi-attached` event will be registered
+       */
       groupName: {
         type: String
       }
@@ -47,9 +71,15 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
     },
 
     behaviors: [
-        // Polymer.multi.observeNodes,
     ],
+
+    /**
+     * `observeData` create a new `universe` with the provided data 
+     * TODO: add a `multi-column` web-component to define additional universe.generatedColumns and a processing function
+     */
     observeData: function(data) {
+      
+      //TODO : this should be a Function property
       function parseDate(d) {
         return new Date(2001,
           d.substring(0, 2) - 1,
@@ -68,6 +98,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         d.index = ++index;
       });
 
+      //TODO: GeneratedColumns should be passed as multi-column (still to be defined)
       var me = this;
       var generatedColumns = {
         day: d => d3.timeFormat('%A')(d.date),
@@ -98,21 +129,23 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
     },
 
-    // onFilter: function() {
-
-    // },
-
+    /**
+     * `onMultiAttached` remove the event's `srcElement` to `registeredItems` 
+     */
     onMultiDetached: function(e, name) {
       if (!this.groupName || (this.groupName === name)) {
         // e.stopPropagation();
         this.splice('registeredItems', this.registeredItems.indexOf(e.srcElement), 1);
       };
     },
-
+    
+    /**
+     * `onMultiAttached` add the event's `srcElement` to `registeredItems` 
+     */
     onMultiAttached: function(e, name) {
       if (!this.groupName || (this.groupName === name)) {
         // e.stopPropagation();  
-        this.push('registeredItems', e.srcElement)
+        this.push('registeredItems', e.srcElement);
       }
     },
 
