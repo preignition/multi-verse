@@ -1,0 +1,45 @@
+<link rel="import" href="../polymer/polymer.html">
+<!--
+`multi-csv
+
+utility element for calling csv formated data. It calls `d3.csv` under the hood 
+
+@demo demo/index.html 
+-->
+<dom-module id="multi-csv">
+  <script>
+  Polymer({
+
+    is: 'multi-csv',
+
+    properties: {
+      /**
+       * `data` the loaded data 
+       */
+      data: {
+        type: Array,
+        notify: true
+      },
+
+      /**
+       * `url` url of the resource to fetch
+       */
+      url: {
+        type: String,
+        observer: 'observeUrl'
+      },
+    },
+
+    observeUrl: function(url) {
+      var me = this;
+      d3.csv(url, function(error, data) {
+        if (error) {
+          return me._error(error);
+        }
+        me.set('data', data);
+      });
+    }
+
+  });
+  </script>
+</dom-module>

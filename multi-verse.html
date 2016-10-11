@@ -1,0 +1,122 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="universe-element-debug.html">
+<link rel="import" href="../d3-bundle-element/d3-element-multi-debug.html">
+<!-- <link rel="import" href="../multi-block/multi-observe-nodes-behavior.html"> -->
+<!--
+`multi-verse`
+polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
+
+@demo demo/index.html 
+-->
+<dom-module id="multi-verse">
+  <template>
+    <content ></content>
+  </template>
+  <script>
+  Polymer({
+
+    is: 'multi-verse',
+
+    properties: {
+      data: {
+        type: Array,
+        observer: 'observeData'
+      },
+
+      universe: {
+        type: Object,
+        notify: true,
+        readOnly: true
+      },
+
+      registeredItems: {
+        type: Array,
+        value: function() {
+          return [];
+        }
+      },
+
+      groupName: {
+        type: String
+      }
+    },
+
+    listeners: {
+      'multi-attached': 'onMultiAttached',
+      'multi-detached': 'onMultiDetached',
+    },
+
+    behaviors: [
+        // Polymer.multi.observeNodes,
+    ],
+    observeData: function(data) {
+      function parseDate(d) {
+        return new Date(2001,
+          d.substring(0, 2) - 1,
+          d.substring(2, 4),
+          d.substring(4, 6),
+          d.substring(6, 8));
+      }
+      var formatNumber = d3.format(',d'),
+        formatChange = d3.format('+,d'),
+        formatDate = d3.timeFormat('%B %d, %Y'),
+        formatTime = d3.timeFormat('%I:%M %p');
+
+      var index = 0;  
+      data.forEach(function(d, i) {
+        d.date = parseDate(d.date);
+        d.index = ++index;
+      });
+
+      var me = this;
+      var generatedColumns = {
+        day: d => d3.timeFormat('%A')(d.date),
+        hour: d => Number(d3.timeFormat('%H')(d.date)),
+        dayOfWeek: d => d3.timeFormat('%A')(d.date),
+        arrivalDelay: d => Math.floor(+d.delay / 30) * 30,
+        distances: d => Math.floor(+d.distance / 100) * 100
+      };
+
+      function onFilter() {
+        me.registeredItems.forEach(function(item) {
+          item.render();
+        });
+      }
+
+      universe(data, {
+          generatedColumns: generatedColumns
+        }).then(function(uni) {
+          me._setUniverse(uni);
+
+          uni.onFilter(onFilter, 100);
+
+          return uni;
+        })
+        .catch(function(error) {
+          console.error(error); // 'oh, no!'
+        });
+
+    },
+
+    // onFilter: function() {
+
+    // },
+
+    onMultiDetached: function(e, name) {
+      if (!this.groupName || (this.groupName === name)) {
+        // e.stopPropagation();
+        this.splice('registeredItems', this.registeredItems.indexOf(e.srcElement), 1);
+      };
+    },
+
+    onMultiAttached: function(e, name) {
+      if (!this.groupName || (this.groupName === name)) {
+        // e.stopPropagation();  
+        this.push('registeredItems', e.srcElement)
+      }
+    },
+
+
+  });
+  </script>
+</dom-module>

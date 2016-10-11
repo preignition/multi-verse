@@ -1,0 +1,79 @@
+<link rel="import" href="../polymer/polymer.html">
+<!--
+`multi-verse`
+polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
+
+@demo demo/index.html 
+-->
+<dom-module id="multi-group">
+  <template>
+    <content></content>
+  </template>
+  <script>
+  Polymer({
+
+    is: 'multi-group',
+
+    properties: {
+      data: {
+        type: Array,
+        notify: true
+      },
+
+      universe: {
+        type: Object
+
+      },
+
+      queryResult : {
+        type: Object
+      },      
+
+      groupBy: {
+        type: String
+      }
+
+    },
+
+    observers: [
+      'observeForQuery(universe, groupBy)'
+    ],
+
+    listeners: {
+      'multi-select': 'onSelect'
+      // 'multi-brush-end': 'onBrush',
+      // 'multi-brush-start': 'onBrushStart',
+    },
+
+    behaviors: [],
+
+    observeForQuery: function(universe, groupBy) {
+      var me = this
+      universe.query({
+          groupBy: groupBy
+        })
+        .then(function(queryResult) {
+            me.set('queryResult', queryResult);
+            me.set('data',queryResult.data);
+        })
+        .catch(function(error) {
+          console.error(error); // 'oh, no!'
+        });
+    },
+
+    // onBrushStart: function(e, detail) {
+
+    // },
+    onSelect: function(e, detail) {
+        if(this.queryResult) {
+          this.queryResult.universe.filter(this.queryResult.column.key, detail.selection, !!detail.isRange);
+            
+        }
+    },
+    // onBrushEnd: function(e, detail) {
+
+    // }
+
+  });
+  </script>
+</dom-module>
