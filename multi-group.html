@@ -89,6 +89,7 @@ Sample use:
      */
     onSelect: function(e, detail) {
       if (this.queryResult) {
+        console.info('SELECTION: ', detail.selection);
         this.queryResult.universe.filter(this.queryResult.column.key, detail.selection, !!detail.isRange);
 
       }

@@ -57,7 +57,33 @@
 window.addEventListener('WebComponentsReady', function() {
   app = document.querySelector('#app');
 
+  universel = app.$.universe
 
+  //TODO : this should be a Function property
+  function parseDate(d) {
+    return new Date(2001,
+      d.substring(0, 2) - 1,
+      d.substring(2, 4),
+      d.substring(4, 6),
+      d.substring(6, 8));
+  }
+
+  universel.preProcess = function(d, i) {
+    d.date = parseDate(d.date);
+  };
+
+  // var formatNumber = d3.format(',d'),
+  //   formatChange = d3.format('+,d'),
+  //   formatDate = d3.timeFormat('%B %d, %Y'),
+  //   formatTime = d3.timeFormat('%I:%M %p');
+
+  universel.generatedColumns = {
+    day: d => d3.timeFormat('%A')(d.date),
+    hour: d => Number(d3.timeFormat('%H')(d.date)),
+    dayOfWeek: d => d3.timeFormat('%A')(d.date),
+    arrivalDelay: d => Math.floor(+d.delay / 30) * 30,
+    distances: d => Math.floor(+d.distance / 100) * 100
+  };
 });
 </script>
 

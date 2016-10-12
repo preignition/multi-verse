@@ -1,7 +1,7 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="universe-element-debug.html">
 <link rel="import" href="../d3-bundle-element/d3-element-multi-debug.html">
-<!-- <link rel="import" href="../multi-block/multi-observe-nodes-behavior.html"> -->
+<link rel="import" href="../multi-chart/multi-observe-nodes-behavior.html">
 <!--
 `multi-verse` takes data as input and encapsulate a [`universe`](https://github.com/crossfilter/universe#create-a-new-universe) Object. 
 When `universe` changes (query or filtering), `registeredItems` (e.g. charts rendering `universe` data) are notified of the change and will render accordingly.
@@ -23,7 +23,7 @@ Sample use:
 -->
 <dom-module id="multi-verse">
   <template>
-    <content ></content>
+    <content id="observeNodes"></content>
   </template>
   <script>
   Polymer({
@@ -40,12 +40,29 @@ Sample use:
       },
 
       /**
-       * `universe` expose the created universe
+       * `universe` expose the created universe instance
        */
       universe: {
         type: Object,
         notify: true,
         readOnly: true
+      },
+
+      /**
+       * [`generatedColumns`](https://github.com/crossfilter/universe#universe-data--config--) optional column configuration to universe instance
+       */
+      generatedColumns: {
+        type: Object,
+        value: function() {
+          return {};
+        }
+      },
+
+      /**
+       * `preProcess` a function that will be called on all data item before the creation of the universe instance
+       */
+      preProcess: {
+        type: Object  
       },
 
       /**
@@ -71,43 +88,19 @@ Sample use:
       'multi-detached': 'onMultiDetached',
     },
 
-    behaviors: [
-    ],
+    behaviors: [],
 
     /**
      * `observeData` create a new `universe` with the provided data 
      * TODO: add a `multi-column` web-component to define additional universe.generatedColumns and a processing function
      */
     observeData: function(data) {
-      
-      //TODO : this should be a Function property
-      function parseDate(d) {
-        return new Date(2001,
-          d.substring(0, 2) - 1,
-          d.substring(2, 4),
-          d.substring(4, 6),
-          d.substring(6, 8));
+
+      if(this.preProcess) {
+        data.forEach(this.preProcess);
       }
-      var formatNumber = d3.format(',d'),
-        formatChange = d3.format('+,d'),
-        formatDate = d3.timeFormat('%B %d, %Y'),
-        formatTime = d3.timeFormat('%I:%M %p');
 
-      var index = 0;  
-      data.forEach(function(d, i) {
-        d.date = parseDate(d.date);
-        d.index = ++index;
-      });
-
-      //TODO: GeneratedColumns should be passed as multi-column (still to be defined)
       var me = this;
-      var generatedColumns = {
-        day: d => d3.timeFormat('%A')(d.date),
-        hour: d => Number(d3.timeFormat('%H')(d.date)),
-        dayOfWeek: d => d3.timeFormat('%A')(d.date),
-        arrivalDelay: d => Math.floor(+d.delay / 30) * 30,
-        distances: d => Math.floor(+d.distance / 100) * 100
-      };
 
       function onFilter() {
         me.registeredItems.forEach(function(item) {
@@ -116,7 +109,7 @@ Sample use:
       }
 
       universe(data, {
-          generatedColumns: generatedColumns
+          generatedColumns: this.generatedColumns
         }).then(function(uni) {
           me._setUniverse(uni);
 
@@ -149,6 +142,20 @@ Sample use:
         this.push('registeredItems', e.srcElement);
       }
     },
+
+    processNewNodes: function(nodes) {
+      var me = this;
+
+      nodes.filter(function(node) {
+        return node.localName === 'multi-column'
+      }).forEach(function(node) {
+        me.set('generatedColumns.' + node.key, node.accessor);
+      });
+    },
+
+    processRemovedNodes: function(nodes) {
+      // no need to do anything.
+    }
 
 
   });
