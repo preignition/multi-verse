@@ -2,6 +2,9 @@
 <link rel="import" href="../../multi-chart/multi-selector.html">
 <link rel="import" href="../../multi-chart/shape/multi-shape-bar.html">
 <link rel="import" href="../../multi-chart/chart/multi-chart-coordinate.html">
+<link rel="import" href="../../multi-chart/properties/multi-x-coordinates-properties-behavior.html">
+<link rel="import" href="../../multi-chart/properties/multi-y-coordinates-properties-behavior.html">
+<link rel="import" href="../../multi-chart/properties/multi-color-properties-behavior.html">
 <link rel="import" href="../multi-shared-styles.html">
 <link rel="import" href="multi-verse-properties-behavior.html">
 <!-- <link rel="import" href="multi-axis-behaviors.html"> -->
@@ -26,6 +29,8 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         width="{{width}}" 
         height="{{height}}"
         color-scale="{{colorScale}}" 
+        x-axis-text="[[xAxisText]]" 
+        y-axis-text="[[yAxisText]]" 
         x-scale="{{xScale}}" 
         x-accessor="{{xAccessor}}" 
         y-scale="{{yScale}}" 
@@ -39,7 +44,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
           y-scale="[[yScale]]" 
           color-scale="[[colorScale]]"></multi-shape-bar>
         <!-- <multi-legend legend chart-width="{{width}}" scale="[[colorScale]]" position="top-right" ></multi-legend> -->
-        <multi-selector x-continuous="[[xContinuous]]" selection-type="brushX" width="[[width]]"  height="[[height]]" x-scale="[[xScale]]" accessor="[[xAccessor]]"></multi-selector> 
+        <multi-selector selected-items="{{selected-items}}" is-range="{{isRange}}" has-selection="{{hasSelection}}" x-continuous="[[xContinuous]]" selection-type="brushX" width="[[width]]"  height="[[height]]" x-scale="[[xScale]]" accessor="[[xAccessor]]"></multi-selector> 
         <content></content>
       </multi-chart-coordinate>
 
@@ -51,26 +56,6 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
     properties: {
 
-      /**
-       * `xAccessorPath` path for computing the xAccessor function
-       * a value of ´key´ will generate  an accessor function like ´function(d) {return d.key}´ 
-       * a value of ´+value.count´ will generate  an accessor function like ´function(d) {return +d.value.count}´ 
-       */
-      xAccessorPath: {
-        type: String,
-        value: 'key'
-      },
-
-       /**
-       * `yAccessorPath` path for computing the xAccessor function
-       * a value of ´key´ will generate  an accessor function like ´function(d) {return d.key}´ 
-       * a value of ´+value.count´ will generate  an accessor function like ´function(d) {return +d.value.count}´ 
-       */
-      yAccessorPath: {
-        type: String,
-        value: '+value.count'
-      },
-
        /**
        * `xContinuous` indicate true if we have a `continuous` scale on X when the xScale is `ordinal` (e.g. a scaleBand for bar charts). If true a `xContinuousScale` is computed on the selector.
        * TODO: is there a way to infer this information otherwise (type of crossfilter group ? )
@@ -80,13 +65,17 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       },
 
       colorDomain: {
-        type: Array, 
+        type: 'Array',
         value: ['count']
       }
+
     },
 
     behaviors: [
-       Polymer.multiverseChartProperties
+      Polymer.multiverseChartProperties,
+      Polymer.multixCoordinatesProperties,
+      Polymer.multiyCoordinatesProperties,
+      Polymer.multiColorProperties   
     ]
 
   });

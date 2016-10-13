@@ -39,9 +39,42 @@ Polymer.multiverseChartProperties = {
      */
     data: {
       type: Array
+    },
+
+    /**
+     * `hasSelection` is true when we have a selection
+     */
+    hasSelection: {
+      type: Boolean,
+      notify: true,
+      reflectToAttribute: true
+    },
+
+    /**
+     * `selectedItems` the list of selected Items, or the selection range
+     */
+    selectedItems: {
+      type: Array,
+      notify: true
+    },
+    /**
+     * `isRange` true when the selection is a range 
+     */
+    isRange: {
+      type: Boolean,
+      notify: true
     }
 
   },
+
+  /**
+   * `clearSelection` clear the current selection 
+   */
+  clearSelection: function() {
+    if (this.$.selector && this.$.selector.clearSelection) {
+      this.$.selector.clearSelection();
+    }
+  }
 
 };
 </script>
