@@ -80,8 +80,20 @@ Sample use:
        */
       groupName: {
         type: String
-      }
+      },
+
+      /**
+       * [`columns`](https://github.com/crossfilter/universe#column-columnkeycolumnobject--)
+       */
+       columns: {
+        type: Object,
+        value: function() {
+          return {};
+        }
+       }
     },
+
+
 
     listeners: {
       'multi-attached': 'onMultiAttached',
@@ -101,6 +113,7 @@ Sample use:
       }
 
       var me = this;
+      var columns = this.columns;
 
       function onFilter() {
         me.registeredItems.forEach(function(item) {
@@ -111,9 +124,17 @@ Sample use:
       universe(data, {
           generatedColumns: this.generatedColumns
         }).then(function(uni) {
-          me._setUniverse(uni);
 
           uni.onFilter(onFilter, 100);
+
+          if(Object.keys(columns).length) {
+             for (k in columns) {
+               if (columns.hasOwnProperty(k)) {
+                  uni.column(columns[k]);
+               }
+             } 
+          }
+          me._setUniverse(uni);
 
           return uni;
         })

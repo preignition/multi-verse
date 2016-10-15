@@ -20,14 +20,13 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
     </style>
     <multi-chart-coordinate id="chart" 
-        title="[[title]]"
         data="[[data]]"
-        subtitle="[[subtitle]]"
         x-accessor-path="[[xAccessorPath]]" 
         y-accessor-path="[[yAccessorPath]]" 
         color-domain="[[colorDomain]]" 
         width="{{width}}" 
         height="{{height}}"
+        color-range="[[colorRange]]"
         color-scale="{{colorScale}}" 
         x-axis-text="[[xAxisText]]" 
         y-axis-text="[[yAxisText]]" 
@@ -44,7 +43,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
           y-scale="[[yScale]]" 
           color-scale="[[colorScale]]"></multi-shape-bar>
         <!-- <multi-legend legend chart-width="{{width}}" scale="[[colorScale]]" position="top-right" ></multi-legend> -->
-        <multi-selector selected-items="{{selected-items}}" is-range="{{isRange}}" has-selection="{{hasSelection}}" x-continuous="[[xContinuous]]" selection-type="brushX" width="[[width]]"  height="[[height]]" x-scale="[[xScale]]" accessor="[[xAccessor]]"></multi-selector> 
+        <multi-selector id="selector" selected-items="{{selected-items}}" is-range="{{isRange}}" has-selection="{{hasSelection}}" x-continuous="[[xContinuous]]" selection-type="[[selectionType]]" width="[[width]]"  height="[[height]]" x-scale="[[xScale]]" accessor="[[xAccessor]]"></multi-selector> 
         <content></content>
       </multi-chart-coordinate>
 
@@ -67,7 +66,16 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       colorDomain: {
         type: 'Array',
         value: ['count']
+      },
+
+      /**
+       * `selectionType` the type of selection (either `multi`, `select`, `brushX`, `brushY`or `brush`)
+       */
+      selectionType: {
+        type: String,
+        value: 'brushX'
       }
+
 
     },
 

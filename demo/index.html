@@ -33,16 +33,23 @@
           <multi-csv url="flight.csv" data="{{data}}"></multi-csv>
           <multi-verse id="universe" data="[[data]]" universe="{{universe}}">
             <multi-group universe="[[universe]]" data="{{data-chart-distance}}" group-by="distances">
-              <multi-verse-line title="line distance" data="[[data-chart-distance]]"> </multi-verse-line>
+              <multi-verse-line data="[[data-chart-distance]]"> 
+                <h3 header>distance (line chart)</h3>
+              </multi-verse-line>
             </multi-group>
             <multi-group universe="[[universe]]" data="{{data-chart-distance}}" group-by="distances">
-              <multi-verse-bar x-continuous title="distance" data="[[data-chart-distance]]"> </multi-verse-bar>
+              <multi-verse-bar x-continuous data="[[data-chart-distance]]">
+                <h3 header>distance (bar chart)</h3>
+              </multi-verse-bar>
             </multi-group>
             <multi-group universe="[[universe]]" data="{{data-chart-day}}" group-by="day">
-              <multi-verse-bar title="day (chart)" data="[[data-chart-day]]"> </multi-verse-bar>
+              <multi-verse-bar  data="[[data-chart-day]]"> 
+                <h3 header>day (chart)</h3>
+              </multi-verse-bar>
             </multi-group>
             <multi-group universe="[[universe]]" data="{{data-chart-day}}" group-by="day">
-              <multi-verse-pie title="day (pie)" data="[[data-chart-day]]" color-scale="{{colorScale}}" width="{{width}}">
+              <multi-verse-pie  data="[[data-chart-day]]" color-scale="{{colorScale}}" width="{{width}}">
+                <h3 header>day (pie)</h3>
                 <multi-legend legend chart-width="[[width]]" scale="[[colorScale]]" position="top-right"></multi-legend>
               </multi-verse-pie>
             </multi-group>

@@ -18,15 +18,15 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
     </style>
     <multi-chart-simple id="chart" 
-        title="[[title]]"
         data="[[data]]"
-        subtitle="[[subtitle]]"
 
         width="{{width}}" 
         height="{{height}}" 
         center="{{center}}" 
 
+        color-range="[[colorRange]]"
         color-scale="{{colorScale}}" 
+        
         key-accessor-path="[[keyAccessorPath]]" 
         key-accessor="{{keyAccessor}}" 
         value-accessor-path="[[valueAccessorPath]]" 
@@ -40,10 +40,10 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
           arcs="[[arcs]]"
           inner-radius="[[innerRadius]]"
           color-scale="[[colorScale]]"></multi-shape-pie>
-         <multi-selector selection-type="select" accessor="[[keyAccessor]]"></multi-selector>  
+         <multi-selector id="selector" selected-items="{{selected-items}}" is-range="{{isRange}}" has-selection="{{hasSelection}}"  selection-type="select" accessor="[[keyAccessor]]"></multi-selector>  
 
         <!-- <multi-legend legend chart-width="{{width}}" scale="[[colorScale]]" position="top-right" ></multi-legend> -->
-        <multi-selector selection-type="select"  accessor="[[xAccessor]]"></multi-selector> 
+        <multi-selector selection-type="[[selectionType]]"  accessor="[[xAccessor]]"></multi-selector> 
         <content></content>
       </multi-chart-simple>
 
@@ -74,6 +74,14 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         type: String,
         value: '+value.count'
       },
+
+      /**
+       * `selectionType` the type of selection (either `multi` or `select`)
+       */
+       selectionType: {
+        type: String,
+        value: 'select'
+       }
 
     },
 
