@@ -39,6 +39,8 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
           center="[[center]]" 
           arcs="[[arcs]]"
           inner-radius="[[innerRadius]]"
+          pie-width="[[pieWidth]]"
+
           color-scale="[[colorScale]]"></multi-shape-pie>
          <multi-selector id="selector" selected-items="{{selected-items}}" is-range="{{isRange}}" has-selection="{{hasSelection}}"  selection-type="select" accessor="[[keyAccessor]]"></multi-selector>  
 
@@ -81,8 +83,31 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
        selectionType: {
         type: String,
         value: 'select'
-       }
+       },
 
+      /**
+       * `innerRadius` the inner radius for the pie chart. It might be calculated by setting `radiusWidth` property
+       */
+      innerRadius: {
+      },
+
+      /**
+       * `pieWidth` a way to indicate the width of the radius (either in % or absolute value). 
+       * If set, inner radius will be inferred. 
+       */
+      pieWidth: {
+        type: String
+      },
+
+      /**
+       * `outerRadius` the outer radius for the pie. Computed as half the max size of the chart. 
+       * It can be set as a Function :
+       * `function(d){return 20 + Math.sqrt(d.value)}` 
+       */
+      outerRadius: {
+        type: Function
+      }
+      
     },
 
     behaviors: [

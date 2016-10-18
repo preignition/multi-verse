@@ -12,7 +12,7 @@
   <link rel="import" href="../multi-verse.html">
   <link rel="import" href="../multi-group.html">
   <link rel="import" href="../multi-csv.html">
-  <link rel="import" href="../chart/multi-verse-bar.html">
+  <!-- <link rel="import" href="../chart/multi-verse-bar.html"> -->
   <!-- <link rel="import" href="../chart/multi-verse-line.html"> -->
   <link rel="import" href="../chart/multi-verse-choropleth.html">
   <!-- <link rel="import" href="../chart/multi-verse-pie.html"> -->
@@ -32,12 +32,14 @@
     <demo-snippet>
       <template>
         <template is="dom-bind" id="app">
+          <iron-ajax auto url="bangladeshScores.json"  handle-as="json" last-response="{{data}}"></iron-ajax>
+           <!-- <multi-verse data="[[data]]" universe="{{universe}}" pre-process="[[pre-process]]" columns="[[columns]]" generated-columns="[[generatedColumns]]"> -->
           <multi-geo-feature 
             feature="{{feature}}" 
             data="{{geometries}}" 
             name="BGD_adm2" 
             url="bangladeshSimplify02.json"></multi-geo-feature>
-          <multi-chart-geo id="geo" 
+         <!--  <multi-chart-geo id="geo" 
             color-scale="{{colorScale}}" 
             path="{{path}}" 
             width="{{width}}" 
@@ -45,14 +47,26 @@
             projection-type="[[projectionType]]" 
             value-accessor-path="+rate"  
             feature="[[feature]]" 
-            projection-scale="[[projectionScale]]">
+            projection-scale="[[projectionScale]]"> -->
           
           <!-- <multi-csv url="flight.csv" data="{{data}}"></multi-csv> -->
           <multi-verse id="universe" data="[[data]]" universe="{{universe}}">
-            <multi-group universe="[[universe]]" data="{{data-chart-distance}}" group-by="distances">
-              <multi-verse-line data="[[data-chart-distance]]"> 
+            <multi-group universe="[[universe]]" data="{{data-chart-district}}" group-by="district">
+              <multi-verse-choropleth id="geo"
+                data="[[data-chart-district]]" 
+                color-scale="{{colorScale}}" 
+                path="{{path}}" 
+                width="{{width}}" 
+                projection="{{projection}}" 
+                projection-type="[[projectionType]]" 
+                value-accessor-path="value.count"  
+                key-accessor-path="key"  
+                feature="[[feature]]" 
+                projection-scale="[[projectionScale]]"
+                > 
                 <h3 header>distance (line chart)</h3>
-              </multi-verse-line>
+                 <multi-legend legend scale="[[colorScale]]" chart-width="[[width]]" label-format=".0f" position="right" > </multi-legend>
+              </multi-verse-choropleth>
             </multi-group>
             
           </multi-verse>
@@ -70,31 +84,37 @@ window.addEventListener('WebComponentsReady', function() {
 
   universel = app.$.universe
 
-  //TODO : this should be a Function property
-  function parseDate(d) {
-    return new Date(2001,
-      d.substring(0, 2) - 1,
-      d.substring(2, 4),
-      d.substring(4, 6),
-      d.substring(6, 8));
-  }
+  var chart = app.$.geo
 
-  universel.preProcess = function(d, i) {
-    d.date = parseDate(d.date);
-  };
+  chart.scaleType = 'scaleQuantize';
+  chart.colorRange = [d3.rgb(247, 251, 255), d3.rgb(222, 235, 247), d3.rgb(198, 219, 239), d3.rgb(158, 202, 225), d3.rgb(107, 174, 214), d3.rgb(66, 146, 198), d3.rgb(33, 113, 181), d3.rgb(8, 81, 156), d3.rgb(8, 48, 107)];
+  // chart.colorDomain = [0, 10];
+
+  //TODO : this should be a Function property
+  // function parseDate(d) {
+  //   return new Date(2001,
+  //     d.substring(0, 2) - 1,
+  //     d.substring(2, 4),
+  //     d.substring(4, 6),
+  //     d.substring(6, 8));
+  // }
+
+  // universel.preProcess = function(d, i) {
+  //   d.date = parseDate(d.date);
+  // };
 
   // var formatNumber = d3.format(',d'),
   //   formatChange = d3.format('+,d'),
   //   formatDate = d3.timeFormat('%B %d, %Y'),
   //   formatTime = d3.timeFormat('%I:%M %p');
 
-  universel.generatedColumns = {
-    day: d => d3.timeFormat('%A')(d.date),
-    hour: d => Number(d3.timeFormat('%H')(d.date)),
-    dayOfWeek: d => d3.timeFormat('%A')(d.date),
-    arrivalDelay: d => Math.floor(+d.delay / 30) * 30,
-    distances: d => Math.floor(+d.distance / 100) * 100
-  };
+  // universel.generatedColumns = {
+  //   day: d => d3.timeFormat('%A')(d.date),
+  //   hour: d => Number(d3.timeFormat('%H')(d.date)),
+  //   dayOfWeek: d => d3.timeFormat('%A')(d.date),
+  //   arrivalDelay: d => Math.floor(+d.delay / 30) * 30,
+  //   distances: d => Math.floor(+d.distance / 100) * 100
+  // };
 });
 </script>
 

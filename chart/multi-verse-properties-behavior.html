@@ -82,6 +82,10 @@ Polymer.multiverseChartProperties = {
     if (this.$.selector && this.$.selector.clearSelection) {
       this.$.selector.clearSelection();
     }
+  },
+
+  listeners: {
+    'multi-clear': 'clearSelection'
   }
 
 };
