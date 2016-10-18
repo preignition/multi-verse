@@ -46,7 +46,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         key-accessor-path="[[keyAccessorPath]]" 
         key-accessor="{{keyAccessor}}" 
         
-        feature-key-accessor-path="[[featureKeyAccessorPAth]]" 
+        feature-key-accessor-path="[[featureKeyAccessorPath]]" 
         feature-key-accessor="{{featureKeyAccessor}}" 
         
         value-accessor-path="[[valueAccessorPath]]" 
@@ -62,7 +62,13 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         precision="[[precision]]"
        >
 
-       <multi-selector id="selector" selected-items="{{selected-items}}" is-range="{{isRange}}" has-selection="{{hasSelection}}"  selection-type="[[selectionType]]" accessor="[[keyAccessor]]"></multi-selector>  
+       <multi-selector 
+        id="selector" 
+        selected-items="{{selected-items}}" 
+        is-range="{{isRange}}" 
+        has-selection="{{hasSelection}}"  
+        selection-type="[[selectionType]]" 
+        accessor="[[featureKeyAccessor]]"></multi-selector>  
 
         <content></content>
       </multi-chart-geo>
