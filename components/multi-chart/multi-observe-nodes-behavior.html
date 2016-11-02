@@ -1,0 +1,39 @@
+<link rel="import" href="../polymer/polymer.html">
+<script>
+/**
+ * `multiObserveNodes` for observing child nodes that need to be registered or further processed when attached
+ *
+ */
+'use strict';
+
+/** @polymerBehavior */
+Polymer.multiObserveNodes = {
+
+  get observeNodes() {
+    return this.$.observeNodes;
+  },
+
+  ready: function() {
+    var boundHandler = this.__childNodesChanged.bind(this);
+    this.__observer = Polymer.dom(this.observeNodes).observeNodes(boundHandler);
+  },
+
+  detached: function() {
+    Polymer.dom(this.observeNodes).unobserveNodes(this.__observer);
+  },
+
+  __childNodesChanged: function(nodeInfo) {
+    this.processNewNodes(nodeInfo.addedNodes);
+    this.processRemovedNodes(nodeInfo.removedNodes);
+  },
+
+  processNewNodes: function(nodes) {
+    // do something
+  },
+
+  processRemovedNodes: function(nodes) {
+    // do something
+  }
+
+};
+</script>

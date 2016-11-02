@@ -1,0 +1,169 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../multi-chart/multi-selector.html">
+<link rel="import" href="../../multi-chart/chart/multi-chart-geo.html">
+<link rel="import" href="../../multi-chart/shape/multi-shape-pie.html">
+<link rel="import" href="../../multi-chart/d3-geo/multi-geo-feature.html">
+<link rel="import" href="../../multi-chart/properties/multi-geo-chart-properties-behavior.html">
+<link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../multi-shared-styles.html">
+
+<link rel="import" href="multi-verse-properties-behavior.html">
+<!-- <link rel="import" href="multi-axis-behaviors.html"> -->
+<!--
+`multi-poly`
+polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
+
+@demo demo/index.html 
+-->
+<dom-module id="multi-verse-choropleth">
+  <template>
+    <style is="custom-style" include="multi-verse">
+    #chart {
+      @apply(--layout-flex);
+      height: var(--chart-height);
+    }
+    </style>
+     <multi-geo-feature 
+        feature="{{feature}}" 
+        data="{{geometries}}" 
+        name="[[featureName]]" 
+        url="[[url]]"></multi-geo-feature>
+
+    <multi-chart-geo id="chart" 
+        data="[[data]]"
+
+        width="{{width}}" 
+        height="{{height}}" 
+        center="{{center}}"
+        attrs="[[attrs]]" 
+
+        path="{{path}}" 
+        feature="[[feature]]" 
+        
+        color-scale="{{colorScale}}" 
+        color-range="[[colorRange]]"
+        color-domain="[[colorDomain]]"
+
+        key-accessor-path="[[keyAccessorPath]]" 
+        key-accessor="{{keyAccessor}}" 
+        
+        feature-key-accessor-path="[[featureKeyAccessorPath]]" 
+        feature-key-accessor="{{featureKeyAccessor}}" 
+        
+        value-accessor-path="[[valueAccessorPath]]" 
+        value-accessor="{{valueAccessor}}"
+        
+        projection="{{projection}}" 
+        projection-type="[[projectionType]]" 
+        projection-scale="[[projectionScale]]"
+        clip-angle="[[clipAngle]]" 
+        clip-extent="[[clipExtent]]" 
+        center="[[center]]"
+        rotate="[[rotate]]"
+        precision="[[precision]]"
+       >
+
+       <multi-selector 
+        id="selector" 
+        selected-items="{{selected-items}}" 
+        is-range="{{isRange}}" 
+        has-selection="{{hasSelection}}"  
+        selection-type="[[selectionType]]" 
+        accessor="[[featureKeyAccessor]]"></multi-selector>  
+
+        <content></content>
+      </multi-chart-geo>
+
+  </template>
+  <script>
+  Polymer({
+
+    is: 'multi-verse-choropleth',
+
+    properties: {
+
+      /**
+       * `keyAccessorPath` path for computing the key Accessor function
+       * a value of ´key´ will generate  an accessor function like ´function(d) {return d.key}´ 
+       * a value of ´+value.count´ will generate  an accessor function like ´function(d) {return +d.value.count}´ 
+       */
+      keyAccessorPath: {
+        type: String,
+        value: 'key'
+      },
+
+      /**
+       * `valueAccessorPath` path for computing the value Accessor function
+       * a value of ´key´ will generate  an accessor function like ´function(d) {return d.key}´ 
+       * a value of ´+value.count´ will generate  an accessor function like ´function(d) {return +d.value.count}´ 
+       */
+      valueAccessorPath: {
+        type: String,
+        value: '+value.count'
+      },
+
+     /**
+       * `featureKeyAccessorPath` path for computing the feature key accessor function
+       * a value of ´key´ will generate  an accessor function like ´function(d) {return d.key}´ 
+       * a value of ´+value.count´ will generate  an accessor function like ´function(d) {return +d.value.count}´ 
+       */
+      featureKeyAccessorPath: {
+        type: String,
+        value: 'properties.NAME_2'
+      },
+
+      /**
+       * `selectionType` the type of selection (either `multi` or `select`)
+       */
+      selectionType: {
+        type: String,
+        value: 'select'
+      },
+       /**
+       * `feature` the goe feature to be exposed by this component
+       */
+      feature: {
+        type: Array,
+        notify: true
+      },
+
+      /**
+       * `geometries` topojson or geojson object. It is either retrieved iron-ajax or passed as an argument
+       */
+      geometries: {
+        type: Object,
+        notify: true
+      },
+      
+      /**
+       * `path` the [path](https://github.com/d3/d3-geo#geoPath) generator function
+       */
+      path: {
+        type: Function,
+        notify: true,
+      },
+
+      /**
+       * [`projection`]((https://github.com/d3/d3-geo#path_projection)) to be applied to the path  
+       */
+      projection: {
+        type: Function,
+        notify: true
+      },
+
+      /**
+       * `attrs` default attributes to be set on the first draw
+       */
+      attrs: {
+        type: Object
+      }
+
+    },
+
+    behaviors: [
+       Polymer.multiverseChartProperties,
+    ]
+
+  });
+  </script>
+</dom-module>

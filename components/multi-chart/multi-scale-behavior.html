@@ -1,0 +1,154 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="multi-lifecycle-behavior.html">
+<link rel="import" href="multi-config-behavior.html">
+<script>
+/**
+ * `multiScale` behavior for scales
+ *
+ * @demo demo/index-pie.html
+ */
+
+'use strict';
+
+/** @polymerBehavior multiScaleImpl */
+Polymer.multiScaleImpl = {
+
+  properties: {
+
+    scale: {
+      type: Function,
+      notify: true,
+      computed: '__computeScale(scaleType)'
+    },
+
+    scaleType: {
+      type: String,
+      value: 'scaleLinear'
+    },
+
+    elastic: {
+      type: Boolean,
+      reflectToAttribute: true,
+      value: false
+    },
+
+    domain: {
+      type: Array,
+      notify: true
+    },
+
+    accessor: {
+      type: Function
+    },
+
+    /**
+     * `domainMin` if set, will be used as the min value for calculating the domain - otherwise, it will be inferred from provided data (`d3.extent(data, accessor)`)
+     */
+    domainMin: {
+      type: Number
+    },
+
+    /**
+     * `domainMax` if set, will be used as the max value for calculating the domain - otherwise, it will be inferred from provided data (`d3.extent(data, accessor)`)
+     */
+    domainMax: {
+      type: Number
+    },
+
+    effectiveDomain: {
+      type: Array,
+      computed: '__computeEffectiveDomain(domain,family)'
+    },
+
+    range: {
+      type: Array,
+      notify: true
+    },
+
+    padding: {
+      type: Number
+    },
+
+    family: {
+      type: String,
+      notify: true,
+      computed: '__computeFamily(scaleType)'
+    }
+
+  },
+
+  observers: [
+    'observeConfig(padding, "padding", "scale")',
+    'observeConfig(effectiveDomain, "domain", "scale")',
+    'observeConfigSplices(range.*, "range", "scale")',
+    'observeConfigSplices(domain.*, "domain", "scale")',
+  ],
+
+  get targetElement() {
+    return null;
+  },
+
+  /**
+   * `preDraw` re-calculate the domain if/when needed - called by the host 
+   */
+  preDraw: function(host, data, duration, isStack) {
+    if (this.elastic === true || !this.domain) {
+      if (this.family === 'ordinal') {
+        this.domain = data.map(this.accessor);
+      } else {
+        var extent = d3.extent(data, this.accessor);
+        if (this.domainMin || this.domainMin === 0) {
+          extent[0] = this.domainMin;
+        }
+        if (this.domainMax || this.domainMax === 0) {
+          extent[1] = this.domainMax;
+        }
+        this.domain = extent;
+      }
+    }
+  },
+
+  __computeScale: function(type) {
+    if (typeof d3[type] === 'function') {
+      return d3[type]();
+    }
+    this._error('scale type is not a valid d3 scale (type is ' + type + ')');
+  },
+
+  __computeEffectiveDomain: function(domain, family) {
+    if (family === 'continuous') {
+      return d3.extent(domain);
+    }
+    return domain;
+  },
+
+  __computeFamily: function(type) {
+    if (type === 'scaleLinear' || type === 'scalePow' || type === 'scaleSqrt' || type === 'scaleLog' || type === 'scaleIdentity' || type === 'scaleTime') {
+      return 'continuous';
+    }
+    if (type === 'scaleSequential') {
+      return 'sequential';
+    }
+    if (type === 'scaleQuantize') {
+      return 'quantize';
+    }
+    if (type === 'scaleQuantile') {
+      return 'quantile';
+    }
+    if (type === 'scaleThreshold') {
+      return 'threshold';
+    }
+    if (type === 'scaleOrdinal' || type === 'scaleBand' || type === 'scalePoint' || type === 'scaleCategory') {
+      return 'ordinal';
+    }
+    this._error('scale type is not a valid d3 scale (type is ' + type + ')');
+  }
+};
+
+/** @polymerBehavior */
+Polymer.multiScale = [
+  Polymer.multiLifecycle,
+  Polymer.multiConfig,
+  Polymer.multiScaleImpl
+];
+</script>

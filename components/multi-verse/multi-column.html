@@ -1,0 +1,36 @@
+<link rel="import" href="../polymer/polymer.html">
+<!--
+`multi-column` 
+
+-->
+<dom-module id="multi-column">
+  <template>
+    <content></content>
+  </template>
+  <script>
+  Polymer({
+
+    is: 'multi-column',
+
+    properties: {
+
+      /**
+       * `key` the key of the columns
+       */
+      key: {
+        type: String,
+        reflectToAttribute: true
+      },
+
+      /**
+       * `accessor` the accessor function 
+       */
+      accessor: {
+        type: Object,
+        notify: true
+      }
+    }
+
+  });
+  </script>
+</dom-module>

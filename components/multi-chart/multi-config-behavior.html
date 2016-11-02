@@ -1,0 +1,64 @@
+<link rel="import" href="../polymer/polymer.html">
+<script>
+/**
+ * `multiConfig` utility method for handling element config 
+ */
+
+'use strict';
+
+/** @polymerBehavior */
+Polymer.multiConfig = {
+
+  properties: {
+
+  },
+
+  applyConfig: function(obj, properties) {
+    properties.forEach(function(name) {
+      if (this.name !== undefined && obj[name]) {
+        obj[name](this.name);
+      }
+    }, this);
+  },
+
+  observeConfig: function(value, name, targetName, eventName) {
+    var target = this[targetName] || this._config[targetName];
+    if (target && target[name]) {
+      target[name](value);
+      if (eventName) {
+        this.fire('multi-' + eventName, {
+          value: value,
+          name: name,
+          target: targetName
+        });
+      }
+      // this._notifyChange(targetName, null, value);
+    }
+  },
+  observeConfigSplices: function(splice, name, targetName, eventName) {
+    var value = this[name];
+    var target = this[targetName] || this._config[targetName];
+    if (target && target[name]) {
+      target[name](value);
+      if (eventName) {
+        this.fire('multi-' + eventName, {
+          value: value,
+          name: name,
+          target: targetName
+        });
+      }
+    }
+  },
+
+  /**
+   * `notifyChanged` update the `changed` attribute of the `name` object. 
+   * This is used to propagate changes on Function properties that other element need to react on. 
+   * For instance, a setting a new scale in `d3-geo-projection` Function should trigger a redraw of the map. 
+   * In this case, we will have an observer like `observeProjection(projection.changed)` 
+   */
+  notifyChanged: function(name) {
+    this.set(name + '.changed', !this[name].changed);
+  }
+
+};
+</script>

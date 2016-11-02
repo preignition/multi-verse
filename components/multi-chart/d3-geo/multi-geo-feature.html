@@ -1,0 +1,77 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../iron-ajax/iron-ajax.html">
+<link rel="import" href="../../d3-bundle-element/topojson-element-debug.html">
+<link rel="import" href="../multi-config-behavior.html">
+<!--
+`multi-geo-feature`
+exposes geo feature from an url
+
+@demo demo/index-choropleth.html 
+-->
+<dom-module id="multi-geo-feature">
+  <template>
+    <iron-ajax auto url="[[url]]" handle-as="[[handleAs]]" last-response="{{data}}"></iron-ajax>
+    <multi-accessor accessor="{{value}}" path="[[valuePath]]"></multi-accessor>
+  </template>
+  <script>
+  Polymer({
+
+    is: 'multi-geo-feature',
+
+    properties: {
+      /**
+       * `feature` the GeoJSON Feature or FeatureCollection to be exposed by this component
+       */
+      feature: {
+        type: Array,
+        notify: true
+      },
+
+      /**
+       * `data` topojson or geojson object. It is either retrieved iron-ajax or passed as an argument
+       */
+      data: {
+        type: Object,
+        notify: true
+      },
+
+      /**
+       * `geoType` the type of data object (topojson or geojson)
+       */
+      geoType: {
+        type: String,
+        value: 'topojson'
+      },
+
+      /**
+       * `name` the name of the property to extract from the geo data object
+       */
+      name: {
+        type: String
+      },
+
+      /**
+       * [`handleAs`](https://elements.polymer-project.org/elements/iron-ajax#property-handleAs) 
+       */
+      handleAs: {
+        type: String,
+        value: 'json'
+      }
+    },
+
+    observers: [
+      '_observeData(data, name, geoType)',
+
+    ],
+
+    _observeData: function(data, name, geoType) {
+      if (geoType === 'topojson') {
+        this.feature = topojson.feature(data, data.objects[name]);
+      } else {
+        this.feature = data.objects[name].geometries;
+      }
+    }
+
+  });
+  </script>
+</dom-module>

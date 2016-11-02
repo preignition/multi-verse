@@ -1,0 +1,92 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../multi-config-behavior.html">
+<link rel="import" href="d3-shape-behavior.html">
+<!-- <link rel="import" href="multi-lifecyle-behavior.html"> -->
+<!--
+`d3-stack`
+
+@demo demo/index-stack.html 
+-->
+<dom-module id="d3-stack">
+  <template>
+    <multi-accessor accessor="{{value}}" path="[[valuePath]]" sub-path></multi-accessor>
+  </template>
+  <script>
+  Polymer({
+
+    is: 'd3-stack',
+
+    properties: {
+      shaper: {
+        type: Function,
+        value: function() {
+          var shaper = d3.stack();
+          this.applyConfig(shaper, ['value', 'keys', 'order', 'offset']);
+          return shaper;
+        }
+      },
+      keys: {
+        type: Array,
+        value: function() {
+          return [];
+        }
+      },
+      valuePath: {
+        type: String,
+        value: 'value'
+      },
+
+      value: {
+        type: Function
+      },
+
+      order: {
+        type: Function
+      },
+
+      offset: {
+        type: Function
+      },
+
+      /**
+       * `domainMin` the minimum value for the calculated domain
+       */
+      domainMin: {
+        type: Number,
+        value: 0
+      },
+
+      /**
+       * `domain` the domain attached to this shaper. when data changes, domain need to be recalculated (e.g. the y-domain in a coordinate chart)
+       */
+      domain: {
+        type: Array,
+        notify: true,
+        computed: 'computeDomain(data, domainMin)'
+      },
+
+    },
+
+    behaviors: [
+      Polymer.multiShaper
+      // Polymer.multi.lifecycle
+    ],
+
+    observers: [
+      'observeConfigSplices(keys.splices, "keys", "shaper", "refresh")',
+      'observeConfig(value, "value", "shaper", "refresh")',
+      'observeConfig(order, "order", "shaper", "refresh")',
+      'observeConfig(offset, "offset", "shaper", "refresh")'
+      // 'computeDomain(data, domainMin)'
+    ],
+
+    computeDomain: function(data, domainMin) {
+        return [domainMin, d3.max(data[this.keys.length - 1], function(d) {
+          return d[1];
+        })];
+    },
+
+
+  });
+  </script>
+</dom-module>

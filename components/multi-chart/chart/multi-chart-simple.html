@@ -1,0 +1,101 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../d3-bundle-element/d3-element-multi.html">
+<!-- <link rel="import" href="../multi-color-behavior.html"> -->
+<!-- <link rel="import" href="../shape/multi-shape-choropleth.html"> -->
+<!-- <link rel="import" href="../d3-geo/d3-geo-projection.html"> -->
+<!-- <link rel="import" href="../d3-geo/d3-geo-path.html"> -->
+<link rel="import" href="../multi-scale.html">
+<link rel="import" href="../multi-accessor.html">
+<link rel="import" href="../properties/multi-chart-properties-behavior.html">
+<link rel="import" href="../properties/multi-color-properties-behavior.html">
+<link rel="import" href="../properties/multi-value-accessor-properties-behavior.html">
+<link rel="import" href="../properties/multi-selection-properties-behavior.html">
+<link rel="import" href="../multi-container-simple.html">
+<link rel="import" href="../multi-shared-styles.html">
+<!-- <link rel="import" href="multi-axis-behaviors.html"> -->
+<!--
+`multi-chart-simple`
+
+### Example: a simple chart containing a pie, with legend and selector
+
+```
+ <multi-chart-simple 
+            id="chart" 
+            title="test pie" 
+            width="{{width}}" 
+            height="{{height}}" 
+            center="{{center}}" 
+
+            color-scale="{{colorScale}}" 
+            key-accessor-path="[[keyAccessorPath]]" 
+            key-accessor="{{keyAccessor}}" 
+            value-accessor-path="[[valueAccessorPath]]" 
+            value-accessor="{{valueAccessor}}" 
+             >
+            <d3-pie  data="{{arcs}}" value="[[valueAccessor]]" __value-path="[[valueAccessorPath]]" pad-angle="[[padAngle]]" sort="[[sort]]" sort-values="[[sortValues]]"></d3-pie>
+            <multi-shape-pie 
+              width="[[width]]" 
+              height="[[height]]" 
+              center="[[center]]" 
+              arcs="[[arcs]]"
+              inner-radius="[[innerRadius]]"
+              color-scale="[[colorScale]]"></multi-shape-pie>
+             <multi-selector selection-type="select" accessor="[[keyAccessor]]"></multi-selector>  
+             <multi-legend legend chart-width="[[width]]" scale="[[colorScale]]" position="top-right" ></multi-legend>
+
+          </multi-chart-simple>
+
+```
+<div>
+  <img src="https://raw.githubusercontent.com/PolymerEl/multi-chart/master/images/chart-pie.png" width="300"></img>
+</div>
+
+@element multi-chart-simple
+@demo demo/index-pie.html
+-->
+<dom-module id="multi-chart-simple">
+  <template>
+    <style is="custom-style" include="multi-chart multi-chart-selector">
+
+    </style>
+    <!-- <h2 class="title">[[title]]</h2> -->
+    <!-- <h3 class="subtitle">[[subtitle]]</h3> -->
+    <content select="[header]"></content>
+    <multi-accessor accessor="{{valueAccessor}}" path="[[valueAccessorPath]]"></multi-accessor>
+    <multi-accessor accessor="{{keyAccessor}}" path="[[keyAccessorPath]]"></multi-accessor>
+      
+      <multi-container-simple 
+      selection-type="[[selectionType]]" 
+      selectedItems="[[selectedItems]]" 
+      height="{{height}}" 
+      width="{{width}}"
+      center="{{center}}"  
+      data="[[data]]" 
+      >
+      <multi-scale scale-type="[[colorScaleType]]" accessor="[[keyAccessor]]" domain="[[colorDomain]]" range="[[colorRange]]" scale="{{colorScale}}"></multi-scale>
+    <content select=":not([header]):not([footer])"></content>
+    </multi-container-simple>
+    <content select="[footer]"></content>
+  </template>
+  <script>
+  Polymer({
+
+    is: 'multi-chart-simple',
+
+    hostAttributes: {
+      multichart: ''
+    },
+
+    properties: {
+
+    },
+
+    behaviors: [
+      Polymer.multiChartProperties,
+      Polymer.multiColorProperties,
+      Polymer.multiValueProperties,
+    ]
+
+  });
+  </script>
+</dom-module>

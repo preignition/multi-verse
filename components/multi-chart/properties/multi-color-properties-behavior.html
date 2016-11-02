@@ -1,0 +1,49 @@
+<link rel="import" href="../../polymer/polymer.html">
+<script>
+/**
+ * `colorProperties` behavior for exposing and documenting properties related to colors
+ *
+ */
+
+/** @polymerBehavior */
+Polymer.multiColorProperties = {
+
+  properties: {
+
+    /**
+     * `colorScale`
+     */
+    colorScale: {
+      type: Function,
+      notify: true
+    },
+
+    /**
+     * `colorDomain` the domain to use for colors
+     */
+    colorDomain: {
+      type: Array
+    },
+
+    /**
+     * `colorRange` output range of colors to be used for calculating the colorScale
+     */
+    colorRange: {
+      type: Array,
+      value: function() {
+        return d3.schemeCategory10;
+      }
+    },
+
+    /**
+     * `colorScaleType` the type of scale for color
+     */
+
+    colorScaleType: {
+      type: String,
+      value: 'scaleOrdinal'
+    }
+  }
+
+};
+</script>

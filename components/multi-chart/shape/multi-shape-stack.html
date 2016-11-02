@@ -1,0 +1,123 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="multi-shape-behavior.html">
+<link rel="import" href="../multi-lifecycle-behavior.html">
+<!--
+`multi-shape-stack`
+polymer elements responsible for drawing stacks in coordinate charts
+
+@demo demo/index-stack.html 
+-->
+<dom-module id="multi-shape-stack">
+  <template>
+    <style is="custom-style">
+    :host {
+      display: none;
+    }
+    </style>
+    <svg>
+      <g id="shape" class="shape-stack">
+      </g>
+    </svg>
+  </template>
+  <script>
+  Polymer({
+
+    is: 'multi-shape-stack',
+
+    properties: {
+      /**
+       * `stack` stacked data
+       */
+      stack: {
+        type: Array,
+        observer: 'fireRefresh'
+      },
+
+      keys: {
+        type: Array,
+        value: function() {
+          return [];
+        }
+      },
+    },
+
+    behaviors: [
+      Polymer.multiLifecycle,
+      Polymer.multiShape
+    ],
+
+    /**
+     * `targetElement` getter override lifecycle Behavior and called during attached
+     */
+    get targetElement() {
+      return this.$.shape;
+    },
+
+    // preDraw: function(host, data, duration) {
+    //    this.$.shaper.computeData(data);
+    //  },
+
+    draw: function(host, data, duration) {
+
+      if (!this.stack) {
+        this._error('stack is not provided');
+      }
+
+      var stack = this.stack;
+      var xScale = this.xScale;
+      var yScale = this.yScale;
+      var colorScale = this.colorScale;
+
+      var series = d3.select(this.targetElement).selectAll('.serie')
+        .data(stack);
+
+      series.exit().remove();
+
+      series = series.enter().append('g')
+        .attr('class', 'serie')
+        .attr('key', function(d) {
+          return d.key;
+        })
+        .attr('fill', function(d) {
+          return colorScale(d.key);
+        })
+        .merge(series);
+
+      var chart = series.selectAll('rect.stack')
+        .data(function(d) {
+          return d;
+        });
+
+      chart.exit().remove();
+
+      chart = chart.enter().append('rect')
+        .attr('class', 'shape stack selectable')
+        .merge(chart);
+
+      chart.on('click', function(d) {
+        host.fire('multi-tap', d);
+      });
+
+      if (duration) {
+        chart = this.setTransition(chart, duration);
+      }
+
+      chart
+        .attr('x', function(d) {
+          return xScale(d.data.key);
+        })
+        .attr('y', function(d) {
+          return yScale(d[1]);
+        })
+        .attr('key', function(d) {
+          return d.data.key;
+        })
+        .attr('height', function(d) {
+          return yScale(d[0]) - yScale(d[1]);
+        })
+        .attr('width', this.xScale.bandwidth());
+    }
+
+  });
+  </script>
+</dom-module>

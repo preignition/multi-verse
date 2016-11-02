@@ -1,0 +1,113 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>multi-chart demo</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
+  <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+  <link rel="import" href="../../paper-button/paper-button.html">
+  <link rel="import" href="../../paper-input/paper-input.html">
+  <link rel="import" href="../../d3-bundle-element/d3-element-multi-debug.html">
+  <link rel="import" href="../d3-geo/multi-geo-feature.html">
+  <link rel="import" href="../shape/multi-shape-geo-line.html">
+  <link rel="import" href="../d3-geo/multi-geo-mesh.html">
+  <link rel="import" href="../multi-legend.html">
+  <link rel="import" href="../chart/multi-chart-geo.html">
+  <link rel="stylesheet" href="../multichart.css">
+  <style is="custom-style" include="demo-pages-shared-styles">
+  #chart {
+    height: 600px;
+    width: 650px;
+
+  }
+  h3 {
+    margin-bottom: 10px;
+  }
+  </style>
+</head>
+
+<body>
+  <div class="vertical-section-container centered">
+    <h3>multi-chart Demo</h3>
+    <demo-snippet>
+      <template>
+        <template is="dom-bind" id="app">
+          <p>Example largely inspired from <a href="http://bl.ocks.org/mbostock/4060606" title="">this block</a>!</p>
+          <multi-geo-feature feature="{{feature}}" data="{{geometries}}" name="counties" url="us.json"></multi-geo-feature>
+          <multi-geo-mesh mesh="{{mesh}}" data="[[geometries]]" name="states"></multi-geo-mesh>
+          <multi-chart-geo 
+            id="chart" 
+            color-scale="{{colorScale}}" 
+            path="{{path}}" 
+            width="{{width}}" 
+            projection="{{projection}}"
+            projection-type="geoAlbersUsa" 
+            value-accessor-path="+rate"  
+            key-accessor-path="id"  
+            feature-key-accessor-path="id"  
+            feature="[[feature]]" 
+            projection-scale="[[projectionScale]]">
+            <!-- the mesh for US States will be added to the choropleth !-->
+            <multi-shape-geo-line path="[[path]]" projection="[[projection]]" attrs="[[meshAttrs]]" data="[[mesh]]"></multi-shape-geo-line>
+            <multi-legend legend scale="[[colorScale]]" chart-width="[[width]]" padding="50" label-format=".0%" position="right" > </multi-legend>
+            <h3 header>test choropleth chart</h3>  
+          </multi-chart-geo>
+           <paper-input label="scale" min="0" step="50" type="number" value="{{projectionScale}}"></paper-input>
+           <paper-button raised on-tap="toggle">randomize data</paper-button>
+        </template>
+      </template>
+    </demo-snippet>
+  </div>
+</body>
+<script>
+window.addEventListener('WebComponentsReady', function() {
+  app = document.querySelector('#app');
+
+  var chart = app.$.chart;
+  var data;
+
+  app.projectionScale = 800;
+  chart.scaleType = 'scaleQuantize';
+  chart.colorRange = [d3.rgb(247, 251, 255), d3.rgb(222, 235, 247), d3.rgb(198, 219, 239), d3.rgb(158, 202, 225), d3.rgb(107, 174, 214), d3.rgb(66, 146, 198), d3.rgb(33, 113, 181), d3.rgb(8, 81, 156), d3.rgb(8, 48, 107)];
+  chart.colorDomain = [0, 0.15];
+
+  chart.attrs = {
+    fill: '#eee',
+    stroke: null
+  };
+  app.meshAttrs = {
+    fill: 'none',
+    'stroke-width': 2,
+    stroke: '#fff'
+  };
+
+  function rnd(data, max) {
+    var rnd = d3.randomUniform(max);
+    data.forEach(function(d) {
+      d.rate = rnd();
+
+    });
+    return data;
+  }
+
+  d3.tsv('unemployment.tsv', function(e, d) {
+    if (e) {
+      app._error('error while loading the file');
+    }
+    data = chart.data = d;
+
+  });
+
+
+  app.toggle = function() {
+    data = rnd(data, 0.15);
+    this.$.chart.data = data.concat();
+  };
+
+});
+</script>
+
+</html>

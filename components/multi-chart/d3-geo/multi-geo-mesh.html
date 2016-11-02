@@ -1,0 +1,78 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../iron-ajax/iron-ajax.html">
+<link rel="import" href="../../d3-bundle-element/topojson-element-debug.html">
+<link rel="import" href="../multi-config-behavior.html">
+<!--
+`multi-geo-mesh`
+exposes geo  mesh from an url or topojson data
+see [topojson API](https://github.com/mbostock/topojson/wiki/API-Reference) for further documentation
+
+@demo demo/index-choropleth.html 
+-->
+<dom-module id="multi-geo-mesh">
+  <template>
+    <iron-ajax auto url="[[url]]" handle-as="[[handleAs]]" last-response="{{data}}"></iron-ajax>
+    <multi-accessor accessor="{{value}}" path="[[valuePath]]"></multi-accessor>
+  </template>
+  <script>
+  Polymer({
+
+    is: 'multi-geo-mesh',
+
+    properties: {
+      /**
+       * `feature` the geo feature to be exposed by this component
+       */
+      mesh: {
+        type: Array,
+        notify: true
+      },
+
+      /**
+       * `data` topojson or geojson object. It is either retrieved iron-ajax or passed as an argument
+       */
+      data: {
+        type: Object,
+        notify: true
+      },
+
+      /**
+       * `name` the name of the property to extract from the geo data object
+       */
+      name: {
+        type: String
+      },
+
+      /**
+       * [`handleAs`](https://elements.polymer-project.org/elements/iron-ajax#property-handleAs) 
+       */
+      handleAs: {
+        type: String,
+        value: 'json'
+      },
+
+      /**
+       * `filter` filter to be used for the mesh
+       */
+      filter: {
+        type: Function,
+        value: function() {
+          return function(a, b) {
+            return a !== b;
+          };
+        }
+      }
+
+    },
+
+    observers: [
+      '_observeData(data, name, filter)',
+    ],
+
+    _observeData: function(data, name, filter) {
+      this.mesh = topojson.mesh(data, data.objects[name], filter);
+    }
+
+  });
+  </script>
+</dom-module>

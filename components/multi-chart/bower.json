@@ -1,0 +1,60 @@
+{
+  "name": "multi-chart",
+  "version": "0.5.2",
+  "description": "polymer building blocks elements for building charts and visualization (based on d3.js v4).",
+  "license": "Business Source License",
+  "authors": [
+    "christophe.geiser <christophe.geiser@e-smile.org>"
+  ],
+  "main": [
+      "chart/multi-chart-geo.html",
+      "chart/multi-chart-coordinate.html",
+      "chart/multi-chart-simple.html",
+      "shape/multi-shape-bar.html",
+      "shape/multi-shape-bubble.html",
+      "shape/multi-shape-choropleth.html",
+      "shape/multi-shape-line.html",
+      "shape/multi-shape-pie.html",
+      "shape/multi-shape-stack.html",
+      "shape/multi-shape-stack.html",
+      "d3-geo/d3-geo-path.html",
+      "d3-geo/d3-geo-projection.html",
+      "d3-geo/multi-geo-feature.html",
+      "d3-geo/multi-geo-feature.html",
+      "d3-shape/d3-pie.html",
+      "d3-shape/d3-stack.html",
+      "multi-axis.html",
+      "multi-container-coordinate.html",
+      "multi-container-simple.html",
+      "multi-legend.html",
+      "multi-scale.html",
+      "multi-selector.html"
+  ],
+  "repository": "https://github.com/polymerEl/multi-chart",
+  "keywords": [
+    "web-component",
+    "web-components",
+    "d3.js",
+    "charts",
+    "polymer",
+    "analytics",
+    "mapping",
+    "dataviz"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.6.0",
+    "paper-styles": "PolymerElements/paper-styles#^1.1.4",
+    "iron-ajax": "PolymerElements/iron-ajax#^1.4.3",
+    "d3-bundle-element": "^1.4.1",
+    "iron-resizable-behavior": "^1.0.0",
+    "paper-input": "^1.0.0",
+    "paper-button": "^1.0.13"
+
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^1.0.0",
+    "web-component-tester": "^4.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  }
+}

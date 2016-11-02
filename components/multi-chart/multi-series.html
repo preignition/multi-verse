@@ -1,0 +1,137 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="multi-observe-nodes-behavior.html">
+<link rel="import" href="multi-serie.html">
+<!--
+`multi-poly`
+polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
+
+@demo demo/index-stack.html 
+-->
+<dom-module id="multi-series">
+  <template>
+    <content id="observeNodes"></content>
+  </template>
+  <script>
+  Polymer({
+
+    is: 'multi-series',
+
+
+    properties: {
+      /**
+       * `series` Array of items with the following structure: 
+       *  {
+       *    key: 'theSerieKey'
+       *    label: 'theSerieLabel'
+       *    accessor: 'theAccessorFunction ' //(e.g. function(d){return d.data.count})
+       *  }
+       *
+       * individual series can be added with the <multi-serie> element
+       */
+      series: {
+        type: Array,
+        notify: true,
+        value: function() {
+          return [];
+        }
+      },
+
+      keys: {
+        type: Array,
+        notify: true,
+        value: function() {
+          return [];
+        }
+      }
+
+    },
+
+    behaviors: [
+      Polymer.multiObserveNodes
+
+    ],
+
+    listeners: {
+      'multi-serie-change': '_onSerieChange'
+    },
+
+    observers: [
+      '_observeSeries(series.splices)'
+    ],
+
+    _observeSeries: function(changeRecord) {
+      if (changeRecord) {
+        var me = this;
+        changeRecord.indexSplices.forEach(function(s) {
+          s.removed.forEach(function(serie) {
+            var index = me.keys.indexOf(serie.key);
+            if (index > -1) {
+              me.splice('keys', index, 1);
+            }
+          });
+          for (var i = 0; i < s.addedCount; i++) {
+            var index = s.index + i;
+            var key = s.object[index].key;
+            me.push('keys', key);
+              // console.log('User ' + newUser.name + ' added at index ' + index);
+          }
+        }, this);
+      }
+    },
+
+    _onSerieChange: function(e, key) {
+      e.stopPropagation();
+      if (key) {
+        var index = this._getSerieIndex(key);
+        this.set('series.' + index + 'label', e.srcElement.label);
+        this.set('series.' + index + 'accessor', e.srcElement.accessor);
+      }
+    },
+
+    _getSerieIndex: function(key) {
+      this.series.map(function(serie) {
+        return serie.key;
+      }).indexOf(key);
+    },
+
+    /**
+     * @override
+     * `processNewNodes` process new nodes than have been added to the observedNode
+     */
+    processNewNodes: function(nodes) {
+      var me = this;
+      nodes.filter(function(node) {
+        return node.localName === 'multi-serie';
+      }).forEach(function(node) {
+        me.push('series', {
+          key: node.key,
+          accessor: node.accessor,
+          // path: node.path,
+          label: node.label
+        });
+
+      });
+    },
+
+    /**
+     * @override
+     * `processRemovedNodes` process nodes than have been removed from observedNode
+     */
+    processRemovedNodes: function(nodes) {
+      var me = this;
+
+      nodes.filter(function(node) {
+        return node.localName === 'multi-serie';
+      }).forEach(function(node) {
+
+        var index = me._getSerieIndex(node.key);
+        if (index > -1) {
+          me.splice('series', index, 1);
+        }
+
+      });
+
+    }
+  });
+  </script>
+</dom-module>

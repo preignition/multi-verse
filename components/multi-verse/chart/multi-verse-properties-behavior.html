@@ -1,0 +1,92 @@
+<link rel="import" href="../../polymer/polymer.html">
+<script>
+/**
+ * `chartProperties` behavior for exposing and documenting properties shared across charts
+ */
+'use strict';
+
+/** @polymerBehavior */
+Polymer.multiverseChartProperties = {
+
+  properties: {
+
+    /**
+     * `witdh` the width of the chart 
+     */
+    width: {
+      type: Number,
+      notify: true
+    },
+
+    /**
+     * `height` the width of the chart 
+     */
+    height: {
+      type: Number,
+      notify: true
+    },
+
+    /**
+     * `colorScale`
+     */
+    colorScale: {
+      type: Function,
+      notify: true
+    },
+
+    /**
+     * `data` 
+     */
+    data: {
+      type: Array
+    },
+
+    /**
+     * `hasSelection` is true when we have a selection
+     */
+    hasSelection: {
+      type: Boolean,
+      notify: true,
+      reflectToAttribute: true
+    },
+
+    /**
+     * `selectedItems` the list of selected Items, or the selection range
+     */
+    selectedItems: {
+      type: Array,
+      notify: true
+    },
+
+    /**
+     * `selectionType` the type of selection (either `multi`, `select`, `brushX`, `brushY`or `brush`)
+     */
+    selectionType: {
+      type: String,
+      value: 'select'
+    },
+    /**
+     * `isRange` true when the selection is a range 
+     */
+    isRange: {
+      type: Boolean,
+      notify: true
+    }
+
+  },
+
+  /**
+   * `clearSelection` clear the current selection 
+   */
+  clearSelection: function() {
+    if (this.$.selector && this.$.selector.clearSelection) {
+      this.$.selector.clearSelection();
+    }
+  },
+
+  listeners: {
+    'multi-clear': 'clearSelection'
+  }
+
+};
+</script>

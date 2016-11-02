@@ -1,0 +1,183 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../d3-bundle-element/d3-element-multi.html">
+<link rel="import" href="../multi-color-behavior.html">
+<link rel="import" href="../shape/multi-shape-choropleth.html">
+<link rel="import" href="../d3-geo/d3-geo-projection.html">
+<link rel="import" href="../d3-geo/d3-geo-path.html">
+<link rel="import" href="../multi-scale.html">
+<link rel="import" href="../multi-accessor.html">
+<link rel="import" href="../properties/multi-color-properties-behavior.html">
+<link rel="import" href="../properties/multi-selection-properties-behavior.html">
+<link rel="import" href="../properties/multi-geo-chart-properties-behavior.html">
+<link rel="import" href="../properties/multi-value-accessor-properties-behavior.html">
+<link rel="import" href="../multi-config-behavior.html">
+<link rel="import" href="../multi-container-simple.html">
+<link rel="import" href="../multi-shared-styles.html">
+<!-- 
+`multi-chart-geo`
+
+### Example: a choropleth chart, along with a topojson mesh
+
+```
+ <multi-chart-geo id="chart" color-scale="{{colorScale}}" path="{{path}}" width="{{width}}" projection="{{projection}}" projection-type="geoAlbersUsa" value-accessor-path="+rate" title="a nice choropleth" feature="[[feature]]" scale="[[scale]]">
+     <multi-shape-geo-line geo path="[[path]]" projection="[[projection]]" attrs="[[meshAttrs]]" feature="[[mesh]]"></multi-shape-geo-line>
+     <multi-legend legend scale="[[colorScale]]" chart-width="[[width]]" padding="50" label-format=".0%" position="right" > </multi-legend>
+ </multi-chart-geo>
+```
+
+<div>
+  <img src="https://raw.githubusercontent.com/PolymerEl/multi-chart/master/images/chart-choropleth.png" width="600"></img>
+</div>
+
+@element multi-chart-geo
+@demo demo/index-choropleth.html
+-->
+<dom-module id="multi-chart-geo">
+  <template>
+    <style is="custom-style" include="multi-chart multi-chart-selector">
+
+    </style>
+    <!-- <h2 class="title">[[title]]</h2> -->
+    <!-- <h3 class="subtitle">[[subtitle]]</h3> -->
+    <content select="[header]"></content>
+    <multi-accessor accessor="{{valueAccessor}}" path="[[valueAccessorPath]]"></multi-accessor>
+    <multi-accessor accessor="{{keyAccessor}}" path="[[keyAccessorPath]]"></multi-accessor>
+    <multi-accessor accessor="{{featureKeyAccessor}}" path="[[featureKeyAccessorPath]]"></multi-accessor>
+      
+      <multi-container-simple 
+      selection-type="[[selectionType]]" 
+      selectedItems="[[selectedItems]]" 
+      height="{{height}}" 
+      width="{{width}}" 
+      data="[[data]]" 
+      >
+        <multi-scale 
+          scale-type="[[colorScaleType]]" 
+          accessor="[[valueAccessor]]" 
+          domain="[[colorDomain]]" 
+          range="[[colorRange]]" 
+          scale="{{colorScale}}"></multi-scale>
+        <d3-geo-projection 
+          projection="{{projection}}" 
+          scale="[[projectionScale]]"  
+          height="[[height]]"
+          clip-angle="[[clipAngle]]" 
+          clip-extent="[[clipExtent]]" 
+          center="[[center]]"
+          rotate="[[rotate]]"
+          precision="[[precision]]"
+          width="[[width]]"  
+          height="[[height]]"  
+          projection-type="[[projectionType]]"></d3-geo-projection>
+        <d3-geo-path path="{{path}}" projection="[[projection]]"></d3-geo-path>
+        <multi-shape-choropleth
+          path="[[path]]"
+          projection="[[projection]]"
+          data="[[feature]]"
+          attrs="[[attrs]]"
+          value-accessor="[[valueAccessor]]" 
+          key-accessor="[[keyAccessor]]" 
+          feature-key-accessor="[[featureKeyAccessor]]" 
+          color-scale="[[colorScale]]"></multi-shape-choropleth>
+          <content select=":not([legend]):not([header]):not([footer])"></content>
+          <content select="[legend]"></content>
+    </multi-container-simple>
+    <content select="[footer]"></content>
+  </template>
+  <script>
+  Polymer({
+
+    is: 'multi-chart-geo',
+
+    hostAttributes: {
+      multichart: ''
+    },
+
+    properties: {
+
+      /**
+       * `autoFit` when true, fit projection scale and translate so as to fit to bounding box (width and height)
+       */
+      autoFit: {
+        type: Boolean, 
+        value: true
+      },
+
+       /**
+       * `path` the [path](https://github.com/d3/d3-geo#geoPath) generator function. It notifies so that we can pass other geo element that share the same path generator 
+       */
+      path: {
+        type: Function, 
+        notify: true
+      },
+
+      /**
+      * `projection` the [projection](https://github.com/d3/d3-geo#projection) generator function. It notifies so that we can pass other geo element that share the same path generator 
+      */
+      projection: {
+        type: Function,
+        notify: true,
+      },
+
+      /**
+       * [`projectionScale`](https:github.com/d3/d3-geo#projection_scale)
+       */
+      projectionScale: {
+        type: Number
+      },
+
+       /**
+       * `keyAccessorPath` the path used to define the key accessor function 
+       */
+      featureKeyAccessorPath: {
+        type: String,
+        value: 'properties.NAME_2'
+      },
+
+      featureKeyAccessor: {
+        type: Function, 
+        notify: true
+      },
+
+       /**
+       * `colorScaleType` the type of scale for color
+       */
+      colorScaleType: {
+        type: String,
+        value: 'scaleQuantize'
+       }
+
+       // colorScaleType: 'scaleQuantize'
+     
+    },
+
+    behaviors: [
+      Polymer.multiGeoChartProperties,
+      Polymer.multiColorProperties,
+      Polymer.multiValueProperties,
+      Polymer.multiConfig
+      // Polymer.multiSelectionProperties
+    ],
+
+    observers: [
+      'doFit(autoFit,width, height, feature, projection)'
+      // 'observePath(path.changed)'
+    ],
+
+    doFit: function(autoFit, width, height, feature, projection) {
+      if(autoFit && width && height) {
+        projection.fitExtent([[0,0], [width, height]], feature);
+        // this._notifyChange('projection');
+        // we need to notify the path so that layers are redrawn when the projection changes
+        this.notifyChanged('projection');
+        this.notifyChanged('path');
+      }
+    },
+    // observePath: function() {
+    //   console.info('PATH CHANGED');
+    // }
+
+
+  });
+  </script>
+</dom-module>

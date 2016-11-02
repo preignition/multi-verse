@@ -1,0 +1,184 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="universe-element-debug.html">
+<link rel="import" href="../d3-bundle-element/d3-element-multi-debug.html">
+<link rel="import" href="../multi-chart/multi-observe-nodes-behavior.html">
+<!--
+`multi-verse` takes data as input and encapsulate a [`universe`](https://github.com/crossfilter/universe#create-a-new-universe) Object. 
+When `universe` changes (query or filtering), `registeredItems` (e.g. charts rendering `universe` data) are notified of the change and will render accordingly.
+
+Sample use:  
+
+  <multi-verse id="universe" data="[[data]]" universe="{{universe}}">
+    <multi-group universe="[[universe]]" data="{{data-chart-distance}}" group-by="distances">
+      <multi-verse-bar title="distance" data="[[data-chart-distance]]"> </multi-verse-bar>
+    </multi-group>
+    <multi-group universe="[[universe]]" data="{{data-chart-day}}" group-by="day">
+      <multi-verse-pie title="day (pie)" data="[[data-chart-day]]" color-scale="{{colorScale}}" width="{{width}}">
+        <multi-legend legend chart-width="[[width]]" scale="[[colorScale]]" position="top-right"></multi-legend>
+      </multi-verse-pie>
+    </multi-group>
+  </multi-verse>
+
+@demo demo/index.html 
+-->
+<dom-module id="multi-verse">
+  <template>
+    <content id="observeNodes"></content>
+  </template>
+  <script>
+  Polymer({
+
+    is: 'multi-verse',
+
+    properties: {
+      /**
+       * `data`  the data to pass for creating a new [universe](https://github.com/crossfilter/universe#create-a-new-universe)
+       */
+      data: {
+        type: Array,
+        observer: 'observeData'
+      },
+
+      /**
+       * `universe` expose the created universe instance
+       */
+      universe: {
+        type: Object,
+        notify: true,
+        readOnly: true
+      },
+
+      /**
+       * [`generatedColumns`](https://github.com/crossfilter/universe#universe-data--config--) optional column configuration to universe instance
+       */
+      generatedColumns: {
+        type: Object,
+        value: function() {
+          return {};
+        }
+      },
+
+      /**
+       * `preProcess` a function that will be called on all data item before the creation of the universe instance
+       */
+      preProcess: {
+        type: Object  
+      },
+
+      /**
+       * `registeredItems` Array of web-components that will be notified when `universe` has been queried/filtered
+       */
+      registeredItems: {
+        type: Array,
+        value: function() {
+          return [];
+        }
+      },
+
+      /**
+       * `groupName` if set will only register webcomponents with the same `groupName`. Otherwise, every web-component that fire a `multi-attached` event will be registered
+       */
+      groupName: {
+        type: String
+      },
+
+      /**
+       * [`columns`](https://github.com/crossfilter/universe#column-columnkeycolumnobject--)
+       */
+       columns: {
+        type: Object,
+        value: function() {
+          return {};
+        }
+       }
+    },
+
+
+
+    listeners: {
+      'multi-attached': 'onMultiAttached',
+      'multi-detached': 'onMultiDetached',
+    },
+
+    behaviors: [],
+
+    /**
+     * `observeData` create a new `universe` with the provided data 
+     * TODO: add a `multi-column` web-component to define additional universe.generatedColumns and a processing function
+     */
+    observeData: function(data) {
+
+      if(this.preProcess) {
+        data.forEach(this.preProcess);
+      }
+
+      var me = this;
+      var columns = this.columns;
+
+      function onFilter() {
+        me.registeredItems.forEach(function(item) {
+          item.render();
+        });
+      }
+
+      universe(data, {
+          generatedColumns: this.generatedColumns
+        }).then(function(uni) {
+
+          uni.onFilter(onFilter, 100);
+
+          if(Object.keys(columns).length) {
+             for (k in columns) {
+               if (columns.hasOwnProperty(k)) {
+                  uni.column(columns[k]);
+               }
+             } 
+          }
+          me._setUniverse(uni);
+
+          return uni;
+        })
+        .catch(function(error) {
+          console.error(error); // 'oh, no!'
+        });
+
+    },
+
+    /**
+     * `onMultiAttached` remove the event's `srcElement` to `registeredItems` 
+     */
+    onMultiDetached: function(e, name) {
+      if (!this.groupName || (this.groupName === name)) {
+        // e.stopPropagation();
+        this.splice('registeredItems', this.registeredItems.indexOf(e.srcElement), 1);
+      };
+    },
+
+    /**
+     * `onMultiAttached` add the event's `srcElement` to `registeredItems` 
+     */
+    onMultiAttached: function(e, name) {
+      if (!this.groupName || (this.groupName === name)) {
+        // e.stopPropagation();  
+        this.push('registeredItems', e.srcElement);
+      }
+    },
+
+    processNewNodes: function(nodes) {
+      var me = this;
+
+      nodes.filter(function(node) {
+        return node.localName === 'multi-column'
+      }).forEach(function(node) {
+        me.set('generatedColumns.' + node.key, node.accessor);
+      });
+    },
+
+    processRemovedNodes: function(nodes) {
+      // no need to do anything.
+    }
+
+
+  });
+  </script>
+</dom-module>

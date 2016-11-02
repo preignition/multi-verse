@@ -1,0 +1,145 @@
+<link rel="import" href="../../polymer/polymer.html">
+<!-- <link rel="import" href="../multi-accessor.html"> -->
+<link rel="import" href="../multi-config-behavior.html">
+<!-- <link rel="import" href="d3-shape-behavior.html"> -->
+<!-- <link rel="import" href="multi-lifecyle-behavior.html"> -->
+<!--
+`d3-hexbin`
+
+@demo demo/index-choropleth.html 
+-->
+<dom-module id="d3-hexbin">
+  <!--  <template>
+    <multi-accessor accessor="{{value}}" path="[[valuePath]]" ></multi-accessor>
+  </template> -->
+  <script>
+  Polymer({
+
+    is: 'd3-hexbin',
+
+    properties: {
+      /**
+       * `shaper` the [hexbin](https://github.com/d3/d3-hexbin) shaper function 
+       */
+      hexbin: {
+        type: Function,
+        notify: true,
+        value: function() {
+          var hexbin = d3.hexbin();
+          this.applyConfig(hexbin, ['x', 'y', 'radius', 'extent']);
+          return hexbin;
+        }
+      },
+
+      bins: {
+        type: Array,
+        notify: true
+        // computed: '_computeBins(hexbin, points, callback)'
+      },
+
+      /**
+       * `points` the points to pass for constructing the bin
+       */
+      points: {
+        type: Array
+      },
+
+      callback: {
+        type: Function,
+        value: function() {
+          return function(b, i) {
+            b.forEach(function(p) {
+              p.__bin__ = i;
+            });
+          };
+        }
+      },
+
+      /**
+       * [`x`](https://github.com/d3/d3-hexbin#x) x-coordinate accessor function
+       */
+      x: {
+        type: Function
+      },
+
+      /**
+       * [`y`](https://github.com/d3/d3-hexbin#y) y-coordinate accessor function
+       */
+      y: {
+        type: Function
+      },
+
+      /**
+       * [`radius`](https://github.com/d3/d3-hexbin#radius) the radius of the hexagon 
+       */
+      radius: {
+        type: Function,
+        value: 6
+
+      },
+
+
+      /**
+       * `width` the width of the chart 
+       */
+      width: {
+        type: Number,
+      },
+
+      /**
+       * `height` the width of the chart 
+       */
+      height: {
+        type: Number,
+      },
+
+      /**
+       * [`extent`](https://github.com/d3/d3-hexbin#extent) bounds of the the hexbin generator
+       */
+      extent: {
+        type: Array,
+        computed: '_computeExtent(height, width)'
+      },
+    },
+
+    behaviors: [
+      Polymer.multiConfig
+      // Polymer.multi.lifecycle
+    ],
+
+    listeners: {
+      'multi-refresh-bin': '_onRefresh'
+    },
+
+    observers: [
+      'observeConfig(x, "x", "hexbin","refresh-bin")',
+      'observeConfig(y, "y", "hexbin","refresh-bin")',
+      'observeConfig(radius, "radius", "hexbin","refresh-bin")',
+      'observeConfig(extent, "extent", "hexbin","refresh-bin")',
+      '_observeBin(hexbin, points, callback)'
+    ],
+
+    _onRefresh: function(e) {
+      e.stopPropagation();
+      this.debounce('bin', function() {
+        this._observeBin(this.hexbin, this.points, this.callback);
+      }, 40);
+    },
+
+    _observeBin: function(hexbin, points, callback) {
+      if (this.width && this.height) {
+        var bins = hexbin(points);
+        bins.forEach(callback);
+        this.set('bins', bins);
+      }
+    },
+    _computeExtent: function(h, w) {
+      return [
+        [0, 0],
+        [w, h]
+      ];
+    },
+
+  });
+  </script>
+</dom-module>

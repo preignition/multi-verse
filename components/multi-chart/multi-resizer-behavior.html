@@ -1,0 +1,105 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
+<script>
+/**
+ * `multiResizer` behavior making multi-charts reactive
+ *
+ * @demo demo/index-pie.html
+ */
+
+'use strict';
+
+/** @polymerBehavior multiResizerImpl */
+Polymer.multiResizerImpl = {
+
+  properties: {
+    height: {
+      type: Number,
+      readOnly: true,
+      notify: true,
+      value: 0
+    },
+
+    width: {
+      type: Number,
+      readOnly: true,
+      notify: true,
+      value: 0
+    },
+
+    margin: {
+      type: Object,
+      value: function() {
+        return {
+          top: 20,
+          left: 40,
+          right: 20,
+          bottom: 20
+        };
+      }
+    },
+
+    xCenter: {
+      type: Number,
+      computed: '__computeCenter(margin.right, width)'
+    },
+
+    yCenter: {
+      type: Number,
+      computed: '__computeCenter(margin.top, height)'
+    },
+
+    center: {
+      type: Array,
+      notify: true,
+      computed: '__computeCenterArray(xCenter, yCenter)'
+    }
+
+  },
+
+  listeners: {
+    'iron-resize': '__onIronResize'
+  },
+
+  observers: [
+    'observeMargin(margin.*)'
+  ],
+
+  attached: function() {
+    this.calculateSize();
+  },
+
+  observeMargin: function(margin) {
+    this.calculateSize(margin.base);
+  },
+
+  calculateSize: function() {
+
+    this.debounce('calculateSize', function() {
+      var rect = this.$.svg.getBoundingClientRect();
+      this._setWidth(Math.floor(rect.width) - this.margin.right - this.margin.left);
+      this._setHeight(Math.floor(rect.height) - this.margin.top - this.margin.bottom);
+      this.fire('multi-resize');
+    }, 30);
+  },
+
+  __onIronResize: function() {
+    this.calculateSize();
+  },
+
+  __computeCenter: function(margin, size) {
+    // return margin + size / 2;
+    return margin + size / 2;
+  },
+
+  __computeCenterArray: function(x, y) {
+    return [x, y];
+  }
+};
+
+/** @polymerBehavior */
+Polymer.multiResizer = [
+  Polymer.IronResizableBehavior,
+  Polymer.multiResizerImpl
+];
+</script>

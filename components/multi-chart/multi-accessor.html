@@ -1,0 +1,67 @@
+<link rel="import" href="../polymer/polymer.html">
+<!--
+`multi-accessor`
+
+-->
+<dom-module id="multi-accessor">
+  <script>
+  Polymer({
+
+    is: 'multi-accessor',
+
+    properties: {
+      
+      /**
+       * `accessor` the accessor function 
+       */
+      accessor: {
+        type: Function,
+        notify: true,
+      },
+
+      /**
+       * `accessor` the path from which tha accessor function is built
+       */
+      path: {
+        type: String,
+        // observer: 'observePath'
+      },
+
+      subPath: {
+        type: Boolean,
+        value: false
+      }
+
+    },
+
+    observers: [
+      '_observePath(path, subPath)'
+    ],
+
+    _observePath: function(path, subPath) {
+      var isAdd = path.substring(0, 1) === '+';
+      var fn;
+      if (subPath) {
+        fn = new Function('d', 'k', isAdd ? ('return +d.' + path.substring(1)) + '[k]' : ('return d.' + path + '[k]'));
+      } else {
+        fn = new Function('d', isAdd ? ('return +d.' + path.substring(1)) : ('return d.' + path));
+      }
+      this.set('accessor', fn);
+    },
+
+    // observeSeries: function(series) {
+    //   this.set('accessor', series.map(function(s) {
+    //     var fn, isAdd;
+    //     if (s.path) {
+    //       isAdd = s.path.substring(0, 1) === '+';
+    //       fn = new Function('d', isAdd ? ('return +d.' + s.path.substring(1)) : ('return d.' + s.path));
+    //     } else {
+    //       fn = s.fn;
+    //     }
+    //     return  fn;
+    //   }));
+    // }
+
+  });
+  </script>
+</dom-module>

@@ -1,0 +1,32 @@
+<link rel="import" href="../polymer/polymer.html">
+<script>
+/**
+ * `multiSvgUtil` utility methods for manipulating svg transform attribute
+ *
+ */
+
+'use strict';
+
+/** @polymerBehavior */
+Polymer.multiSvgUtil = {
+
+  translateCenter: function(w, h) {
+    return 'translate(' + w / 2 + ',' + h / 2 + ')';
+  },
+
+  translate: function(x, y) {
+    return 'translate(' + x + ',' + y + ')';
+  },
+  rotate: function(angle) {
+    return 'rotate(' + angle + ')';
+  },
+  svgScale: function(factor) {
+    return 'scale(' + factor + ')';
+  },
+  //TODO
+  matrix: function() {
+    return 'matrix(' + ',' + ')';
+  },
+
+};
+</script>

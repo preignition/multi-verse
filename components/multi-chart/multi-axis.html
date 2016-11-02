@@ -1,0 +1,200 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="multi-svg-util-behavior.html">
+<!-- <link rel="import" href="multi-scale-behavior.html"> -->
+<link rel="import" href="multi-lifecycle-behavior.html">
+<!--
+`multi-axis`, an element for adding axis to multi-chart
+
+@demo demo/index-line.html 
+-->
+<dom-module id="multi-axis">
+  <template>
+    <style is="custom-style">
+    :host {
+      display: none;
+    }
+    </style>
+    <svg>
+      <g id="axis" class="axis" transform$="[[translate(_x,_y)]]">
+        <text class="axis-text" transform$="[[rotate(textAngle)]]" x$="[[xText]]" y$="[[yText]]" dx$="[[dx]]" dy$="[[dy]]" text-anchor="end">[[text]]</text>
+      </g>
+    </svg>
+  </template>
+  <script>
+  Polymer({
+
+    is: 'multi-axis',
+
+
+    properties: {
+      /**
+       * `axis` the [d3 axis](https://github.com/d3/d3-axis) function 
+       */
+      axis: {
+        type: Function,
+        computed: '_computeAxis(position,scale)'
+      },
+
+      /**
+       * `position`  the [position of the axis](https://github.com/d3/d3-axis#position), either right, left, bottom or top. 
+       * a x-axis (resp. y-axis) attribute is set to the target element when position is either left or right (resp. to or bottom), 
+       */
+      position: {
+        type: String,
+        value: 'bottom',
+        observer: '_setPositionAttribute'
+      },
+
+      /**
+       * `_x` x translation for the axis. is set depending on position and height 
+       */
+      _x: {
+        type: Number,
+        value: 0
+      },
+
+      /**
+       * `_y` y translation for the axis. is set depending on position and width
+       */
+      _y: {
+        type: Number,
+        value: 0
+      },
+
+      /**
+       * `width` the width of the chart
+       */
+      width: {
+        type: Number
+      },
+
+      /**
+       * `height` the height of the chart
+       */
+      height: {
+        type: Number
+      },
+
+      /**
+       * `text` text for the axis 
+       */
+      text: {
+        type: String
+      },
+
+      /**
+       * `xText` value to be set to the axisText x attribute
+       */
+      xText: {
+        type: Number
+      },
+
+      /**
+       * `yText` value to be set to the axisText `y` attribute
+       */
+      yText: {
+        type: Number
+      },
+
+      /**
+       * `dx` value to be set to the axisText `dx` attribute
+       */
+      dx: {
+        type: String
+      },  
+      
+      /**
+       * `dy` value to be set to the axisText `dy` attribute
+       */
+      dy: {
+        type: String
+      },
+
+      /**
+       * `textAngle` rotation angle to be applied to text axis
+       */
+      textAngle: {
+        type: Number,
+        value: 0
+      },
+ 
+    },
+
+    behaviors: [
+      Polymer.multiSvgUtil,
+      Polymer.multiScale
+    ],
+
+
+    /**
+     * `targetElement` getter override lifecycle Behavior and called during attached
+     */
+     get targetElement() {
+      return this.$.axis;
+    },
+
+    observers: [
+      // '_observePosition(position)',
+      '_observeHeight(height, position)',
+      '_observeWidth(width, position)'
+    ],
+
+
+    get isY() {
+      return this.position === 'left' || this.position === 'right';
+    },
+
+    get isX() {
+      return this.position === 'top' || this.position === 'bottom';
+    },
+
+    _computeAxis: function(type, scale) {
+      var axis = type === 'right' ? d3.axisRight() : type === 'left' ? d3.axisLeft() : type === 'top' ? d3.axisTop() : d3.axisBottom();
+
+      return axis.scale(scale);
+    },
+
+    _observeWidth: function(w, position) {
+      if (this.isY) {
+        this._x = position === 'right' ? w : 0;
+      }
+      if (this.isX) {
+        this.range = [0, w];
+        this.xText = w;
+      }
+    },
+
+    _observeHeight: function(h, position) {
+      if (this.isX) {
+        this._y = position === 'bottom' ? h : 0;
+      }
+
+      if (this.isY) {
+        this.range = [h, 0];
+      }
+    },
+
+    _setPositionAttribute: function(position) {
+      d3.select(this.targetElement).attr(this.isX ? 'x-axis' : 'y-axis','');
+    },
+
+
+    draw: function(host, data, duration) {
+
+      var sel = d3.select(this.targetElement);
+
+      if (duration) {
+        sel.transition(duration).call(this.axis.scale(this.scale));
+      } else {
+        sel.call(this.axis.scale(this.scale));
+      }
+    }
+
+    // remove: function() {
+    //   d3.select(this.$.axis).selectAll('*').remove();
+    // }
+  
+
+  });
+  </script>
+</dom-module>

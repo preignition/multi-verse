@@ -1,0 +1,52 @@
+{
+  "name": "universe",
+  "version": "0.6.4",
+  "description": "The fastest way to query and explore multivariate datasets",
+  "main": "src/universe.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "crossfilter2": "2.0.0-alpha.04",
+    "q": "^1.4.1",
+    "reductio": "0.5.3"
+  },
+  "devDependencies": {
+    "browserify": "^13.0.0",
+    "browserify-shim": "^3.8.12",
+    "chai": "^3.5.0",
+    "chai-as-promised": "^5.2.0",
+    "gulp": "^3.9.1",
+    "gulp-bump": "^1.0.0",
+    "gulp-concat": "^2.6.0",
+    "gulp-coverage": "^0.3.38",
+    "gulp-mocha": "^2.2.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-streamify": "^1.0.2",
+    "gulp-uglify": "^1.5.3",
+    "lodash": "^4.6.1",
+    "mocha": "^2.4.5",
+    "vinyl-source-stream": "^1.1.0"
+  },
+  "scripts": {
+    "test": "gulp test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/crossfilter/universe.git"
+  },
+  "keywords": [
+    "crossfilter",
+    "query",
+    "multivariate",
+    "datavis",
+    "filtering",
+    "data"
+  ],
+  "author": "Tanner Linsley",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/crossfilter/universe/issues"
+  },
+  "homepage": "https://github.com/crossfilter/universe"
+}

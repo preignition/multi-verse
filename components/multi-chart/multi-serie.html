@@ -1,0 +1,41 @@
+<link rel="import" href="../polymer/polymer.html">
+<!--
+`multi-poly`
+polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
+
+-->
+<dom-module id="multi-serie">
+  <template>
+    <content></content>
+  </template>
+  <script>
+  Polymer({
+
+    is: 'multi-serie',
+
+    properties: {
+     
+      key: {
+        type: String,
+        reflectToAttribute: true
+      },
+     
+      label: {
+        type: String,
+        observer: '_notifyChange',
+        reflectToAttribute: true
+      },
+     
+      accessor: {
+        observer: '_notifyChange',
+        type: Function
+      }
+
+    },
+    _notifyChange: function() {
+      this.fire('multi-serie-change', this.key);
+    }
+      
+  });
+  </script>
+</dom-module>

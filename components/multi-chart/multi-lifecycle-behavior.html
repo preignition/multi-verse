@@ -1,0 +1,93 @@
+<link rel="import" href="../polymer/polymer.html">
+<script>
+/**
+ * `multiLidecycle` 
+ * This behavior should be added to all elements that need to react on data changes (e.g. need to be drawn again)
+ * 
+ */
+
+'use strict';
+
+/** @polymerBehavior */
+Polymer.multiLifecycle = {
+
+  properties: {
+
+    /**
+     * `isActive` set to false to inactivate this component. It will remove visual elements and inactivate its functionality.
+     */
+    isActive: {
+      type: Boolean,
+      value: true,
+      observer: '__observeIsActive'
+    },
+
+    /**
+     * `shallRegister` is a flag to know if this element need to be registered when it is added to a chart-container
+     */
+    shallRegister: {
+      type: Boolean,
+      value: true
+    },
+
+    /**
+     * `isDrawn` flag to know if this element is drawn. 
+     */
+    isDrawn: {
+      type: Boolean,
+      readOnly: true
+    },
+
+    /**
+     * `hostAnchor` the id of a host element under which this element will be appended (in `afterRegister` method).
+     */
+    anchor: {
+      type: String,
+      readOnly: true
+    },
+
+  },
+
+  get targetElement() {
+    return null;
+  },
+
+  detached: function() {
+    // this.fire('multi-register-item', false);
+    this.appendChild(this.targetElement);
+  },
+
+  __observeIsActive: function(isActive) {
+    // this.fire('multi-register-register', isActive);
+    if (!isActive) {
+      this._setIsDrawn(false);
+      return this.remove();
+    }
+
+    if (this.isDrawn === false) {
+      // the chart container will call a draw method if need be
+      this.fire('multi-refresh');
+    }
+  },
+
+  /**
+   * `afterRegister` is called by the host once this element has been registered. It placed the axis element into the chart. 
+   */
+  afterRegister: function(host) {
+    if (!this.anchor && !host.chartInsertionPoint) {
+      this._error('insertionPoint is missing. specify either and anchor or a chartInsertionPoint.');
+    }
+    if (this.targetElement) {
+      host.$[this.anchor || host.chartInsertionPoint].appendChild(this.targetElement);
+    }
+  },
+
+  draw: function() {},
+
+  remove: function() {
+    if (this.targetElement) {
+      d3.select(this.targetElement).selectAll('*').remove();
+    }
+  }
+};
+</script>

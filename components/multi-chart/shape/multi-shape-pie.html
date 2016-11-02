@@ -1,0 +1,177 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="multi-shape-behavior.html">
+<link rel="import" href="../multi-lifecycle-behavior.html">
+<!--
+`multi-shape pie`
+polymer elements responsible for drawing pie shapes
+
+@demo demo/index-pie.html 
+-->
+<dom-module id="multi-shape-pie">
+  <template>
+    <style is="custom-style">
+    :host {
+      display: none;
+    }
+    </style>
+    <svg>
+      <g id="shape" transform$="[[translate(center.0, center.1)]]" class="shape-pie">
+      </g>
+    </svg>
+  </template>
+  <script>
+  (function() {
+    'use strict';
+
+    var identity = function(d) {
+      return d;
+    };
+
+    Polymer({
+
+      is: 'multi-shape-pie',
+
+      properties: {
+
+        arcs: {
+          type: Array,
+          observer: 'fireRefresh'
+        },
+
+        /**
+         * `innerRadius` the inner radius for the pie chart. It might be calculated by setting `radiusWidth` property
+         */
+        innerRadius: {
+          value: 0
+        },
+
+        /**
+         * `pieWidth` a way to indicate the width of the radius (either in % or absolute value). 
+         * If set, inner radius will be inferred. 
+         */
+        pieWidth: {
+          type: String
+        },
+
+        /**
+         * `outerRadius` the outer radius for the pie. Computed as half the max size of the chart. 
+         * It can be set as a Function :
+         * `function(d){return 20 + Math.sqrt(d.value)}` 
+         */
+        outerRadius: {
+          type: Function,
+          computed: '_computeRadius(width, height)'
+        },
+
+        arc: {
+          type: Function,
+          computed: '_computeArc(innerRadius, outerRadius)'
+        },
+
+        height: {
+          type: Number
+        },
+
+        width: {
+          type: Number
+        },
+
+        center: {
+          type: Array
+        }
+
+      },
+
+      observers: [
+        '_observePieWidth(pieWidth, outerRadius)'
+      ],
+
+      behaviors: [
+        Polymer.multiLifecycle,
+        Polymer.multiShape
+      ],
+
+      /**
+       * `targetElement` getter override lifecycle Behavior and called during attached
+       */
+      get targetElement() {
+        return this.$.shape;
+      },
+
+      _computeArc: function(innerRadius, outerRadius) {
+        var arc = this.arc || d3.arc();
+        arc.innerRadius(innerRadius).outerRadius(outerRadius);
+        this.fire('multi-refresh');
+        return arc;
+      },
+
+      _computeRadius: function(w, h) {
+        return Math.min(w, h) / 2;
+      },
+
+      _observePieWidth: function(width, radius) {
+        this.innerRadius = (width + '').endsWith('%') ? parseFloat(width) * radius : radius - parseFloat(width);
+      },
+
+      draw: function(host, data, duration) {
+
+        if (!this.arcs) {
+          this._error('arcs is not provided');
+        }
+
+        var chart = d3.select(this.targetElement).selectAll('path.pie');
+
+        if (duration) {
+          chart.each(function(d) {
+            this._current = d;
+          });
+        }
+
+        // var arcs = this.pie(data);
+        var arcs = this.arcs; //this.$.shaper.shapedData;
+        var arc = this.arc;
+        var colorScale = this.colorScale;
+
+        chart = chart.data(arcs);
+
+        chart.exit().remove();
+
+        chart = chart.enter().append('path')
+          .attr('class', 'shape pie selectable')
+          .on('click', function(d) {
+            host.fire('multi-tap', d);
+          })
+          .merge(chart);
+
+        if (duration) {
+          //as in https://bl.ocks.org/mbostock/5100636
+          function arcTween(a) {
+            var i = d3.interpolate(this._current, a);
+            this._current = i(0);
+            return function(t) {
+              return arc(i(t));
+            };
+          }
+
+          chart = this.setTransition(chart, duration);
+
+          chart
+            .attrTween('d', arcTween);
+
+        } else {
+          chart
+            .attr('d', arc);
+        }
+
+        chart.attr('key', function(d) {
+            return d.data.key;
+          })
+          .attr('fill', function(d) {
+            return colorScale(d.data.key);
+          });
+      }
+
+    });
+  })();
+  </script>
+</dom-module>

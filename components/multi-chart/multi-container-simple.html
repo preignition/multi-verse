@@ -1,0 +1,64 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="multi-container-behavior.html">
+<link rel="import" href="multi-axis.html">
+<link rel="import" href="multi-scale.html">
+<link rel="import" href="multi-accessor.html">
+<link rel="import" href="multi-shared-styles.html">
+<!--
+`multi-container-coordinate` is a container for simple charts (e.g. pie chart or maps)
+
+The container register elements that have a `shallRegister` property set to `true` and draw them when needed (e.g when the data changes).
+ 
+@element multi-container-simple
+@demo demo/index-pie.html
+@demo demo/index-choropleth.html
+-->
+<dom-module id="multi-container-simple">
+  <template>
+    <style is="custom-style" include="multi-container multi-chart-selector">
+
+    </style>
+    <div id="observeNodes">
+      <content id="content"></content>
+    </div>
+    <svg id="svg">
+      <!-- <g id="chartContent" transform$="[[translate(xCenter, yCenter)]]"> -->
+      <g id="chartContent">
+        <g id="zoom">
+          <g id="chart" class="chart">
+          </g>
+        </g>
+        <!-- <g id="selector"></g>   -->
+      </g>
+      <g id="legend"></g>
+    </svg>
+    <!-- <div id="legend"></div> -->
+  </template>
+  <script>
+  Polymer({
+
+    is: 'multi-container-simple',
+
+    hostAttributes: {
+      multicontainer: ''
+    },
+
+    properties: {
+
+      /**
+       * `chartInsertionPoint` the id for anchoring contents - as Polymer does not support external namespaces, we cheat with the way SVG nodes are inserted into this component. (see [multi-lifecycle-behavior.html]())
+       */
+      chartInsertionPoint: {
+        type: String,
+        value: 'chart'
+      },
+
+    },
+
+    behaviors: [
+      Polymer.multiContainer
+    ]
+
+  });
+  </script>
+</dom-module>

@@ -1,0 +1,114 @@
+<link rel="import" href="../../polymer/polymer.html">
+<!-- <link rel="import" href="../properties/multi-label-properties-behavior.html">
+<link rel="import" href="../multi-config-behavior.html">
+<link rel="import" href="../multi-label-behavior.html">
+<link rel="import" href="../multi-svg-util-behavior.html"> -->
+<script>
+/**
+ * `multiShapeGeo` behavior 
+ */
+
+'use strict';
+
+/** @polymerBehavior */
+Polymer.multiShapeGeo = {
+
+  properties: {
+    
+    /**
+     * `layer` a d3.selection of the layer for convenience
+     */
+    layer: {
+      type: Function
+    },
+
+    /**
+     * `data` geometries to be drawn
+     */
+    data: {
+      type: Array
+    },
+
+    /**
+     * `path` the [d3-geoPath](](https://github.com/d3/d3-geo#geoPath))
+     */
+    path: {
+      type: Function,
+    },
+
+    /**
+     * `attrs` default attributes to be set on the first draw
+     */
+    attrs: {
+      type: Object,
+      value: function() {
+        return {
+          fill: '#ddd',
+          stroke: '#555'
+        }
+      }
+    },
+
+    /**
+     * `layerType` layer type - will be reflected to the layer class
+     */
+    layerType: {
+      type: String,
+      value: 'layer',
+      observer: '_observeLayerType'
+    },
+
+    /**
+     * `cls` the class to add to layer shapes
+     */
+    cls: {
+      type: String,
+      value: 'layer-shape'
+    }
+
+  },
+  observers: [
+    'drawLayer(data, path)',
+    'observeChanged(path.changed)'
+  ],
+
+  /**
+   * `targetElement` getter override lifecycle Behavior and called during attached
+   */
+  get targetElement() {
+    return this.$.layer;
+  },
+
+  _observeLayerType: function(type, old) {
+    if (old) {
+      this.targetElement.removeAttribute(old);
+    }
+    this.targetElement.setAttribute(type, '');
+  },
+
+  observeChanged: function() {
+    if (this.data && this.path) {
+      this.debounce('drawLayer', function() {
+        this.drawLayer(this.data, this.path);
+      }, 40);
+    }
+  },
+
+  drawLayer: function(data, path) {
+    var layer = this.layer || d3.select(this.targetElement);
+    var cls = this.cls;
+
+    layer = layer.selectAll('path.' + cls).data(data);
+
+    layer.exit().remove();
+
+    layer = layer.enter().append('path')
+      .attr('class', cls)
+      .attrs(this.attrs)
+      .merge(layer);
+
+    return this.layer = layer;  
+  }
+
+}
+</script>

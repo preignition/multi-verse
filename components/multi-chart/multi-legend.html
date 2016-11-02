@@ -1,0 +1,224 @@
+<link rel="import" href="../polymer/polymer.html">
+<!-- <link rel="import" href="../multi-shape-behavior.html"> -->
+<link rel="import" href="multi-lifecycle-behavior.html">
+<link rel="import" href="multi-svg-util-behavior.html">
+<link rel="import" href="multi-config-behavior.html">
+<!--
+`multi-poly`
+polymer elements for multivariate analysis (depend on crossfilter, universe and reductio)
+
+@demo demo/index-pie.html 
+-->
+<dom-module id="multi-legend">
+  <template>
+    <style is="custom-style">
+    :host {
+      display: none;
+    }
+    </style>
+    <svg>
+      <g id="legendG" transform$="[[translate(x,y)]][[svgScale(scaleFactor)]]" class="legend">
+      </g>
+    </svg>
+  </template>
+  <script>
+  Polymer({
+
+    is: 'multi-legend',
+
+    properties: {
+
+      /**
+       * `legendType` the type of legend (`legendColor`, `legendSize`, `legendSymbol`) for instantiating the legend ([d3-legend](http://d3-legend.susielu.com/).
+       */
+      legendType: {
+        type: String,
+        value: 'legendColor'
+      },
+
+      anchor: {
+        type: String,
+        value: 'legend'
+      },
+
+      scaleFactor: {
+        type: Number,
+        value: 0.7
+      },
+
+      /**
+       * `position` this position within the chart. The observer will look for words like `top`, `bottom`, `right` and `left`and calculate `x`  and `y` position accordingly.
+       */
+      position: {
+        type: String
+      },
+
+      /**
+       * `padding` the padding to be applied when calculation the position
+       */
+      padding: {
+        type: Number,
+        value: 0
+      },
+
+      /**
+       * `chartWidth` the width of the containing chart. If not set, will pick-it up on attached
+       */
+      chartWidth: {
+        type: Number,
+        value: 300
+
+      },
+
+      /**
+       * `chartHeight` the height of the containing chart. If not set, will pick-it up on attached
+       */
+      chartHeight: {
+        type: Number,
+        value: 300
+
+      },
+
+      x: {
+        type: Number,
+        value: 0
+      },
+
+      y: {
+        type: Number,
+        value: 0
+      },
+
+      legend: {
+        type: Function,
+        computed: '_computeLegend(legendType)'
+      },
+
+      // API Properties
+      scale: {
+        type: Function
+      },
+      cells: {
+        type: Number
+      },
+      orient: {
+        type: String
+          // value: 'horizontal'
+      },
+      ascending: {
+        type: Boolean
+      },
+      shape: {
+        type: String
+      },
+      shapeWidth: {
+        type: Number
+      },
+      shapeHeight: {
+        type: Number
+      },
+      shapeRadius: {
+        type: Number
+      },
+      shapePadding: {
+        type: Number
+      },
+      useClass: {
+        type: Boolean
+      },
+      classPrefix: {
+        type: String
+      },
+      title: {
+        type: String
+      },
+      labels: {
+        type: String
+      },
+      labelAlign: {
+        type: String
+      },
+      labelFormat: {
+        type: Function
+      },
+      labelOffset: {
+        type: Number
+      },
+      labelDelimiter: {
+        type: String
+      }
+    },
+
+    behaviors: [
+      Polymer.multiLifecycle,
+      Polymer.multiConfig,
+      Polymer.multiSvgUtil,
+    ],
+
+    observers: [
+      '_observePosition(position, padding,chartWidth, chartHeight)',
+      'observeConfig(scale, "scale", "legend", "refresh")',
+      'observeConfig(cells, "cells", "legend", "refresh")',
+      'observeConfig(orient, "orient", "legend", "refresh")',
+      'observeConfig(ascending, "ascending", "legend", "refresh")',
+      'observeConfig(shape, "shape", "legend", "refresh")',
+      'observeConfig(shapeWidth, "shapeWidth", "legend", "refresh")',
+      'observeConfig(shapeHeight, "shapeHeight", "legend", "refresh")',
+      'observeConfig(shapeRadius, "shapeRadius", "legend", "refresh")',
+      'observeConfig(shapePadding, "shapePadding", "legend", "refresh")',
+      'observeConfig(useClass, "useClass", "legend", "refresh")',
+      'observeConfig(classPrefix, "classPrefix", "legend", "refresh")',
+      'observeConfig(title, "title", "legend", "refresh")',
+      'observeConfig(labels, "labels", "legend", "refresh")',
+      'observeConfig(labelAlign, "labelAlign", "legend", "refresh")',
+      'observeConfig(labelFormat, "labelFormat", "legend", "refresh")',
+      'observeConfig(labelOffset, "labelOffset", "legend", "refresh")',
+      'observeConfig(labelDelimiter, "labelDelimiter", "legend", "refresh")'
+    ],
+
+    // attached: function() {
+    //   if (!this.chartWidth) {
+    //     this.chartWidth = this.domHost.width;
+    //   }
+    //   if (!this.chartWidth) {
+    //     this.chartWidth = this.domHost.height;
+    //   }
+    // },
+
+    _observePosition: function(position, padding , chartWidth, chartHeight) {
+      var isRight = ~position.indexOf('right');
+      var isBottom = ~position.indexOf('bottom');
+
+      var size = this.getBoundingClientRect();
+      if (isRight) {
+        this.x = chartWidth - size.width - padding;
+      }
+
+      if (isBottom) {
+        this.y = chartHeight - size.height - padding;
+      }
+    },
+
+    /**
+     * `targetElement` getter override lifecycle Behavior and called during attached
+     */
+      get targetElement() {
+      return this.$.legendG;
+    },
+
+    _computeLegend: function(legendType) {
+      if (d3[legendType]) {
+        var legend = d3[legendType]();
+        this.applyConfig(legend, ['scale', 'cells', 'orient', 'ascending', 'shape', 'shapeWidth', 'shapeHeight', 'shapeRadius', 'shapePadding', 'useClass', 'classPrefix', 'title', 'labels', 'labelAlign', 'labelFormat', 'labelOffset', 'labelDelimiter']);
+        return legend;
+      }
+    },
+
+    draw: function(host, data, duration) {
+
+      var legend = d3.select(this.targetElement).call(this.legend);
+
+    }
+  });
+  </script>
+</dom-module>

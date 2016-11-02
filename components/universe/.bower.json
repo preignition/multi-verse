@@ -1,0 +1,14 @@
+{
+  "name": "universe",
+  "homepage": "https://github.com/crossfilter/universe",
+  "version": "0.6.4",
+  "_release": "0.6.4",
+  "_resolution": {
+    "type": "version",
+    "tag": "0.6.4",
+    "commit": "b4b9be7cf6edda554c97d414e869770c2fb6f552"
+  },
+  "_source": "git://github.com/crossfilter/universe.git",
+  "_target": "^0.6.4",
+  "_originalSource": "crossfilter/universe"
+}

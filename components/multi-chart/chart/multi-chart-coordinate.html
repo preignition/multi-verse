@@ -1,0 +1,108 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../properties/multi-x-coordinates-properties-behavior.html">
+<link rel="import" href="../properties/multi-y-coordinates-properties-behavior.html">
+<link rel="import" href="../properties/multi-chart-properties-behavior.html">
+<link rel="import" href="../properties/multi-color-properties-behavior.html">
+<link rel="import" href="../properties/multi-selection-properties-behavior.html">
+<link rel="import" href="../d3-shape/d3-stack.html">
+<link rel="import" href="../../d3-bundle-element/d3-element-multi.html">
+<link rel="import" href="../shape/multi-shape-stack.html">
+<link rel="import" href="../multi-scale.html">
+<link rel="import" href="../multi-series.html">
+<link rel="import" href="../multi-accessor.html">
+<link rel="import" href="../multi-legend.html">
+<link rel="import" href="../multi-container-coordinate.html">
+<link rel="import" href="../multi-shared-styles.html">
+<!--
+`multi-chart-coordinate`
+
+### Example: a Stack chart 
+
+```
+<multi-chart-coordinate id="chart" title="test stack chart" width="{{width}}" height="{{height}}" y-domain="[[yDomain]]" color-scale="{{colorScale}}" x-scale="{{xScale}}" y-scale="{{yScale}}" color-domain="[[keys]]" series="{{series}}" keys="{{keys}}" >
+  <d3-stack domain="{{yDomain}}" data="{{stack}}" domain-min="[[domainMin]]" value="[[value]]" value-path="[[valuePath]]" order="[[order]]" offset="[[offset]]" keys="[[keys]]"></d3-stack>
+  <multi-shape-stack chart  stack="[[stack]]" x-scale="[[xScale]]"  y-scale="[[yScale]]"    color-scale="[[colorScale]]"></multi-shape-stack>
+  <multi-serie serie key="apple" label="apple"></multi-serie>
+  <multi-serie serie key="banana" label="banana"></multi-serie>
+  <multi-serie serie key="grape" label="grape"></multi-serie>
+  <multi-legend legend chart-width="{{width}}" scale="[[colorScale]]" position="top-right" ></multi-legend>
+  <multi-selector selection-type="brushX" width="[[width]]"  height="[[height]]" x-scale="[[xScale]]" accessor="[[keyAccessor]]"></multi-selector> 
+</multi-chart-coordinate>
+```          
+<div>
+  <img src="https://raw.githubusercontent.com/PolymerEl/multi-chart/master/images/chart-stack.png" width="300"></img>
+</div>
+
+@element multi-chart-coordinate
+@demo demo/index-bar.html
+@demo demo/index-bubble.html
+@demo demo/index-line.html
+@demo demo/index-stack.html
+
+-->
+<dom-module id="multi-chart-coordinate">
+  <template>
+    <style is="custom-style" include="multi-chart multi-chart-selector">
+
+    </style>
+    <content select="[header]"></content> 
+    <multi-accessor accessor="{{xAccessor}}" path="[[xAccessorPath]]"></multi-accessor>
+    <multi-accessor accessor="{{yAccessor}}" path="[[yAccessorPath]]"></multi-accessor>
+    <multi-container-coordinate 
+     selection-type="[[selectionType]]"
+     selected-items="[[selectedItems]]"
+     height="{{height}}"
+     width="{{width}}"
+     data="[[data]]"
+     x-accessor="[[xAccessor]]"
+     y-domain="[[yDomain]]"
+     y-accessor="[[yAccessor]]" 
+     x-scale="{{xScale}}"
+     y-scale="{{yScale}}"
+     x-axis-text="[[xAxisText]]" 
+     y-axis-text="[[yAxisText]]" 
+     x-elastic="[[xElastic]]" 
+     y-elastic="[[yElastic]]" 
+     color-scale="{{colorScale}}">
+      <multi-series keys="{{keys}}" series="{{series}}">
+        <content select="[serie]"></content>
+      </multi-series>
+      <multi-scale scale-type="[[colorScaleType]]" domain="[[colorDomain]]" range="[[colorRange]]" scale="{{colorScale}}"></multi-scale>
+      <content select=":not([serie]):not([header]):not([footer])"></content>
+    </multi-container-coordinate>
+    <content select="[footer]"></content> 
+  </template>
+  <script>
+  Polymer({
+
+    is: 'multi-chart-coordinate',
+
+    hostAttributes: {
+      multichart: ''
+    },
+
+    properties: {
+
+      keys: {
+        type: Array, 
+        notify: true
+      },
+
+      series: {
+        type: Array,
+        notify: true
+      },
+
+     },
+
+    behaviors: [
+      Polymer.multixCoordinatesProperties,
+      Polymer.multiyCoordinatesProperties,
+      Polymer.multiChartProperties,
+      Polymer.multiColorProperties
+      // Polymer.multiSelectionProperties
+    ]
+
+  });
+  </script>
+</dom-module>

@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>multi-poly demo</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
+  <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+  <link rel="import" href="../../paper-button/paper-button.html">
+  <link rel="import" href="../../paper-input/paper-input.html">
+  <link rel="import" href="../../d3-bundle-element/d3-element-multi-debug.html">
+  <link rel="import" href="../chart/multi-chart-line.html">
+  <link rel="import" href="../chart/multi-chart-pie.html">
+  <link rel="import" href="../chart/multi-chart-bar.html">
+  <link rel="import" href="../chart/multi-chart-bubble.html">
+  <link rel="stylesheet" href="../multichart.css">
+  <style is="custom-style" include="demo-pages-shared-styles">
+  #barChart {
+    height:400px;
+  }
+  </style>
+</head>
+
+<body>
+  <div class="vertical-section-container centered">
+    <h3>Basic multi-poly Demo</h3>
+    <demo-snippet>
+      <template>
+        <template is="dom-bind" id="app">
+          <!-- <multi-chart-line id="lineChart"  > </multi-chart-line> -->
+          <multi-chart-bubble id="bubbleChart"  > </multi-chart-bubble>
+          <multi-chart-pie id="pieChart" pad-angle="0.1" inner-radius="[[innerRadius]]" > </multi-chart-pie>
+          <!-- <multi-chart-bar x-axis-text="my text" y-axis-text="yAxis" id="barChart"  > </multi-chart-bar> -->
+          <paper-input label="innerRadius" type="number" data="{{innerRadius}}"></paper-input>
+          <paper-button raised on-tap="toggle">toggle data</paper-button>
+        </template>
+      </template>
+    </demo-snippet>
+  </div>
+</body>
+<script>
+  window.addEventListener('WebComponentsReady', function() {
+    app = document.querySelector('#app');
+
+    var d1 = [{"key":0,"value":{"count":20}},{"key":1,"value":{"count":4}},{"key":3,"value":{"count":1}},{"key":5,"value":{"count":42}},{"key":6,"value":{"count":1412}},{"key":7,"value":{"count":1958}},{"key":8,"value":{"count":1917}},{"key":9,"value":{"count":1706}},{"key":10,"value":{"count":1634}},{"key":11,"value":{"count":1760}},{"key":12,"value":{"count":1814}},{"key":13,"value":{"count":1684}},{"key":14,"value":{"count":1744}},{"key":15,"value":{"count":1754}},{"key":16,"value":{"count":1745}},{"key":17,"value":{"count":2022}},{"key":18,"value":{"count":1877}},{"key":19,"value":{"count":1768}},{"key":20,"value":{"count":1604}},{"key":21,"value":{"count":1310}},{"key":22,"value":{"count":493}},{"key":23,"value":{"count":126}}]
+    var d2 = [{"key":0,"value":{"count":200}},{"key":1,"value":{"count":40}},{"key":3,"value":{"count":156}},{"key":5,"value":{"count":4}},{"key":6,"value":{"count":142}},{"key":7,"value":{"count":1958}},{"key":8,"value":{"count":1917}},{"key":9,"value":{"count":1706}},{"key":10,"value":{"count":1634}},{"key":11,"value":{"count":1760}},{"key":12,"value":{"count":1814}},{"key":13,"value":{"count":1684}},{"key":14,"value":{"count":1744}},{"key":15,"value":{"count":1754}},{"key":16,"value":{"count":1745}},{"key":17,"value":{"count":2022}},{"key":18,"value":{"count":1877}},{"key":19,"value":{"count":5768}},{"key":20,"value":{"count":1604}},{"key":21,"value":{"count":130}},{"key":22,"value":{"count":393}},{"key":23,"value":{"count":126}}]
+    var isD1 = false;
+
+    // app.$.lineChart.data = d1;
+    app.$.pieChart.data = d1;
+    app.$.bubbleChart.data = d1;
+    // app.$.barChart.data = d2;
+    
+    app.toggle = function() {
+      isD1 = !isD1
+      // this.$.lineChart.data = isD1 ? d2 : d1;
+      this.$.bubbleChart.data = isD1 ? d2 : d1;
+      this.$.pieChart.data = isD1 ? d2 : d1;
+      // this.$.barChart.data = isD1 ? d1 : d2;
+    }    
+    
+  });
+
+</script>
+
+</html>

@@ -1,0 +1,119 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>multi-poly demo</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
+  <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+  <link rel="import" href="../../paper-button/paper-button.html">
+  <link rel="import" href="../../paper-input/paper-input.html">
+  <link rel="import" href="../../d3-bundle-element/d3-element-multi-debug.html">
+  <link rel="import" href="../multi-serie.html">
+  <link rel="import" href="../multi-legend.html">
+  <link rel="import" href="../multi-selector.html">
+  <link rel="import" href="../multi-scale.html">
+  <link rel="import" href="../shape/multi-shape-bubble.html">
+  <link rel="import" href="../chart/multi-chart-coordinate.html">
+  <link rel="stylesheet" href="../multichart.css">
+  <style is="custom-style" include="demo-pages-shared-styles">
+  #chart {
+    height: 400px;
+  }
+  </style>
+</head>
+
+<body>
+  <div class="vertical-section-container centered">
+    <h3>Basic bubble-chart Demo</h3>
+    <demo-snippet>
+      <template>
+        <template is="dom-bind" id="app">
+          <multi-chart-coordinate id="chart" 
+            width="{{width}}" 
+            height="{{height}}" 
+            y-domain="[[yDomain]]" 
+            color-scale="{{colorScale}}" 
+            x-accessor-path="[[xAccessorPath]]"
+            x-scale="{{xScale}}" 
+            x-accessor="{{xAccessor}}" 
+            y-accessor-path="[[yAccessorPath]]"
+            y-scale="{{yScale}}" 
+            y-accessor="{{yAccessor}}"
+            color-domain="[[keys]]" series="{{series}}" keys="{{keys}}" >
+            
+            <!-- <d3-stack domain="{{yDomain}}" data="{{stack}}" domain-min="[[domainMin]]" value="[[value]]" value-path="[[valuePath]]" order="[[order]]" offset="[[offset]]" keys="[[keys]]"></d3-stack> -->
+            <!-- <multi-shape-stack chart  stack="[[stack]]" x-scale="[[xScale]]"  y-scale="[[yScale]]"    color-scale="[[colorScale]]"></multi-shape-stack> -->
+            
+            <multi-scale scale-type="scaleSqrt" accessor="[[yAccessor]]"  range="[3,13]" scale="{{zScale}}"></multi-scale>
+            <multi-shape-bubble index="banana" 
+                  x-accessor="[[xAccessor]]" 
+                  y-accessor="[[yAccessor]]" 
+                  z-accessor="[[yAccessor]]" 
+                  x-scale="[[xScale]]" 
+                  y-scale="[[yScale]]" 
+                  z-scale="[[zScale]]"
+                  color-scale="[[colorScale]]"></multi-shape-bubble>
+                <multi-shape-bubble index="apple" 
+                  x-accessor="[[xAccessor]]" 
+                  y-accessor="[[yAccessor]]" 
+                  z-accessor="[[xAccessor]]" 
+                  x-scale="[[xScale]]" 
+                  y-scale="[[yScale]]" 
+                  z-scale="[[zScale]]"
+                  color-scale="[[colorScale]]"></multi-shape-bubble>
+            <h3 header>test bubble chart</h3>          
+            <multi-serie serie key="apple" label="apple"></multi-serie>
+            <multi-serie serie key="banana" label="banana"></multi-serie>
+            <multi-legend legend chart-width="[[width]]" scale="[[colorScale]]" position="top-right" ></multi-legend>
+          </multi-chart-coordinate>
+          <paper-button raised on-tap="toggle">toggle data</paper-button>
+        </template>
+      </template>
+    </demo-snippet>
+  </div>
+</body>
+<script>
+window.addEventListener('WebComponentsReady', function() {
+  app = document.querySelector('#app');
+
+    var chart = app.$.chart;
+    var data;
+
+    var keys = ['apple', 'banana', 'grape'];
+    var n = 10;
+
+    function rnd(size, keys, max) {
+      return d3.range(size).map(function(d,i) {
+        var value = {};
+        var r = d3.randomUniform(max);
+        keys.forEach(function(k){
+          value[k] = r();
+        });
+        return {key: i, value: value}
+      });
+    }
+
+    var d1 = rnd(10, keys, 50);
+    var d2 = rnd(10, keys, 50);
+
+  var isD1 = false;
+
+  chart.xAccessorPath = 'key';
+  chart.yAccessorPath = '+value.apple';
+  chart.data = d1;
+
+  // app.innerRadius = 45;
+  // app.padAngle = 0.1;
+
+  app.toggle = function() {
+    isD1 = !isD1;
+    chart.data = isD1 ? d2 : d1;
+  }
+
+});
+</script>
+
+</html>

@@ -1,0 +1,117 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../multi-config-behavior.html">
+<link rel="import" href="../properties/multi-label-properties-behavior.html">
+<link rel="import" href="../multi-svg-util-behavior.html">
+<script>
+/**
+  `multiShape` behavior 
+
+ */
+
+'use strict';
+
+/** @polymerBehavior Polymer.multiShapeImpl */
+Polymer.multiShapeImpl = {
+
+  properties: {
+
+    key: {
+      type: Function,
+      computed: 'computeKey(xAccessor)'
+    },
+
+    /**
+     * `isDrawning` flag to know if this element is being drawn (e.g. animating). 
+     */
+    isDrawing: {
+      type: Boolean,
+      readOnly: true,
+      value: false
+    },
+
+    /**
+     * `needRefresh` flag to know if this element need a refresh 
+     */
+    needRefresh: {
+      type: Boolean,
+      readOnly: true
+    }
+
+  },
+
+  fireRefresh: function() {
+    this.fire('multi-refresh');
+  },
+
+  checkRefresh: function() {
+    if (this.needRefresh) {
+      this.fireRefresh();
+    }
+  },
+
+  clearRefresh: function() {
+    this._setNeedRefresh(false);
+  },
+
+  setTransition: function(chart, duration) {
+    var me = this;
+    this._setIsDrawing(true);
+
+    chart = chart.transition().duration(duration)
+      .on('end', function() {
+        me._setIsDrawing(false);
+      });
+    return chart;
+
+  },
+
+  computeKey: function(accessor) {
+    return function(d, i) {
+      return accessor(d, i);
+    };
+  },
+
+  /**
+   * `computeDataKey` as computewKey except that we pass d.data (to be used for pie where d3.arc return initial data point under d.data)
+   */
+  computeDataKey: function(accessor) {
+    return function(d, i) {
+      return accessor(d.data, i);
+    };
+  },
+
+  computeAccessor: function(scale, accessor) {
+    return function(d, i) {
+      return scale(accessor(d, i));
+    };
+  },
+
+  /**
+   * `computeDataAccessor` as computeAccessor except that we pass d.data (to be used for pie where d3.arc return initial data point under d.data)
+   */
+  computeDataAccessor: function(scale, accessor) {
+    return function(d, i) {
+      return scale(accessor(d.data, i));
+    };
+  },
+
+  constant: function(x) {
+    return function() {
+      return x;
+    };
+  },
+
+  functor: function(x) {
+    return typeof x === 'function' ? x : this.constant(x);
+  }
+
+};
+
+/** @polymerBehavior */
+Polymer.multiShape = [
+  Polymer.multiConfig,
+  Polymer.multiLabelProperties,
+  Polymer.multiSvgUtil,
+  Polymer.multiShapeImpl
+];
+</script>

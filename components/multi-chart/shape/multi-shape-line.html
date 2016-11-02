@@ -1,0 +1,99 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="multi-shape-behavior.html">
+<link rel="import" href="../multi-lifecycle-behavior.html">
+<link rel="import" href="../multi-shared-styles.html">
+<!--
+`multi-shape-line`
+polymer elements resobpible for drawing lines in a coordinate chart
+
+@demo demo/index-line.html 
+-->
+<dom-module id="multi-shape-line">
+  <template>
+    <style is="custom-style" include="multi-chart-line">
+    :host {
+      display: none;
+    }
+    </style>
+    <svg>
+      <path id="shape" class="shape line" > </path>
+    </svg>
+  </template>
+  <script>
+  Polymer({
+
+    is: 'multi-shape-line',
+
+    properties: {
+      
+      /**
+       * `x` the x accessor to be applied to the line generator
+       */
+      x: {
+        type: Function,
+        computed: 'computeAccessor(xScale, xAccessor)'
+      },
+      
+      /**
+       * `y` the y accessor to be applied to the line generator
+       */
+      y: {
+        type: Function,
+        computed: 'computeAccessor(yScale, yAccessor)'
+      },
+
+      /**
+       * `line` the line generator with the default settings as in [d3-shape](https://github.com/d3/d3-shape#lines).
+       */
+      line: {
+        type: Function,
+        computed: '_computeLine(x, y)'
+      },
+
+      index: {
+        type: String
+      }
+     
+    },
+
+    behaviors: [
+      Polymer.multiLifecycle,
+      Polymer.multiShape,
+      // Polymer.multi.xCoordinate,
+      // Polymer.multi.yCoordinate,
+    ],
+
+    _computeLine: function(x, y) {
+        var line = this.line || d3.line() ;
+        line.x(x).y(y);
+        this.fire('multi-refresh');
+        return line;
+    },
+
+    /**
+     * `targetElement` getter override lifecycle Behavior and called during attached
+     */
+     get targetElement() {
+      return this.$.shape;
+    },
+
+    draw: function(host, data, duration) {
+
+      var chart = d3.select(this.targetElement).datum(data);
+      
+      // chart.on('click', function(d) {
+      //     host.fire('multi-tap', d);
+      //   });
+
+      if (duration)  {
+        chart = chart.transition().duration(duration);
+      }  
+      
+      chart.attr('stroke',  this.colorScale(this.index))
+        .attr('key', this.key)
+        .attr('d', this.line);
+    },
+
+  });
+  </script>
+</dom-module>

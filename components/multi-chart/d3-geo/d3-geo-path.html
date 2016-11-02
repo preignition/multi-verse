@@ -1,0 +1,89 @@
+<link rel="import" href="../../polymer/polymer.html">
+<!-- <link rel="import" href="../multi-accessor.html"> -->
+<link rel="import" href="../multi-config-behavior.html">
+<!-- <link rel="import" href="d3-shape-behavior.html"> -->
+<!-- <link rel="import" href="multi-lifecyle-behavior.html"> -->
+<!--
+`d3-geo-path`
+a new geographic path generator with the default settings as in [d3.geoPath](https://github.com/d3/d3-geo#geoPath)
+
+@demo demo/index-choropleth.html 
+-->
+<dom-module id="d3-geo-path">
+  <template>
+    <multi-accessor accessor="{{value}}" path="[[valuePath]]"></multi-accessor>
+  </template>
+  <script>
+  Polymer({
+
+    is: 'd3-geo-path',
+
+    properties: {
+      /**
+       * `path` the [path](https://github.com/d3/d3-geo#geoPath) generator function
+       */
+      path: {
+        type: Function,
+        notify: true,
+        value: function() {
+          var path = d3.geoPath();
+          this.applyConfig(path, ['projection', 'context']);
+          return path;
+        }
+      },
+
+      /**
+       * [`projection`]((https://github.com/d3/d3-geo#path_projection)) to be applied to the path  
+       */
+      projection: {
+        type: Function
+      },
+
+      /**
+       * [`context`](https://github.com/d3/d3-geo#path_context) to be applied to the path  
+       */
+      context: {
+        type: Function
+      }
+
+    },
+
+    /**
+     * [`area`](https://github.com/d3/d3-geo#path_area) returns the projected planar area for the specified GeoJSON `object` 
+     */
+    area: function(object) {
+      return this.path.area(object);
+    },
+
+    /**
+     * [`bounds`](https://github.com/d3/d3-geo#path_bounds) returns the projected planar bounding box for the specified GeoJSON `object` 
+     */
+    bounds: function(object) {
+      return this.path.bounds(object);
+    },
+
+    /**
+     * [`centroid`](https://github.com/d3/d3-geo#path_centroid) returns the projected planar centroid for the specified GeoJSON `object` 
+     */
+    centroid: function(object) {
+      return this.path.centroid(object);
+    },
+
+    behaviors: [
+      Polymer.multiConfig
+    ],
+
+    observers: [
+      'observeConfig(projection, "projection", "path")',
+      'observeConfig(context, "context", "path")',
+      'observeChanged(projection.changed)'
+    ],
+
+    observeChanged: function(pr){
+      this.notifyChanged('path');
+    }
+    
+
+  });
+  </script>
+</dom-module>

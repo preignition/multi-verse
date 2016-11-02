@@ -1,0 +1,72 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="properties/multi-x-coordinates-properties-behavior.html">
+<link rel="import" href="properties/multi-y-coordinates-properties-behavior.html">
+<link rel="import" href="multi-container-behavior.html">
+<!-- <link rel="import" href="multi-color-behavior.html"> -->
+<link rel="import" href="multi-axis.html">
+<!-- <link rel="import" href="multi-scale.html"> -->
+<link rel="import" href="multi-accessor.html">
+<link rel="import" href="multi-shared-styles.html">
+<!--
+`multi-container-coordinate` is a container for `multi-charts` with `x` and `y` coordinates.
+
+The container register elements that have a `shallRegister` property set to `true` and draw them when needed (e.g when the data changes).
+ 
+@element multi-container-coordinate
+@demo demo/index-bar.html
+@demo demo/index-bubble.html
+@demo demo/index-line.html
+@demo demo/index-stack.html
+-->
+<dom-module id="multi-container-coordinate">
+  <template>
+    <style is="custom-style" include="multi-container multi-chart-selector">
+
+    </style>
+    <!-- Polymer has problem with handling namespace (https://github.com/Polymer/polymer/pull/3372): multi-axis is outside SVG -->
+    <div id="observeNodes">
+      <multi-axis anchor="axisGroup" dy="2.7em" accessor="[[xAccessor]]" elastic="[[xElastic]]" text="[[xAxisText]]" ref="xAxis" width="[[width]]" height="[[height]]" family="{{xScaleFamily}}" scale="{{xScale}}" scale-type="scaleBand" padding="0.1" domain="{{xDomain}}" range="[[xRange]]"></multi-axis>
+      <multi-axis anchor="axisGroup" text-angle="-90" y-text="6" dy="0.7em" domain-min="0" domain="[[yDomain]]" accessor="[[yAccessor]]" elastic="[[yElastic]]" text="[[yAxisText]]" ref="yAxis" width="[[width]]" height="[[height]]" position="left" domain="{{yDomain}}" range="[[yRange]]" scale="{{yScale}}"></multi-axis>
+      <content id="content"></content>
+    </div>
+    <svg id="svg">
+      <g id="chartContent" transform$="[[translate(margin.left, margin.top)]]">
+        <g id="zoom">
+          <g id="chart" class="chart">
+          </g>
+        </g>
+        <g id="axisGroup"></g>
+      </g>
+      <g id="legend"></g>
+    </svg>
+  </template>
+  <script>
+  Polymer({
+
+    is: 'multi-container-coordinate',
+
+    hostAttributes: {
+      multicontainer: ''
+    },
+
+    properties: {
+
+      /**
+       * `chartInsertionPoint` the id for anchoring contents - as Polymer does not support external namespaces, we cheat with the way SVG nodes are inserted into this component. (see [multi-lifecycle-behavior.html]())
+       */
+      chartInsertionPoint: {
+        type: String,
+        value: 'chart'
+      },
+
+    },
+
+    behaviors: [
+      Polymer.multiContainer,
+      Polymer.multixCoordinatesProperties,
+      Polymer.multiyCoordinatesProperties
+    ]
+
+  });
+  </script>
+</dom-module>

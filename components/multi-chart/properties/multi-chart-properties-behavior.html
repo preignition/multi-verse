@@ -1,0 +1,39 @@
+<link rel="import" href="../../polymer/polymer.html">
+<script>
+/**
+ * `chartProperties` behavior for exposing and documenting properties shared across charts
+ *
+ */
+
+/** @polymerBehavior */
+Polymer.multiChartProperties = {
+
+  properties: {
+
+    /**
+     * `witdh` the width of the chart 
+     */
+    width: {
+      type: Number,
+      notify: true
+    },
+
+    /**
+     * `height` the width of the chart 
+     */
+    height: {
+      type: Number,
+      notify: true
+    },
+
+    /**
+     * `center` the center of the charc
+     */
+    center: {
+      type: Array,
+      notify: true
+    }
+  }
+
+};
+</script>

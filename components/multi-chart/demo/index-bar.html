@@ -1,0 +1,99 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>multi-poly demo</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
+  <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+  <link rel="import" href="../../paper-button/paper-button.html">
+  <link rel="import" href="../../paper-input/paper-input.html">
+  <link rel="import" href="../../d3-bundle-element/d3-element-multi-debug.html">
+  <link rel="import" href="../multi-legend.html">
+  <link rel="import" href="../multi-selector.html">
+  <link rel="import" href="../shape/multi-shape-bar.html">
+  <link rel="import" href="../chart/multi-chart-coordinate.html">
+  <link rel="stylesheet" href="../multichart.css">
+  <style is="custom-style" include="demo-pages-shared-styles">
+  #chart {
+    height: 400px;
+  }
+  </style>
+</head>
+
+<body>
+  <div class="vertical-section-container centered">
+    <h3>multi-chart Demo</h3>
+    <demo-snippet>
+      <template>
+        <template is="dom-bind" id="app">
+         <multi-chart-coordinate id="chart" 
+            width="{{width}}" 
+            height="{{height}}" 
+            color-scale="{{colorScale}}" 
+            x-scale="{{xScale}}" 
+            x-accessor="{{xAccessor}}" 
+            y-scale="{{yScale}}" 
+            y-accessor="{{yAccessor}}">
+            <multi-shape-bar 
+              index="banana"
+              height="[[height]]" 
+              x-accessor="[[xAccessor]]" 
+              y-accessor="[[yAccessor]]" 
+              x-scale="[[xScale]]" 
+              y-scale="[[yScale]]" 
+              color-scale="[[colorScale]]"></multi-shape-bar>
+            <h3 header>test stack chart</h3>  
+            <multi-legend legend chart-width="[[width]]" scale="[[colorScale]]" position="top-right" ></multi-legend>
+            <multi-selector selection-type="brushX" width="[[width]]"  height="[[height]]" x-scale="[[xScale]]" accessor="[[xAccessor]]"></multi-selector> 
+          </multi-chart-coordinate>
+          <paper-button raised on-tap="toggle">toggle data</paper-button>
+        </template>
+      </template>
+    </demo-snippet>
+  </div>
+</body>
+<script>
+window.addEventListener('WebComponentsReady', function() {
+  var chart = app.$.chart;
+    var data;
+
+    var keys = ['apple', 'banana', 'grape'];
+    var n = 10;
+
+    function rnd(size, keys, max) {
+      return d3.range(size).map(function(d,i) {
+        var value = {};
+        var r = d3.randomUniform(max);
+        keys.forEach(function(k){
+          value[k] = r();
+        });
+        return {key: i, value: value}
+      });
+    }
+
+    var d1 = rnd(10, keys, 50);
+    var d2 = rnd(10, keys, 50);
+
+  var isD1 = false;
+
+  chart.colorDomain = ['banana'];
+  chart.xAccessorPath = 'key';
+  chart.yAccessorPath = '+value.banana';
+  chart.data = d1;
+
+  // app.innerRadius = 45;
+  // app.padAngle = 0.1;
+
+  app.toggle = function() {
+    isD1 = !isD1;
+    chart.data = isD1 ? d2 : d1;
+  }
+
+
+});
+</script>
+
+</html>

@@ -1,0 +1,50 @@
+<link rel="import" href="../../polymer/polymer.html">
+<script>
+/**
+ * `yCoordinates` behavior for exposing and documenting properties related to x-coordinates
+ *
+ */
+
+/** @polymerBehavior */
+Polymer.multiyCoordinatesProperties = {
+
+  properties: {
+    /**
+     * `yElastic` set true for making the axis recalculate its domain on data change 
+     */
+    yElastic: {
+      type: Boolean,
+      value: true
+    },
+
+    /**
+     * `yAxistText` text for xAxis
+     */
+    yAxisText: {
+      type: String
+    },
+
+    /**
+     * `yAccessorPath` path for computing the yAccessor function
+     * a value of ´key´ will generate  an accessor function like ´function(d) {return d.key}´ 
+     * a value of ´+value.count´ will generate  an accessor function like ´function(d) {return +d.value.count}´ 
+     */
+    yAccessorPath: {
+      type: String,
+      value: '+value.count'
+    },
+
+    yAccessor: {
+      type: Function,
+      notify: true
+    },
+
+    yScale: {
+      type: Function,
+      notify: true
+    },
+
+  },
+
+};
+</script>

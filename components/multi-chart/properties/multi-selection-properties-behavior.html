@@ -1,0 +1,33 @@
+<link rel="import" href="../../polymer/polymer.html">
+<script>
+/**
+ * `chartProperties` behavior for exposing and documenting properties shared across charts
+ *
+ */
+
+/** @polymerBehavior */
+Polymer.multiSelectionProperties = {
+
+  properties: {
+
+    /**
+     * `selectionType` the type of selection,  either `brushX`, `brushY`, `brush`, `multi`, `select` or kept undefined to disable selection behaviors.
+     */
+    selectionType: {
+      type: String,
+      value: 'select'
+    },
+
+    /**
+     * `selectedItems` the list of items selected (when selectionType === 'select')
+     */
+    selectedItems: {
+      type: Array,
+      notify: true
+    },
+
+  },
+
+
+};
+</script>

@@ -1,0 +1,40 @@
+{
+  "name": "multi-verse",
+  "version": "0.6.0",
+  "description": "polymer elements for multivariate analysis (depend on crossfilter, universe, reductio and multichart)",
+  "license": "BSL",
+  "authors": [
+    "christophe.geiser <christophe.geiser@e-smile.org>"
+  ],
+  "main": [
+    "multi-group.html",
+    "multi-verse.html",
+    "universe-element.html",
+    "multi-csv.html"
+  ],
+  "repository": "https://github.com/polymerEl/multi-verse",
+  "keywords": [
+    "web-component",
+    "web-components",
+    "d3.js",
+    "charts",
+    "multivariate",
+    "polymer",
+    "crossfilter",
+    "universe",
+    "analytics",
+    "mapping",
+    "dataviz"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.6.0",
+    "universe": "crossfilter/universe#^0.6.4",
+    "multi-chart": "PolymerEl/multi-chart#^0.5.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^1.0.0",
+    "web-component-tester": "^4.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  }
+}

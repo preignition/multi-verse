@@ -1,0 +1,83 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../multi-accessor.html">
+<link rel="import" href="d3-shape-behavior.html">
+<!-- <link rel="import" href="multi-lifecyle-behavior.html"> -->
+<!--
+`d3-pie`
+
+@demo demo/index-pie.html 
+-->
+<dom-module id="d3-pie">
+  <template>
+    <multi-accessor accessor="{{value}}" path="[[valuePath]]" ></multi-accessor>
+  </template>
+  <script>
+  Polymer({
+
+    is: 'd3-pie',
+
+    properties: {
+      /**
+       * `shaper` the [pie](https://github.com/d3/d3-shape#pie) shaper function 
+       */
+      shaper: {
+        type: Function,
+        value: function() {
+          var pie = d3.pie();
+          this.applyConfig(pie, ['value', 'padAngle', 'sort', 'sortValues']);
+          return pie;
+        }
+      },
+      
+     /**
+      * `value` as in [value](https://github.com/d3/d3-shape#pie_value) to be applied to the pie. If not set by host, can be computed by providing a valuePath. 
+      */
+      value: {
+        type: Function
+      },
+
+      valuePath: {
+        type: String
+      },
+
+      /**
+       * `padAngle` as in [padAngle](https://github.com/d3/d3-shape#pie_padAngle) to be applied to the pie. 
+       */
+      padAngle: {
+        value: 0,
+      },
+
+      /**
+       * `sort` as in [sort](https://github.com/d3/d3-shape#pie_sort). It is null by default so as to render arcs in the provided order (same order as bound data)
+       */
+      sort: {
+        type: Function,
+        value: null
+      },
+
+      /**
+       * `sortValue` as in [sortValues](https://github.com/d3/d3-shape#pie_sortValues). It is null by default so as to render arcs in the provided order (same order as bound data)
+       */
+      sortValues: {
+        type: Function,
+        value: null
+      },
+
+     
+    },
+
+    behaviors: [
+      Polymer.multiShaper
+      // Polymer.multi.lifecycle
+    ],
+
+    observers: [
+      'observeConfig(value, "value", "shaper","refresh")',
+      'observeConfig(padAngle, "padAngle", "shaper","refresh")',
+      'observeConfig(sort, "sort", "shaper","refresh")',
+      'observeConfig(sortValues, "sortValues", "shaper,"refresh"")'
+    ]
+
+  });
+  </script>
+</dom-module>

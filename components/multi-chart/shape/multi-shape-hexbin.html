@@ -1,0 +1,94 @@
+<link rel="import" href="../../polymer/polymer.html">
+<!-- <link rel="import" href="multi-shape-behavior.html"> -->
+<link rel="import" href="multi-shape-geo-behavior.html">
+<link rel="import" href="../multi-lifecycle-behavior.html">
+<!--
+`nulti-shape-hexbin`
+polymer elements responsible for drawing hexbin in a geo-chart 
+
+@demo demo/index-choropleth.html 
+-->
+<dom-module id="multi-shape-hexbin">
+  <template>
+    <style is="custom-style">
+    :host {
+      display: none;
+    }
+    </style>
+    <svg>
+      <g id="layer" class="shape-layer-hexbin">
+      </g>
+    </svg>
+  </template>
+  <script>
+  (function() {
+    'use strict';
+
+    // var identity = function(d) {
+    //   return d;
+    // }
+
+    Polymer({
+
+      is: 'multi-shape-hexbin',
+
+      properties: {
+
+        cls: {
+          type: String,
+          value: 'hexbin'
+        },
+        /**
+         * `colorScale` scale function for mapping the input colorDomain to the output colorRange. It is usually computed by a multi-scale element.
+         */
+        colorScale: {
+          type: Function
+        },
+        attrs: {
+          type: Object,
+          value: {
+            stroke: 'white',
+            'stroke-width': 0.2
+          }
+        }
+
+      },
+
+      behaviors: [
+        Polymer.multiLifecycle,
+        Polymer.multiShapeGeo
+      ],
+
+      observers: [
+        // '_drawLayer(data'
+      ],
+
+      drawLayer: function(data, path) {
+
+        var chart = Polymer.multiShapeGeo.drawLayer.call(this, data, path);
+        var hexbin = path;
+
+        var color =  d3.scaleSequential(d3.interpolateViridis)
+          .domain([0, 50]);
+
+        chart.attr('d', hexbin.hexagon())
+          .attr('transform', function(d) {
+            return 'translate(' + d.x + ',' + d.y + ')';
+          })
+        .style('fill', function(d) {
+          return color(d.length);
+        });
+
+      },
+
+      /**
+       * `draw` update layer fill colors.
+       */
+      draw: function(host, data, duration) {
+
+      }
+
+    });
+  })();
+  </script>
+</dom-module>

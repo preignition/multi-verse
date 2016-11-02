@@ -1,0 +1,103 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<!-- shared styles for all elements and index.html -->
+<dom-module id="multi-container">
+  <template>
+    <style>
+    :host {
+      @apply(--layout-vertical);
+      @apply(--layout-justified);
+    }
+    
+    #svg {
+      width: 100%; /* need width here, otherwise the size of this svg is not properly calculated on resize*/
+      @apply(--layout-flex);
+      @apply(--layout-self-stretch);
+    }
+    
+    ::content .axis-text {
+      fill: var(--secondary-text-color, grey);
+    }
+    
+    ::content .brush::content rect.extent {
+      fill: steelblue;
+      fill-opacity: .125;
+    }
+    
+    ::content .brush::content .resize::content path {
+      fill: #eee;
+      stroke: #666;
+    }
+
+    ::content .title,  ::content .subtitle    {
+      margin: 0;
+    }
+    ::content .subtitle {
+      color: red;
+    }
+
+    </style>
+  </template>
+</dom-module>
+<dom-module id="multi-chart">
+  <template>
+    <style>
+    :host {
+      @apply(--layout-vertical);
+      @apply(--layout-justified);
+      height: 200px;
+    }
+    
+    [multicontainer] {
+      @apply(--layout-flex-auto);
+    }
+
+    ::content [header],  ::content [footer]    {
+      margin: 0;
+    }
+    
+
+    </style>
+  </template>
+</dom-module>
+<dom-module id="multi-chart-selector">
+  <template>
+    <style>
+    :host[is-selecting] ::content .selectable, :host[has-selection] ::content .selectable  {
+      fill-opacity: 0.35;
+    }  
+    
+    :host[is-selecting] ::content .selected, :host[has-selection] ::content .selected { 
+      fill-opacity: 1;
+    } 
+
+    ::content .selectable {
+      cursor: pointer;
+    } 
+
+    ::content .selectable:hover {
+      stroke-width : 3px;
+      fill-opacity: 0.85;
+    } 
+
+
+    </style>
+  </template>
+</dom-module>
+
+<dom-module id="multi-charts-bar">
+  <template>
+    <style>
+
+    </style>
+  </template>
+</dom-module>
+<dom-module id="multi-chart-line">
+  <template>
+    <style>
+    ::content .line {
+      fill: none;
+    }
+    </style>
+  </template>
+</dom-module>

@@ -1,0 +1,83 @@
+<link rel="import" href="../../polymer/polymer.html">
+<script>
+/**
+ * `chartProperties` behavior for exposing and documenting properties shared across geo charts
+ *
+ */
+
+/** @polymerBehavior */
+Polymer.multiGeoChartProperties = {
+
+  properties: {
+
+    /**
+     * `projectionType` the type of the projection, one of `geoAlbers`,`geoAlbersUsa`,`geoAzimuthalEqualArea`,`geoAzimuthalEquidistant`,`geoConicConformal`,`geoConicEqualArea`,`geoConicEquidistant`,`geoEquirectangular`,`geoGnomonic`,`geoProjection`,`geoMercator`,`geoOrthographic`,`geoStereographic`,`geoTransverseMercator`
+     */
+    projectionType: {
+      type: String
+    },
+
+    /**
+     * [`clipAngle`](https:github.com/d3/d3-geo#projection_clipAngle)
+     */
+    clipAngle: {
+      type: Number
+    },
+    /**
+     * [`clipExtent`](https:github.com/d3/d3-geo#projection_clipExtent)
+     */
+    clipExtent: {
+      type: Array
+    },
+
+    /**
+     * [`center`](https:github.com/d3/d3-geo#projection_center)
+     */
+    center: {
+      type: Array
+    },
+    /**
+     * [`rotate`](https:github.com/d3/d3-geo#projection_rotate)
+     */
+    rotate: {
+      type: Number
+    },
+    /**
+     * [`precision`](https:github.com/d3/d3-geo#projection_precision)
+     */
+    precision: {
+      type: Number
+    },
+    
+    /**
+     * [`translate`](https:github.com/d3/d3-geo#projection_translate)
+     */
+    translate: {
+      type: Array,
+      notify: true, 
+      value: function() {
+        return  [480, 250];
+      }
+      // computed: '_computeTranslate(width, height)'
+    },
+
+    /**
+     * `width` the width for the layer. 
+     */
+    width: {
+      type: Number, 
+      notify: true
+    },
+
+    /**
+     * `height` the height for the layer. 
+     */
+    height: {
+      type: Number,
+      notify: true
+    }
+
+  }
+
+};
+</script>

@@ -1,0 +1,155 @@
+<link rel="import" href="../../polymer/polymer.html">
+<!-- <link rel="import" href="../multi-accessor.html"> -->
+<link rel="import" href="../multi-config-behavior.html">
+<link rel="import" href="../properties/multi-geo-chart-properties-behavior.html">
+<!-- <link rel="import" href="d3-shape-behavior.html"> -->
+<!-- <link rel="import" href="multi-lifecyle-behavior.html"> -->
+<!--
+`d3-geo-projection`
+a webcompobent for handling geo projection as in [d3-geo](https://github.com/d3/d3-geo/blob/master/README.md#_projections)
+
+@demo demo/index-choropleth.html 
+-->
+<dom-module id="d3-geo-projection">
+  <template>
+    <multi-accessor accessor="{{value}}" path="[[valuePath]]"></multi-accessor>
+  </template>
+  <script>
+  (function() {
+    'use strict';
+
+    var projections = [
+      'geoAlbers',
+      'geoAlbersUsa',
+      'geoAzimuthalEqualArea',
+      'geoAzimuthalEquidistant',
+      'geoConicConformal',
+      'geoConicEqualArea',
+      'geoConicEquidistant',
+      'geoEquirectangular',
+      'geoGnomonic',
+      'geoProjection',
+      'geoMercator',
+      'geoOrthographic',
+      'geoStereographic',
+      'geoTransverseMercator'
+    ];
+
+    Polymer({
+
+      is: 'd3-geo-projection',
+
+      properties: {
+        /**
+         * `projection` the [projection](https://github.com/d3/d3-geo#projection) generator function
+         */
+        projection: {
+          type: Function,
+          notify: true,
+          computed: '_computeProjection(projectionType)'
+        },
+
+        /**
+         * [`scale`](https:github.com/d3/d3-geo#projection_scale)
+         */
+        scale: {
+          type: Number,
+          notify: true, 
+        }
+        
+      },
+
+      /**
+       * [`fitExtent`](https://github.com/d3/d3-geo#projection_fitExtent) Sets the projection’s scale and translate to fit the specified GeoJSON object in the center of the given `extent`. 
+       */
+      fitExtent: function(extent, object) {
+        this.projection.fitExtent(extent, object);
+        // this._notifyChange('projection', null);
+      },
+
+      /**
+       * [`fitSize`](https://github.com/d3/d3-geo#projection_fitSize) A convenience method for projection.fitExtent where the top-left corner of the extent is `[0,0]`.
+       */
+      fitSize: function(size, object) {
+        this.projection.fitSize(size, object);
+        // this._notifyChange('projection', null);
+      },
+
+      /**
+       * [`invert`](https://github.com/d3/d3-geo#projection_invert) Returns a new array [longitude, latitude] in degrees representing the unprojected point of the given projected point.
+       */
+      invert: function(point) {
+        return this.projection.invert(point);
+      },
+
+      _computeProjection: function(projectionType) {
+        if (projections.indexOf(projectionType) < 0) {
+          this._error('provided projectionType is not a d3.js projection');
+        }
+        var projection = d3[projectionType]();
+        this.applyConfig(projection, ['clipAngle', 'clipExtent', 'scale', 'translate', 'center', 'rotate', 'precision']);
+
+        return projection;
+      },
+
+      _computeTranslate: function(w, h) {
+        return [w / 2, h / 2];
+      },
+
+      behaviors: [
+        Polymer.multiConfig,
+        Polymer.multiGeoChartProperties
+      ],
+
+      observers: [
+        'observeConfig(clipAngle, "clipAngle", "projection")',
+        'observeConfig(scale, "scale", "projection", "refresh")',
+        'observeConfig(precision, "precision", "projection")',
+        'observeConfig(rotate, "rotate", "projection")',
+        'observeConfigSplices(clipExtent.*, "clipExtent", "projection")',
+        'observeConfigSplices(translate.*, "translate", "projection")',
+        'observeConfigSplices(center.*, "center", "projection")',
+        // 'observeProjectionChanged(projection.*)'
+      ],
+
+      onRefresh: function() {
+        this.notifyChanged('projection');
+      },
+      
+      get clipAngle() {
+        return this.projection.clipAngle();
+      },
+
+      get clipExtent() {
+        return this.projection.clipExtent();
+      },
+
+      get rotate() {
+        return this.projection.rotate();
+      },
+
+      get scale() {
+        return this.projection.scale();
+      },
+
+      get translate() {
+        return this.projection.translate();
+      },
+
+      get center() {
+        return this.projection.center();
+      },
+
+      get precision() {
+        return this.projection.precision();
+
+      },
+      // observeProjectionChanged(pr) {
+      //   console.info('PP');
+      // }
+
+
+    });
+  })();
+  </script>
+</dom-module>

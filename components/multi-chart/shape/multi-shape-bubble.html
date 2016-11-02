@@ -1,0 +1,94 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="multi-shape-behavior.html">
+<link rel="import" href="../multi-lifecycle-behavior.html">
+<!--
+`multi-shape-bubble`
+polymer elements responsible for drawing bubbles in a coordinate chart
+
+@demo demo/index-bubble.html 
+-->
+<dom-module id="multi-shape-bubble">
+  <template>
+    <style is="custom-style">
+    :host {
+      display: none;
+    }
+    </style>
+    <svg>
+      <g id="shape" class="shape-bubble">
+      </g>
+    </svg>
+  </template>
+  <script>
+  Polymer({
+
+    is: 'multi-shape-bubble',
+
+
+    properties: {
+
+      x: {
+        type: Function,
+        computed: 'computeAccessor(xScale, xAccessor)'
+      },
+
+      y: {
+        type: Function,
+        computed: 'computeAccessor(yScale, yAccessor)'
+      },
+
+      z: {
+        type: Function,
+        computed: 'computeAccessor(zScale, zAccessor)'
+      },
+
+      index: {
+        type: String
+      }
+
+    },
+
+    behaviors: [
+      Polymer.multiLifecycle,
+      Polymer.multiShape
+      // Polymer.multi.xCoordinate,
+      // Polymer.multi.yCoordinate,
+    ],
+
+
+    /**
+     * `targetElement` getter override lifecycle Behavior and called during attached
+     */
+    get targetElement() {
+      return this.$.shape;
+    },
+
+    draw: function(host, data, duration) {
+
+      var chart = d3.select(this.targetElement).selectAll('circle.bubble').data(data);
+
+      chart.exit().remove();
+
+      chart = chart.enter().append('circle')
+        .attr('class', 'shape bubble selectable')
+        .merge(chart);
+
+      chart.on('click', function(d) {
+        host.fire('multi-tap', d);
+      });
+
+      if (duration) {
+        chart = chart.transition().duration(duration);
+      }
+
+      chart.attr('cx', this.x)
+        .attr('cy', this.y)
+        .attr('r', this.z)
+        .attr('key', this.key)
+        .attr('fill', this.colorScale(this.index));
+    }
+
+
+  });
+  </script>
+</dom-module>

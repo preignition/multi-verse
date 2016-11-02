@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>multi-poly demo</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
+  <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+  <link rel="import" href="../../paper-button/paper-button.html">
+  <link rel="import" href="../../paper-input/paper-input.html">
+  <link rel="import" href="../../d3-bundle-element/d3-element-multi-debug.html">
+  <!-- <link rel="import" href="../chart/multi-chart-line.html"> -->
+  <!-- <link rel="import" href="/multi-scale.html"> -->
+  <link rel="import" href="../chart/multi-chart-simple.html">
+  <link rel="import" href="../d3-shape/d3-pie.html">
+  <link rel="import" href="../shape/multi-shape-pie.html">
+  <link rel="import" href="../multi-selector.html">
+  <link rel="import" href="../multi-legend.html">
+  <link rel="stylesheet" href="../multichart.css">
+  <style is="custom-style" include="demo-pages-shared-styles">
+  #chart {
+    height: 400px;
+  }
+  </style>
+</head>
+
+<body>
+  <div class="vertical-section-container centered">
+    <h3>Basic multi-poly Demo</h3>
+    <demo-snippet>
+      <template>
+        <template is="dom-bind" id="app">
+          <multi-chart-simple 
+            id="chart" 
+            width="{{width}}" 
+            height="{{height}}" 
+            center="{{center}}" 
+
+            color-scale="{{colorScale}}" 
+            key-accessor-path="[[keyAccessorPath]]" 
+            key-accessor="{{keyAccessor}}" 
+            value-accessor-path="[[valueAccessorPath]]" 
+            value-accessor="{{valueAccessor}}" 
+             >
+            <d3-pie  data="{{arcs}}" value="[[valueAccessor]]"  pad-angle="[[padAngle]]" sort="[[sort]]" sort-values="[[sortValues]]"></d3-pie>
+            <multi-shape-pie 
+              width="[[width]]" 
+              height="[[height]]" 
+              center="[[center]]" 
+              arcs="[[arcs]]"
+              inner-radius="[[innerRadius]]"
+              color-scale="[[colorScale]]"></multi-shape-pie>
+             <multi-selector selection-type="select" accessor="[[keyAccessor]]"></multi-selector>  
+             <multi-legend legend chart-width="[[width]]" scale="[[colorScale]]" position="top-right" ></multi-legend>
+
+          </multi-chart-simple>
+           <h3 header>test pie chart</h3>          
+          <paper-input label="innerRadius" min="0" type="number" value="{{innerRadius}}"></paper-input>
+          <paper-input label="parAngle" min="0" type="number" step="0.02" value="{{padAngle}}"></paper-input>
+          <paper-button raised on-tap="toggle">toggle data</paper-button>
+        </template>
+      </template>
+    </demo-snippet>
+  </div>
+</body>
+<script>
+window.addEventListener('WebComponentsReady', function() {
+  app = document.querySelector('#app');
+
+    function rnd(keys, max) {
+      var r = d3.randomUniform(max);
+      return keys.map(function(d,i) {
+        return {key: d, value: {count: r()}}
+      });
+    }
+
+    var keys = ['a','b','c', 'd', 'e', 'f']
+    var d1 = rnd(keys, 50);
+    var d2 = rnd(keys, 50);
+
+  var isD1 = false;
+  var chart = app.$.chart;
+  
+  chart.data = d1;
+
+  app.keyAccessorPath = 'key';
+  app.valueAccessorPath = '+value.count';
+  app.innerRadius = 45;
+  app.padAngle = 0.1;
+
+  app.toggle = function() {
+    isD1 = !isD1;
+    chart.data = isD1 ? d2 : d1;
+  }
+
+});
+</script>
+
+</html>

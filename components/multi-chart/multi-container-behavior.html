@@ -1,0 +1,224 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="multi-resizer-behavior.html">
+<link rel="import" href="multi-svg-util-behavior.html">
+<link rel="import" href="multi-observe-nodes-behavior.html">
+<script>
+/**
+ * `multiContainer` common config for all chart containers
+ *
+ */
+
+ 'use strict';
+
+/** @polymerBehavior  multiContainerImpl*/
+Polymer.multiContainerImpl = {
+
+  properties: {
+
+    duration: {
+      type: Number,
+      value: 200
+    },
+
+    data: {
+      type: Array,
+      observer: 'render'
+    },
+
+    /**
+     * `groupName` the name of the group (used when to registering this element under a multi-verse)
+     */
+    groupName: {
+      type: String
+    },
+
+    /**
+     * `registeredItems` and array containing all elements that need to be refreshed when data changes 
+     */
+    registeredItems: {
+      type: Array,
+      value: function() {
+        return [];
+      }
+    },
+
+    /**
+     * `shaper` an element that will transform data in a form easier to draw (e.g [d3-stack](https://github.com/d3/d3-shape/blob/master/README.md#stack)).. 
+     */
+    shaper: {
+      type: Object,
+      readOnly: true
+    },
+
+    /**
+     * `isSelection` is true when a selection is being done (e.g. by brushing). The attribute is used for css rules.
+     * This property is changed when a `multi-is-selecting` event is captured
+     */
+    isSelecting: {
+      type: Boolean,
+      value: false,
+      readOnly: true,
+      reflectToAttribute: true
+    },
+
+    /**
+     * `hasSelection`  is true when a selection exists. The attribute is used for css rules.
+     * This property is changed when a `multi-has-selection` event is captured
+     */
+    hasSelection: {
+      type: Boolean,
+      readOnly: true,
+      value: false,
+      reflectToAttribute: true,
+    },
+
+
+  },
+
+  attached: function() {
+    // this.callRegistered('hostAttached');
+
+    this.fire('multi-attached', this.groupName);
+    this.render();
+  },
+
+  detached: function() {
+    this.fire('multi-detached', this.groupName);
+  },
+
+  listeners: {
+    'multi-is-selecting': '__onIsSelecting',
+    'multi-has-selection': '__onHasSelection',
+    'multi-refresh': '__onRefresh',
+    'multi-resize': '__onResize'
+    // 'multi-clear': '__onMultiClear',
+  },
+
+  // renderChart: function(data) {
+  //   if (this.renderer) {
+  //     this.renderer(data);
+  //   }
+  // },
+
+  render: function(data) {
+    data = data || this.data;
+
+    if (data && this.width !== 0) {
+
+      this.callRegistered('preDraw', data, this.duration);
+      this.callRegistered('draw', data, this.duration);
+      this.fire('multi-render');
+    }
+
+    // }
+    // this is the function that is called when we refresh the chart (base-behavior.renderChart(selection))
+    // this.renderer = function(data) {
+    //   draw(data);
+    // };
+
+  },
+
+  callRegistered: function(methodName) {
+    // we replace `methodName`` with `this host` as the first argument 
+    [].splice.call(arguments, 0, 1, this);
+    var args = arguments;
+    this.registeredItems.filter(function(el) {
+      return el.isActive;
+    }).forEach(function(el) {
+      if (el[methodName]) {
+        if (methodName === 'draw') {
+          if (!el.isDrawing) {
+            el[methodName].apply(el, args);
+          }
+          el._setIsDrawn(true);
+        } else {
+          el[methodName].apply(el, args);
+        }
+      }
+    }, this);
+  },
+
+  __onHasSelection: function(e, d) {
+    e.stopPropagation();
+    this._setHasSelection(d);
+  },
+
+  __onIsSelecting: function(e, d) {
+    e.stopPropagation();
+    this._setIsSelecting(d);
+  },
+
+  __onResize: function() {
+    this.render();
+  },
+
+  __onRefresh: function(e, detail) {
+    e.stopPropagation();
+    if (this.data) {
+      var el = e.srcElement;
+      if (el.onRefresh) {
+        // shaper web-component
+        return el.onRefresh(this.data);
+      }
+      if (el.isDrawn && this.registeredItems.indexOf(el) > -1) {
+        el.draw(this, this.data, this.duration);
+      }
+    }
+  },
+
+  // __onMultiClear: function() {
+  //   this.fire('multi-clear');
+  // },
+
+  /**
+   * @override
+   * `processNewNodes` process new nodes than have been added to the observedNode
+   */
+  processNewNodes: function(nodes) {
+    var me = this;
+    nodes.filter(function(node) {
+      return node.shallRegister;
+    }).forEach(function(node) {
+      me.push('registeredItems', node);
+
+      if (node.isSerie) {
+        me.serieItems.push(node.getAttribute(me.attrForSerie));
+      }
+      if (node.afterRegister) {
+        node.afterRegister(me);
+      }
+    });
+  },
+
+  /**
+   * @override
+   * `processRemovedNodes` process nodes than have been removed from observedNode
+   */
+  processRemovedNodes: function(nodes) {
+    var me = this;
+    nodes.filter(function(node) {
+      return node.shallRegister;
+    }).forEach(function(node) {
+      me.splice('registeredItems', me.registeredItems.indexOf(node), 1);
+      me.push('registeredItems', node);
+
+      if (node.isSerie) {
+        me.splice('serieItems', me.serieItems.indexOf(node.getAttribute(me.attrForSerie)), 1);
+      }
+      if (node.afterUnregister) {
+        node.afterUnregister(me);
+      }
+    });
+
+  },
+
+};
+
+/** @polymerBehavior */
+Polymer.multiContainer = [
+  Polymer.multiSvgUtil,
+  Polymer.multiResizer,
+  Polymer.multiObserveNodes,
+  Polymer.multiContainerImpl
+];
+</script>

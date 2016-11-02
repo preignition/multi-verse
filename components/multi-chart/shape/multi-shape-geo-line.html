@@ -1,0 +1,83 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="multi-shape-behavior.html">
+<link rel="import" href="multi-shape-geo-behavior.html">
+
+<link rel="import" href="../multi-lifecycle-behavior.html">
+<!--
+`nulti-shape-geo-line`
+polymer elements for drawing geo features
+
+@demo demo/index-choropleth.html 
+-->
+<dom-module id="multi-shape-geo-line">
+  <template>
+    <style is="custom-style">
+    :host {
+      display: none;
+    }
+    </style>
+    <svg>
+      <g id="layer" class$="shape-geo-line">
+      </g>
+    </svg>
+  </template>
+  <script>
+  (function() {
+    'use strict';
+
+    // var identity = function(d) {
+    //   return d;
+    // };
+
+    Polymer({
+
+      is: 'multi-shape-geo-line',
+
+      properties: {
+        /**
+         * `feature` a GeoJSON MultiLineString geometry object
+         */
+        // feature: {
+        //   type: Array
+        // },
+
+        cls: {
+          type: String, 
+          value: 'line'
+        }
+       
+      },
+
+      behaviors: [
+        Polymer.multiLifecycle,
+        // Polymer.multi.shape,
+        Polymer.multiShapeGeo
+      ],
+
+      /**
+       * `targetElement` getter override lifecycle Behavior and called during attached
+       */
+      get targetElement() {
+        return this.$.layer;
+      },
+
+      /**
+       * `drawLayer` 
+       */
+      drawLayer: function(data, path) {
+        // var layer = this.layer || d3.select(this.targetElement).selectAll('path.layer');
+
+        d3.select(this.targetElement).selectAll('*').remove();
+
+        d3.select(this.targetElement)
+          .append('path')
+          .datum(data)
+          .attrs(this.attrs)
+          .attr('class', 'layer')
+          .attr('d', path);
+      }
+
+    });
+  })();
+  </script>
+</dom-module>

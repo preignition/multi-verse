@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>multi-poly demo</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
+  <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+  <link rel="import" href="../../paper-button/paper-button.html">
+  <link rel="import" href="../../paper-input/paper-input.html">
+  <link rel="import" href="../../d3-bundle-element/d3-element-multi-debug.html">
+  <link rel="import" href="../multi-serie.html">
+  <link rel="import" href="../multi-legend.html">
+  <link rel="import" href="../multi-selector.html">
+  <link rel="import" href="../d3-shape/d3-stack.html">
+  <link rel="import" href="../shape/multi-shape-stack.html">
+  <link rel="import" href="../chart/multi-chart-coordinate.html">
+  <link rel="stylesheet" href="../multichart.css">
+  <style is="custom-style" include="demo-pages-shared-styles">
+  #chart {
+    height: 400px;
+  }
+  </style>
+</head>
+
+<body>
+  <div class="vertical-section-container centered">
+    <h3>Basic multi-poly Demo</h3>
+    <demo-snippet>
+      <template>
+        <template is="dom-bind" id="app">
+          <multi-chart-coordinate id="chart" width="{{width}}" height="{{height}}" y-domain="[[yDomain]]" color-scale="{{colorScale}}" x-scale="{{xScale}}" y-scale="{{yScale}}" color-domain="[[keys]]" series="{{series}}" keys="{{keys}}" >
+            <d3-stack domain="{{yDomain}}" data="{{stack}}" domain-min="[[domainMin]]" value="[[value]]" value-path="[[valuePath]]" order="[[order]]" offset="[[offset]]" keys="[[keys]]"></d3-stack>
+            <multi-shape-stack chart  stack="[[stack]]" x-scale="[[xScale]]"  y-scale="[[yScale]]"    color-scale="[[colorScale]]"></multi-shape-stack>
+            <multi-serie serie key="apple" label="apple"></multi-serie>
+            <multi-serie serie key="banana" label="banana"></multi-serie>
+            <multi-serie serie key="grape" label="grape"></multi-serie>
+            <multi-legend legend chart-width="{{width}}" scale="[[colorScale]]" position="top-right" ></multi-legend>
+            <multi-selector selection-type="brushX" width="[[width]]"  height="[[height]]" x-scale="[[xScale]]" accessor="[[keyAccessor]]"></multi-selector> 
+          </multi-chart-coordinate>
+           <h3 header>test stack chart</h3>          
+          <!-- <paper-input label="innerRadius" min="0" type="number" value="{{innerRadius}}"></paper-input> -->
+          <!-- <paper-input label="parAngle" min="0" type="number" step="0.02" value="{{padAngle}}"></paper-input> -->
+          <paper-button raised on-tap="toggle">toggle data</paper-button>
+        </template>
+      </template>
+    </demo-snippet>
+  </div>
+</body>
+<script>
+window.addEventListener('WebComponentsReady', function() {
+  app = document.querySelector('#app');
+
+    var chart = app.$.chart;
+    var data;
+
+    var keys = ['apple', 'banana', 'grape'];
+    var n = 10;
+
+    function rnd(size, keys, max) {
+      return d3.range(size).map(function(d,i) {
+        var value = {};
+        var r = d3.randomUniform(max);
+        keys.forEach(function(k){
+          value[k] = r();
+        });
+        return {key: i, value: value}
+      });
+    }
+
+    var d1 = rnd(10, keys, 50);
+    var d2 = rnd(10, keys, 50);
+
+  var isD1 = false;
+
+  chart.xAccessorPath = 'key';
+  // chart.yAccessorPath = '+value.count';
+  chart.data = d1;
+
+  // app.innerRadius = 45;
+  // app.padAngle = 0.1;
+
+  app.toggle = function() {
+    isD1 = !isD1;
+    chart.data = isD1 ? d2 : d1;
+  }
+
+});
+</script>
+
+</html>

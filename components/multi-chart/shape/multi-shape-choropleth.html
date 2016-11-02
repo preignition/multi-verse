@@ -1,0 +1,175 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="multi-shape-behavior.html">
+<link rel="import" href="multi-shape-geo-behavior.html">
+<link rel="import" href="../multi-lifecycle-behavior.html">
+<!--
+`nulti-shape-choropleth`
+polymer elements responsible for drawing choropleth area in a geo-chart
+
+@demo demo/index-choropleth.html 
+-->
+<dom-module id="multi-shape-choropleth">
+  <template>
+    <style is="custom-style">
+    :host {
+      display: none;
+    }
+    </style>
+    <svg>
+      <g id="layer" class="shape-choropleth">
+      </g>
+    </svg>
+  </template>
+  <script>
+  (function() {
+    'use strict';
+
+    var identity = function(d) {
+      return d;
+    }
+
+    Polymer({
+
+      is: 'multi-shape-choropleth',
+
+      properties: {
+
+        /**
+         * `map` a d3.map Object to facilitate retrieving values.
+         */
+        map: {
+          type: Object,
+          value: function() {
+            return d3.map();
+          }
+        },
+
+        /**
+         * `valueAccessor` the accessor for the choropleth value
+         */
+        valueAccessor: {
+          type: Function
+
+        },
+
+        /**
+         * `keyAccessor` the accessor for the data key
+         */
+        keyAccessor: {
+          type: Function
+
+        },
+
+        /**
+         * `featureKeyAccessor` the accessor for accessing the feature key
+         */
+        featureKeyAccessor: {
+          type: Function
+
+        },
+
+        /**
+         * `colorScale` scale function for mapping the input colorDomain to the output colorRange. It is usually computed by a multi-scale element.
+         */
+        colorScale: {
+          type: Function
+        },
+
+      },
+
+      behaviors: [
+        Polymer.multiLifecycle,
+        Polymer.multiShapeGeo,
+        Polymer.multiShape
+      ],
+
+      /**
+       * `targetElement` getter override lifecycle Behavior and called during attached
+       */
+      get targetElement() {
+        return this.$.layer;
+      },
+
+
+      /**
+       * `_fillMap` set the map values
+       */
+      _fillMap: function(data) {
+        var map = this.map;
+        var valueAccessor = this.valueAccessor;
+        var keyAccessor = this.keyAccessor;
+        data.forEach(function(d) {
+          map.set(keyAccessor(d), valueAccessor(d));
+        });
+      },
+
+      /**
+       * `drawLayer` redraw the layer. called from multi-shape-geo-behavior when feature or path changes
+       */
+      drawLayer: function(feature, path) {
+        var layer = this.layer || d3.select(this.targetElement).selectAll('path.choropleth');
+        var featureKeyAccessor = this.featureKeyAccessor;
+
+        layer = layer.data(feature.features);
+
+        layer.exit().remove();
+
+        layer = layer.enter().append('path')
+          .attr('class', 'shape choropleth selectable')
+          .merge(layer);
+
+        layer.attr('d', path)
+          .attr('geo-key', function(d) {
+            return featureKeyAccessor(d);
+          });
+
+        // just the first time so that we can see the shapes
+        if (!this.isDrawn) {
+          layer
+            .attrs(this.attrs)
+        }
+
+        this.layer = layer;
+        this.checkRefresh();
+      },
+
+      /**
+       * `preDraw` will jut update the map with new data values
+       */
+      preDraw: function(host, data) {
+        this._fillMap(data);
+      },
+
+      /**
+       * `draw` update layer fill colors.
+       */
+      draw: function(host, data, duration) {
+
+        var layer = this.layer;
+        var featureKeyAccessor = this.featureKeyAccessor;
+
+        if (!layer) {
+          this._setNeedRefresh(true);
+          return; // the layer is not yet ready (e.g. feature not loaded)
+        }
+
+        var colorScale = this.colorScale;
+        var keyAccessor = this.keyAccessor;
+        var map = this.map;
+
+        layer.attr('fill', function(d) {
+          return colorScale(map.get(featureKeyAccessor(d)));
+        });
+
+        layer.on('click', function(d) {
+          host.fire('multi-tap', d);
+        });
+  
+
+        this.clearRefresh();
+      }
+
+    });
+  })();
+  </script>
+</dom-module>

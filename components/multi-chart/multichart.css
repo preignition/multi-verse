@@ -1,0 +1,12 @@
+[multichart] {
+	height: 160px;
+
+}
+
+[multichart] .line {
+	fill:none;
+}
+
+[multichart] .axis-text {
+	/*fill: red;*/
+} 
