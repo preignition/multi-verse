@@ -2,7 +2,8 @@
   "name": "multi-verse",
   "version": "0.6.0",
   "description": "polymer elements for multivariate analysis (depend on crossfilter, universe, reductio and multichart)",
-   "authors": [
+  "license": "BSL",
+  "authors": [
     "christophe.geiser <christophe.geiser@e-smile.org>"
   ],
   "main": [

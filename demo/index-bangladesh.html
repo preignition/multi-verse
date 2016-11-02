@@ -9,6 +9,10 @@
   <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
   <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
   <link rel="import" href="../../paper-button/paper-button.html">
+  <link rel="import" href="../../paper-radio-group/paper-radio-group.html">
+  <link rel="import" href="../../multi-chart/shape/multi-shape-hexbin.html">
+  <link rel="import" href="../../multi-chart/d3-geo/multi-geo-project.html">
+  <link rel="import" href="../../multi-chart/d3-shape/d3-hexbin.html">
   <link rel="import" href="../multi-verse.html">
   <link rel="import" href="../multi-group.html">
   <link rel="import" href="../multi-csv.html">
@@ -32,13 +36,19 @@
     <demo-snippet>
       <template>
         <template is="dom-bind" id="app">
-          <iron-ajax auto url="bangladeshScores.json"  handle-as="json" last-response="{{data}}"></iron-ajax>
+          <iron-ajax auto url="bangladeshScores.json"  handle-as="json" last-response="{{raw}}"></iron-ajax>
+          <multi-geo-project data="[[raw]]" coordinate-accessor-path="location" projection="[[projection]]" projected-data="{{data}}"></multi-geo-project>
+          <d3-hexbin id="hexbin" x="[[x]]" y="[[y]]" hexbin="{{hexbin}}" bins="{{bins}}" width="[[width]]" height="[[height]]" points="[[data]]"></d3-hexbin>
            <!-- <multi-verse data="[[data]]" universe="{{universe}}" pre-process="[[pre-process]]" columns="[[columns]]" generated-columns="[[generatedColumns]]"> -->
+           <paper-radio-group selected="{{selected}}" aria-labelledby="label2">
+            <paper-radio-button name="choropleth">choropleth</paper-radio-button>
+            <paper-radio-button name="hexbin">hexbin</paper-radio-button>
+          </paper-radio-group>
           <multi-geo-feature 
             feature="{{feature}}" 
             data="{{geometries}}" 
             name="BGD_adm2" 
-            url="bangladeshSimplify02.json"></multi-geo-feature>
+            url="[[url]]"></multi-geo-feature>
          <!--  <multi-chart-geo id="geo" 
             color-scale="{{colorScale}}" 
             path="{{path}}" 
@@ -57,6 +67,7 @@
                 color-scale="{{colorScale}}" 
                 path="{{path}}" 
                 width="{{width}}" 
+                height="{{height}}" 
                 projection="{{projection}}" 
                 projection-type="[[projectionType]]" 
                 value-accessor-path="value.count"  
@@ -65,6 +76,13 @@
                 projection-scale="[[projectionScale]]"
                 > 
                 <h3 header>distance (line chart)</h3>
+                <multi-shape-hexbin  
+                  layer-type="hexbin"
+
+                  data="[[bins]]" 
+                  path="[[hexbin]]"
+
+                ></multi-shape-hexbin>
                  <multi-legend legend scale="[[colorScale]]" chart-width="[[width]]" label-format=".0f" position="right" > </multi-legend>
               </multi-verse-choropleth>
             </multi-group>
@@ -80,9 +98,19 @@
 window.addEventListener('WebComponentsReady', function() {
   app = document.querySelector('#app');
 
-  app.projectionType = 'geoMercator';
+  var hexbin = app.$.hexbin;
+  app.x = function(d) {return d.__point__[0];}
+  app.y = function(d) {return d.__point__[1];}
+  // universe.generatedColumns = {
 
-  universel = app.$.universe
+  app.url = 'bangladeshSimplify02.json';
+  app.projectionType = 'geoMercator';
+  app.selected = 'choropleth';
+
+  // var universe = app.$.universe
+
+  //   bin: function(d) {return data.__bin__}
+  // }
 
   var chart = app.$.geo
 

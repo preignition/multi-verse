@@ -6,7 +6,7 @@ Licensor:  Preignition Ltd
 
 Software: multi-verse.js v1.0.0  - The Software is © 2016 Christophe Geiser & multi-chart.js Developers (https://github.com/polymerEl/multi-verse/blob/master/AUTHORS)
 
-Use Limitation: Usage of the software is free when your application that uses the Software has a total of less than 200 paying users.
+Use Limitation: Usage of the software is free when your application that uses the Software has a total of less than 500 paying users.
 
 Change Date: 2019-01-01
 

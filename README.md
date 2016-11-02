@@ -1,8 +1,13 @@
 # \<multi-verse\>
 
-polymer elements for multivariate analysis (built on top of [multi-chart](https://github.com/PolymerEl/multi-verse), and [universe](https://github.com/crossfilter/universe))
+polymer elements for multivariate analysis (built on top of [multi-chart](https://github.com/PolymerEl/multi-chart), and [universe](https://github.com/crossfilter/universe))
 
 [Demo and API docs](http://polymerel.github.io/multi-verse/components/multi-verse/)
+
+
+<div>
+  <img src="https://raw.githubusercontent.com/PolymerEl/multi-verse/master/images/analysis.png" width="300"></img>
+</div>
 
 
 ## Simple Example
@@ -28,8 +33,6 @@ polymer elements for multivariate analysis (built on top of [multi-chart](https:
   </multi-verse>
 ```
 
-## How it works
-TODO
 
 
 

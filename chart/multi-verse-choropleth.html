@@ -34,7 +34,8 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 
         width="{{width}}" 
         height="{{height}}" 
-        center="{{center}}" 
+        center="{{center}}"
+        attrs="[[attrs]]" 
 
         path="{{path}}" 
         feature="[[feature]]" 
@@ -148,6 +149,13 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
       projection: {
         type: Function,
         notify: true
+      },
+
+      /**
+       * `attrs` default attributes to be set on the first draw
+       */
+      attrs: {
+        type: Object
       }
 
     },
