@@ -49,7 +49,7 @@ Sample use:
       },
 
       /**
-       * `queryResult` a result of a `universe` query
+       * `groupBy` 
        */
       groupBy: {
         type: String
@@ -81,7 +81,7 @@ Sample use:
           me.set('data', queryResult.data);
         })
         .catch(function(error) {
-          console.error(error); // 'oh, no!'
+          console.error(error, groupBy); // 'oh, no!'
         });
     },
 

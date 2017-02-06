@@ -62,7 +62,13 @@ Sample use:
        * `preProcess` a function that will be called on all data item before the creation of the universe instance
        */
       preProcess: {
-        type: Object  
+        type: Function,
+        value: null
+        // value: function() {
+        //   return function(item) {
+        //     return item;
+        //   }
+        // }
       },
 
       /**
@@ -97,10 +103,18 @@ Sample use:
 
     listeners: {
       'multi-attached': 'onMultiAttached',
-      'multi-detached': 'onMultiDetached',
+      'multi-detached': 'onMultiDetached'
     },
 
+    observers: [
+      // 'observeData(data)'
+    ],
+
     behaviors: [],
+
+    // _observePreProcess: function() {
+    //   console.info('PROPROCESS', arguments);
+    // },
 
     /**
      * `observeData` create a new `universe` with the provided data 
@@ -108,8 +122,8 @@ Sample use:
      */
     observeData: function(data) {
 
-      if(this.preProcess) {
-        data.forEach(this.preProcess);
+      if (this.preProcess) {
+        data.forEach(preProcess, this);
       }
 
       var me = this;

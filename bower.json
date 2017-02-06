@@ -1,17 +1,12 @@
 {
   "name": "multi-verse",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "polymer elements for multivariate analysis (depend on crossfilter, universe, reductio and multichart)",
   "license": "BSL",
   "authors": [
     "christophe.geiser <christophe.geiser@e-smile.org>"
   ],
-  "main": [
-    "multi-group.html",
-    "multi-verse.html",
-    "universe-element.html",
-    "multi-csv.html"
-  ],
+  "main": "multi-verse-import.html",
   "repository": "https://github.com/polymerEl/multi-verse",
   "keywords": [
     "web-component",
