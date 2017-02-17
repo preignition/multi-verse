@@ -1,6 +1,6 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="universe-element-debug.html">
-<link rel="import" href="../d3-bundle-element/d3-element-multi-debug.html">
+<link rel="import" href="../d3-bundle-element/d3-element-multi.html">
 <link rel="import" href="../multi-chart/multi-observe-nodes-behavior.html">
 <!--
 `multi-verse` takes data as input and encapsulate a [`universe`](https://github.com/crossfilter/universe#create-a-new-universe) Object. 
@@ -35,8 +35,8 @@ Sample use:
        * `data`  the data to pass for creating a new [universe](https://github.com/crossfilter/universe#create-a-new-universe)
        */
       data: {
-        type: Array,
-        observer: 'observeData'
+        type: Array
+        // observer: 'observeData'
       },
 
       /**
@@ -107,7 +107,7 @@ Sample use:
     },
 
     observers: [
-      // 'observeData(data)'
+      'observeData(preProcess, data)'
     ],
 
     behaviors: [],
@@ -120,9 +120,9 @@ Sample use:
      * `observeData` create a new `universe` with the provided data 
      * TODO: add a `multi-column` web-component to define additional universe.generatedColumns and a processing function
      */
-    observeData: function(data) {
+    observeData: function(preProcess, data) {
 
-      if (this.preProcess) {
+      if (preProcess) {
         data.forEach(preProcess, this);
       }
 

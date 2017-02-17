@@ -1,0 +1,66 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../d3-bundle-element/d3-format-behavior.html">
+<!--
+A comment describing this element
+
+Example:
+
+    <my-elem></my-elem>
+
+Example:
+
+    <my-elem>
+      <h2>Hello my-elem</h2>
+    </my-elem>
+
+@demo demo/index.html
+-->
+<dom-module id="multi-selector-display">
+  <template>
+    <style>
+    :host {
+    }
+    </style>
+    <template is="dom-if" if="{{isRange}}">
+    	<span>[[selected]] [[[__rangeFormat(selectedItems.*, 0, d3Format)]]-[[__rangeFormat(selectedItems.*, 1, d3Format)]]]</span>
+    </template>
+    <template is="dom-if" if="{{!isRange}}">    	
+     <span>[[selected]] [[__discreteSelection(selectedItems.*)]]</span>
+    </template>
+  </template>
+  <script>
+  Polymer({
+    is: 'multi-selector-display',
+
+    behaviors: [
+      Polymer.behaviors.d3Format
+    ],
+
+    properties: {
+    	
+    	selectedItems: {
+    		type: Array
+    	},
+
+    	selected:{
+    		type: String, 
+    		value: 'selected:'
+    	},
+
+    	isRange: {
+    		type: Boolean
+    	}
+
+    },
+
+    __rangeFormat: function(items, index, format) {
+    	return format(this.selectedItems[index]);
+    },
+
+    __discreteSelection: function(items){
+    	return this.selectedItems.join(', ');
+    	
+    }
+  });
+  </script>
+</dom-module>

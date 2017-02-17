@@ -1,17 +1,37 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <!-- shared styles for all elements and index.html -->
-<dom-module id="multi-verse">
+<dom-module id="multi-shared-styles">
   <template>
     <style>
     :host {
       /*display: block;*/
       @apply(--layout-vertical);
       @apply(--layout-justified);
-      height: 200px;
+      height: var(--chart-height, 200px);
+      
     }
     
      </style>
   </template>
+
 </dom-module>
 
+
+<dom-module id="multi-hovered">
+  <template>
+    <style>
+    :host[is-hovered] ::content.selectable, :host[is-hovered] ::content g.cell  {
+      /*display: block;*/
+      fill-opacity: 0.35;
+    }
+
+    :host[is-hovered] ::content.selectable.hovered , :host[is-hovered] ::content g.cell.hovered {
+      /*display: block;*/
+      fill-opacity: 1;
+    }    
+    
+     </style>
+  </template>
+
+</dom-module>

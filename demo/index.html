@@ -89,7 +89,7 @@ window.addEventListener('WebComponentsReady', function() {
     hour: d => Number(d3.timeFormat('%H')(d.date)),
     dayOfWeek: d => d3.timeFormat('%A')(d.date),
     arrivalDelay: d => Math.floor(+d.delay / 30) * 30,
-    distances: d => Math.floor(+d.distance / 100) * 100
+    distances: d => Math.floor(+d.distance / 200) * 200
   };
 });
 </script>

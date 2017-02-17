@@ -17,10 +17,12 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 -->
 <dom-module id="multi-verse-choropleth">
   <template>
-    <style is="custom-style" include="multi-verse">
+    <style is="custom-style" include="multi-shared-styles">
+    
+
     #chart {
       @apply(--layout-flex);
-      height: var(--chart-height);
+      /*height: var(--chart-height);*/
     }
     </style>
      <multi-geo-feature 
@@ -61,11 +63,14 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
         center="[[center]]"
         rotate="[[rotate]]"
         precision="[[precision]]"
+
+        auto-scale="[[autoScale]]"
+        auto-fit="[[autoFit]]"
        >
 
        <multi-selector 
         id="selector" 
-        selected-items="{{selected-items}}" 
+        selected-items="{{selectedItems}}" 
         is-range="{{isRange}}" 
         has-selection="{{hasSelection}}"  
         selection-type="[[selectionType]]" 
@@ -79,6 +84,10 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
   Polymer({
 
     is: 'multi-verse-choropleth',
+
+    behaviors: [
+       Polymer.multiverseChartProperties,
+    ],
 
     properties: {
 
@@ -156,14 +165,25 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
        */
       attrs: {
         type: Object
-      }
+      },
 
-    },
+      /**
+       * `autoFit` when true, fit projection scale and translate so as to fit to bounding box (width and height)
+       */
+      autoFit: {
+        type: Boolean, 
+        value: true
+      },
 
-    behaviors: [
-       Polymer.multiverseChartProperties,
-    ]
+      /**
+       * `autoScale` is set to true, the color scale will be recalculated based on min/max every time data changes. 
+       */
+      autoScale: {
+        type: Boolean
+      },
 
+    }
+   
   });
   </script>
 </dom-module>

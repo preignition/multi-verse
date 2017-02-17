@@ -16,12 +16,13 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 -->
 <dom-module id="multi-verse-bar">
   <template>
-    <style is="custom-style" include="multi-verse">
+    <style is="custom-style" include="multi-shared-styles">
 
     </style>
    
     <multi-chart-coordinate id="chart" 
         data="[[data]]"
+        x-pretend-continuous
         x-accessor-path="[[xAccessorPath]]" 
         y-accessor-path="[[yAccessorPath]]" 
         color-domain="[[colorDomain]]" 
@@ -44,7 +45,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
           y-scale="[[yScale]]" 
           color-scale="[[colorScale]]"></multi-shape-bar>
         <!-- <multi-legend legend chart-width="{{width}}" scale="[[colorScale]]" position="top-right" ></multi-legend> -->
-        <multi-selector id="selector" selected-items="{{selected-items}}" is-range="{{isRange}}" has-selection="{{hasSelection}}" x-continuous="[[xContinuous]]" selection-type="[[selectionType]]" width="[[width]]"  height="[[height]]" x-scale="[[xScale]]" accessor="[[xAccessor]]"></multi-selector> 
+        <multi-selector id="selector" selected-items="{{selectedItems}}" is-range="{{isRange}}" has-selection="{{hasSelection}}" x-continuous="[[xContinuous]]" selection-type="[[selectionType]]" width="[[width]]"  height="[[height]]" x-scale="[[xScale]]" accessor="[[xAccessor]]"></multi-selector> 
         <content></content>
       </multi-chart-coordinate>
 

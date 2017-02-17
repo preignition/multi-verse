@@ -71,6 +71,20 @@ Polymer.multiverseChartProperties = {
     isRange: {
       type: Boolean,
       notify: true
+    },
+
+    hoveredItem: {
+      type: String,
+      // reflectToAttribute: true,
+      readOnly: true,
+      observer: '__observerHoveredItem',
+      notify: true
+    },
+
+    isHovered: {
+      type: Boolean,
+      reflectToAttribute: true,
+      computed:'__computeIsHovered(hoveredItem)'
     }
 
   },
@@ -84,8 +98,31 @@ Polymer.multiverseChartProperties = {
     }
   },
 
+  __computeIsHovered: function(hoveredItem) {
+    return !!hoveredItem;
+  },
+
   listeners: {
-    'multi-clear': 'clearSelection'
+    'multi-clear': 'clearSelection',
+    'multi-mouse-enter': '__onMultiMouseEnter',
+    'multi-cell-over': '__onMultiMouseEnter',
+    'multi-mouse-leave': '__onMultiMouseLeave',
+    'multi-cell-out': '__onMultiMouseLeave'
+  },
+  
+  __observerHoveredItem: function(hovered)  {
+    d3.select(this).selectAll('.selectable, g.cell').classed('hovered', function(d) {
+      return d.data ? d.data.key === hovered : d.key ? d.key === hovered : d === hovered; 
+    });
+  },
+
+  __onMultiMouseEnter: function(e,d) {
+    this._setHoveredItem(d.data ? d.data.key: d.key ? d.key : d);
+  },
+
+  __onMultiMouseLeave: function(e,d) {
+    this._setHoveredItem(null);
+    // this.set('hoveredItem', null);
   }
 
 };

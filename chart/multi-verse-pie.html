@@ -14,7 +14,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
 -->
 <dom-module id="multi-verse-pie">
   <template>
-    <style is="custom-style" include="multi-verse">
+    <style is="custom-style" include="multi-shared-styles multi-hovered">
 
     </style>
     <multi-chart-simple id="chart" 
@@ -42,7 +42,7 @@ polymer elements for multivariate analysis (depend on crossfilter, universe and 
           pie-width="[[pieWidth]]"
 
           color-scale="[[colorScale]]"></multi-shape-pie>
-         <multi-selector id="selector" selected-items="{{selected-items}}" is-range="{{isRange}}" has-selection="{{hasSelection}}"  selection-type="select" accessor="[[keyAccessor]]"></multi-selector>  
+         <multi-selector id="selector" selected-items="{{selectedItems}}" is-range="{{isRange}}" has-selection="{{hasSelection}}"  selection-type="select" accessor="[[keyAccessor]]"></multi-selector>  
 
         <!-- <multi-legend legend chart-width="{{width}}" scale="[[colorScale]]" position="top-right" ></multi-legend> -->
         <multi-selector selection-type="[[selectionType]]"  accessor="[[xAccessor]]"></multi-selector> 
