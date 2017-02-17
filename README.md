@@ -1,13 +1,13 @@
+[![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://beta.webcomponents.org/element/polymerEl/multi-verse)
+
 # \<multi-verse\>
 
 polymer elements for multivariate analysis (built on top of [multi-chart](https://github.com/PolymerEl/multi-chart), and [universe](https://github.com/crossfilter/universe))
 
-[Demo and API docs](http://polymerel.github.io/multi-verse/components/multi-verse/)
 
 
 ## Example of multi-verse in a interactive dashboard
 
-[to see it live](https://test.preignition.org/analytics/analytics/overview)
 <div>
   <img src="https://raw.githubusercontent.com/PolymerEl/multi-verse/master/images/analysis.png" width="600"></img>
 </div>
