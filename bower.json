@@ -1,6 +1,6 @@
 {
   "name": "multi-verse",
-  "version": "0.7.1",
+  "version": "0.7.3",
   "description": "polymer elements for multivariate analysis (depend on crossfilter, universe, reductio and multichart)",
   "license": "MIT",
   "authors": [
@@ -24,6 +24,7 @@
   "dependencies": {
     "polymer": "Polymer/polymer#^1.6.0",
     "universe": "crossfilter/universe#^0.6.4",
+    "d3-bundle-element": "^1.6.0",
     "multi-chart": "PolymerEl/multi-chart#^0.5.0"
   },
   "devDependencies": {
