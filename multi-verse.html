@@ -1,5 +1,5 @@
 <link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="universe-element-debug.html">
+<link rel="import" href="universe-element.html">
 <link rel="import" href="../d3-bundle-element/d3-element-multi.html">
 <link rel="import" href="../multi-chart/multi-observe-nodes-behavior.html">
 <!--
@@ -143,7 +143,7 @@ Sample use:
           uni.onFilter(onFilter, 100);
 
           if(Object.keys(columns).length) {
-             for (k in columns) {
+             for (var k in columns) {
                if (columns.hasOwnProperty(k)) {
                   uni.column(columns[k]);
                }
@@ -166,7 +166,7 @@ Sample use:
       if (!this.groupName || (this.groupName === name)) {
         // e.stopPropagation();
         this.splice('registeredItems', this.registeredItems.indexOf(e.srcElement), 1);
-      };
+      }
     },
 
     /**
@@ -183,7 +183,7 @@ Sample use:
       var me = this;
 
       nodes.filter(function(node) {
-        return node.localName === 'multi-column'
+        return node.localName === 'multi-column';
       }).forEach(function(node) {
         me.set('generatedColumns.' + node.key, node.accessor);
       });
