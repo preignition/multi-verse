@@ -1,6 +1,6 @@
 {
   "name": "multi-verse",
-  "version": "0.7.3",
+  "version": "0.7.5",
   "description": "polymer elements for multivariate analysis (depend on crossfilter, universe, reductio and multichart)",
   "license": "MIT",
   "authors": [
@@ -25,7 +25,7 @@
     "polymer": "Polymer/polymer#^1.6.0",
     "universe": "crossfilter/universe#^0.6.4",
     "d3-bundle-element": "^1.6.0",
-    "multi-chart": "PolymerEl/multi-chart#^0.5.0"
+    "multi-chart": "PolymerEl/multi-chart#^0.6.0"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
