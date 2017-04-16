@@ -1,0 +1,55 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="multi-selection-behavior.html">
+<script>
+/**
+ * `multi.chart` behavior for exposing and documenting properties shared across charts
+ */
+'use strict';
+
+/** @polymerBehavior */
+window.multi = window.multi || {};
+
+window.multi.verseBehaviorImpl = {
+// Polymer.multiverseChartPropertiesImpl = {
+
+  properties: {
+
+    /**
+     * `witdh` the width of the chart 
+     */
+    width: {
+      type: Number,
+      notify: true
+    },
+
+    /**
+     * `height` the width of the chart 
+     */
+    height: {
+      type: Number,
+      notify: true
+    },
+
+    /**
+     * `colorScale`
+     */
+    colorScale: {
+      type: Function,
+      notify: true
+    },
+
+    /**
+     * `data` 
+     */
+    data: {
+      type: Array
+    }
+
+  }
+
+};
+window.multi.verseBehavior = [
+  window.multi.verseBehaviorImpl,
+  window.multi.selectionBehavior
+]
+</script>

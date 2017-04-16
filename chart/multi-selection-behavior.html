@@ -1,46 +1,17 @@
 <link rel="import" href="../../polymer/polymer.html">
 <script>
 /**
- * `chartProperties` behavior for exposing and documenting properties shared across charts
+ * `multi.selection` behavior for exposing and documenting properties shared across charts
  */
 'use strict';
 
 /** @polymerBehavior */
-Polymer.multiverseChartProperties = {
+window.multi = window.multi || {};
+
+window.multi.selectionBehavior = {
 
   properties: {
-
-    /**
-     * `witdh` the width of the chart 
-     */
-    width: {
-      type: Number,
-      notify: true
-    },
-
-    /**
-     * `height` the width of the chart 
-     */
-    height: {
-      type: Number,
-      notify: true
-    },
-
-    /**
-     * `colorScale`
-     */
-    colorScale: {
-      type: Function,
-      notify: true
-    },
-
-    /**
-     * `data` 
-     */
-    data: {
-      type: Array
-    },
-
+   
     /**
      * `hasSelection` is true when we have a selection
      */

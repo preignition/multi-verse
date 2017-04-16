@@ -13,6 +13,8 @@
   <link rel="import" href="../../multi-chart/shape/multi-shape-hexbin.html">
   <link rel="import" href="../../multi-chart/d3-geo/multi-geo-project.html">
   <link rel="import" href="../../multi-chart/d3-shape/d3-hexbin.html">
+  <link rel="import" href="../../multi-chart/shape/multi-shape-geo-line.html">
+  <link rel="import" href="../../multi-chart/d3-geo/multi-geo-mesh.html">
   <link rel="import" href="../multi-verse.html">
   <link rel="import" href="../multi-group.html">
   <link rel="import" href="../multi-csv.html">
@@ -30,7 +32,7 @@
 </head>
 
 <body>
-  <div class="vertical-section-container centered">
+  <div class="vertical-section-container ">
     <h3>Basic multi-verse Demo</h3>
     <p>This is a very simple example of the use of `multi-chart` and `multi-verse`, powered under the hood by `d3.js` and `universe.js`.</p>
     <demo-snippet>
@@ -49,6 +51,7 @@
             data="{{geometries}}" 
             name="BGD_adm2" 
             url="[[url]]"></multi-geo-feature>
+          <multi-geo-mesh mesh="{{mesh}}" data="[[geometries]]" name="BGD_adm1"></multi-geo-mesh>
          <!--  <multi-chart-geo id="geo" 
             color-scale="{{colorScale}}" 
             path="{{path}}" 
@@ -65,6 +68,8 @@
               <multi-verse-choropleth id="geo"
                 data="[[data-chart-district]]" 
                 color-scale="{{colorScale}}" 
+                auto-fit
+                enable-zoom
                 path="{{path}}" 
                 width="{{width}}" 
                 height="{{height}}" 
@@ -83,6 +88,8 @@
                   path="[[hexbin]]"
 
                 ></multi-shape-hexbin>
+                 <multi-shape-geo-line path="[[path]]" projection="[[projection]]" attrs="[[meshAttrs]]" data="[[mesh]]"></multi-shape-geo-line>
+           
                  <multi-legend legend scale="[[colorScale]]" chart-width="[[width]]" label-format=".0f" position="right" > </multi-legend>
               </multi-verse-choropleth>
             </multi-group>
@@ -106,6 +113,12 @@ window.addEventListener('WebComponentsReady', function() {
   app.url = 'bangladeshSimplify02.json';
   app.projectionType = 'geoMercator';
   app.selected = 'choropleth';
+  app.meshAttrs ={
+    fill: 'none',
+    stroke: 'red',
+     'stroke-width': 2
+
+  }
 
   // var universe = app.$.universe
 

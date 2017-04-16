@@ -2,11 +2,11 @@
 <link rel="import" href="../../multi-chart/multi-selector.html">
 <link rel="import" href="../../multi-chart/shape/multi-shape-bar.html">
 <link rel="import" href="../../multi-chart/chart/multi-chart-coordinate.html">
-<link rel="import" href="../../multi-chart/properties/multi-x-coordinates-properties-behavior.html">
-<link rel="import" href="../../multi-chart/properties/multi-y-coordinates-properties-behavior.html">
-<link rel="import" href="../../multi-chart/properties/multi-color-properties-behavior.html">
+<link rel="import" href="../../multi-chart/properties/multi-x-coordinates-behavior.html">
+<link rel="import" href="../../multi-chart/properties/multi-y-coordinates-behavior.html">
+<link rel="import" href="../../multi-chart/properties/multi-color-behavior.html">
 <link rel="import" href="../multi-shared-styles.html">
-<link rel="import" href="multi-verse-properties-behavior.html">
+<link rel="import" href="multi-verse-behavior.html">
 <!--
 `multi-verse-bar`
 Simple bar-chart 
@@ -82,10 +82,14 @@ Simple bar-chart
     },
 
     behaviors: [
-      Polymer.multiverseChartProperties,
-      Polymer.multixCoordinatesProperties,
-      Polymer.multiyCoordinatesProperties,
-      Polymer.multiColorProperties   
+      multi.verseBehavior,
+      multi.xCoordinates,
+      multi.yCoordinates,
+      multi.color
+      // Polymer.multiverseChartProperties,
+      // Polymer.multixCoordinatesProperties,
+      // Polymer.multiyCoordinatesProperties,
+      // Polymer.multiColorProperties   
     ]
 
   });

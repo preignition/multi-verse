@@ -3,11 +3,11 @@
 <link rel="import" href="../../multi-chart/chart/multi-chart-geo.html">
 <link rel="import" href="../../multi-chart/shape/multi-shape-pie.html">
 <link rel="import" href="../../multi-chart/d3-geo/multi-geo-feature.html">
-<link rel="import" href="../../multi-chart/properties/multi-geo-chart-properties-behavior.html">
+<link rel="import" href="../../multi-chart/properties/multi-geo-chart-behavior.html">
 <link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../multi-shared-styles.html">
 
-<link rel="import" href="multi-verse-properties-behavior.html">
+<link rel="import" href="multi-verse-behavior.html">
 <!--
 `multi-verse-choropleth`
 Simple choropleth-chart 
@@ -43,6 +43,7 @@ Simple choropleth-chart
         feature="[[feature]]" 
         
         color-scale="{{colorScale}}" 
+        color-scale-type="[[colorScaleType]]" 
         color-range="[[colorRange]]"
         color-domain="[[colorDomain]]"
 
@@ -66,6 +67,9 @@ Simple choropleth-chart
 
         auto-scale="[[autoScale]]"
         auto-fit="[[autoFit]]"
+        enable-zoom="[[enableZoom]]"
+        extent="[[extent]]"
+        scale-extent="[[scaleExtent]]"
        >
 
        <multi-selector 
@@ -86,7 +90,7 @@ Simple choropleth-chart
     is: 'multi-verse-choropleth',
 
     behaviors: [
-       Polymer.multiverseChartProperties,
+      multi.verseBehavior
     ],
 
     properties: {
@@ -172,15 +176,37 @@ Simple choropleth-chart
        */
       autoFit: {
         type: Boolean, 
-        value: true
+        value: false
       },
 
       /**
        * `autoScale` is set to true, the color scale will be recalculated based on min/max every time data changes. 
        */
       autoScale: {
-        type: Boolean
+        type: Boolean,
+        value: false
       },
+
+      /* 
+       * `enableZoom` set to true to enable zoom behavior
+       */
+       enableZoom : {
+         type:  Boolean,
+         value: false
+      },
+      /* 
+       * [`extent`] (https://github.com/d3/d3-zoom/blob/master/README.md#zoom_extent) sets the viewport extent to the specified array of points [[x0, y0], [x1, y1]]
+       */
+       extent : {
+         type:  Array
+         },
+
+      /* 
+       * [`scaleExtent`] (https://github.com/d3/d3-zoom/blob/master/README.md#zoom_scaleExtent) sets the scale extent to the specified array of numbers [k0, k1] where k0 is the minimum allowed scale factor and k1 is the maximum allowed scale factor, and returns this zoom behavior.
+       */
+       scaleExtent : {
+         type: Array
+         },
 
     }
    
