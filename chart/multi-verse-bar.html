@@ -19,48 +19,28 @@ france
     <style is="custom-style" include="multi-shared-styles">
 
     </style>
-   
-    <multi-chart-coordinate id="chart" 
-        data="[[data]]"
-        x-pretend-continuous="[[xContinuous]]"
-        x-accessor-path="[[xAccessorPath]]" 
-        y-accessor-path="[[yAccessorPath]]" 
-        color-domain="[[colorDomain]]" 
-        width="{{width}}" 
-        height="{{height}}"
-        color-range="[[colorRange]]"
-        color-scale="{{colorScale}}" 
-        x-axis-text="[[xAxisText]]" 
-        y-axis-text="[[yAxisText]]" 
-        x-scale="{{xScale}}" 
-        x-accessor="{{xAccessor}}" 
-        x-ticks="[[xTicks]]" 
-        y-scale="{{yScale}}" 
-        y-accessor="{{yAccessor}}"
-        y-ticks="[[yTicks]]" 
-        >
-        <multi-shape-bar 
-          index="count"
-          height="[[height]]" 
-          x-accessor="[[xAccessor]]" 
-          y-accessor="[[yAccessor]]" 
-          x-scale="[[xScale]]" 
-          y-scale="[[yScale]]" 
-          color-scale="[[colorScale]]"></multi-shape-bar>
-        <!-- <multi-legend legend chart-width="{{width}}" scale="[[colorScale]]" position="top-right" ></multi-legend> -->
-        <multi-selector id="selector" selected-items="{{selectedItems}}" is-range="{{isRange}}" has-selection="{{hasSelection}}" x-continuous="[[xContinuous]]" selection-type="[[selectionType]]" width="[[width]]"  height="[[height]]" x-scale="[[xScale]]" accessor="[[xAccessor]]"></multi-selector> 
-        <content></content>
-      </multi-chart-coordinate>
-
+    <multi-chart-coordinate id="chart" data="[[data]]" x-pretend-continuous="[[xContinuous]]" x-accessor-path="[[xAccessorPath]]" y-accessor-path="[[yAccessorPath]]" color-domain="[[colorDomain]]" width="{{width}}" height="{{height}}" color-range="[[colorRange]]" color-scale="{{colorScale}}" x-axis-text="[[xAxisText]]" y-axis-text="[[yAxisText]]" x-scale="{{xScale}}" x-accessor="{{xAccessor}}" x-ticks="[[xTicks]]" y-scale="{{yScale}}" y-accessor="{{yAccessor}}" y-ticks="[[yTicks]]">
+      <multi-shape-bar index="count" height="[[height]]" x-accessor="[[xAccessor]]" y-accessor="[[yAccessor]]" x-scale="[[xScale]]" y-scale="[[yScale]]" color-scale="[[colorScale]]"></multi-shape-bar>
+      <!-- <multi-legend legend chart-width="{{width}}" scale="[[colorScale]]" position="top-right" ></multi-legend> -->
+      <multi-selector id="selector" selected-items="{{selectedItems}}" is-range="{{isRange}}" has-selection="{{hasSelection}}" x-continuous="[[xContinuous]]" selection-type="[[selectionType]]" width="[[width]]" height="[[height]]" x-scale="[[xScale]]" accessor="[[xAccessor]]"></multi-selector>
+      <content></content>
+    </multi-chart-coordinate>
   </template>
   <script>
   Polymer({
 
     is: 'multi-verse-bar',
 
+    behaviors: [
+      multi.verseBehavior,
+      multi.xCoordinates,
+      multi.yCoordinates,
+      multi.color
+    ],
+
     properties: {
 
-       /**
+      /**
        * `xContinuous` indicate true if we have a `continuous` scale on X when the xScale is `ordinal` (e.g. a scaleBand for bar charts). If true a `xContinuousScale` is computed on the selector.
        * TODO: is there a way to infer this information otherwise (type of crossfilter group ? )
        */
@@ -82,16 +62,7 @@ france
         value: 'brushX'
       }
 
-
-    },
-
-    behaviors: [
-      multi.verseBehavior,
-      multi.xCoordinates,
-      multi.yCoordinates,
-      multi.color
-    ]
-
+    }
   });
   </script>
 </dom-module>

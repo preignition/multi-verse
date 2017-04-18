@@ -6,11 +6,10 @@
  */
 'use strict';
 
-/** @polymerBehavior */
 window.multi = window.multi || {};
 
-window.multi.verseBehaviorImpl = {
-// Polymer.multiverseChartPropertiesImpl = {
+/* @polymerBehavior multi.verseBehaviorImpl */
+multi.verseBehaviorImpl = {
 
   properties: {
 
@@ -48,8 +47,10 @@ window.multi.verseBehaviorImpl = {
   }
 
 };
-window.multi.verseBehavior = [
-  window.multi.verseBehaviorImpl,
-  window.multi.selectionBehavior
+
+/* @polymerBehavior multi.verseBehavior */
+multi.verseBehavior = [
+  multi.verseBehaviorImpl,
+  multi.selectionBehavior
 ]
 </script>
