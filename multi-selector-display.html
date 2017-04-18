@@ -1,4 +1,5 @@
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../d3-bundle-element/d3-format-behavior.html">
 <!--
 `multi-selector-display` for displaying charts elements that have been selected
@@ -11,13 +12,25 @@
   <template>
     <style>
     :host {
+      display: inline;
+      /*position: relative;*/
+    }
+    
+    paper-icon-button {
+      padding: 0;
+      width: 18px;
+      height: 18px;
+      margin-left: 10px;
     }
     </style>
-    <template is="dom-if" if="{{isRange}}">
-    	<span>[[selected]] [[[__rangeFormat(selectedItems.*, 0, d3Format)]]-[[__rangeFormat(selectedItems.*, 1, d3Format)]]]</span>
-    </template>
-    <template is="dom-if" if="{{!isRange}}">    	
-     <span>[[selected]] [[__discreteSelection(selectedItems.*)]]</span>
+    <template is="dom-if" if="[[selectedItems.length]]">
+      <template is="dom-if" if="[[isRange]]">
+        <span>[[selected]] [[[__rangeFormat(selectedItems.*, 0, d3Format)]]-[[__rangeFormat(selectedItems.*, 1, d3Format)]]]</span>
+      </template>
+      <template is="dom-if" if="[[!isRange]]">
+        <span>[[selected]] [[__discreteSelection(selectedItems.*)]]</span>
+      </template>
+      <paper-icon-button on-tap="clear" class="filter-clear" icon="clear">
     </template>
   </template>
   <script>
@@ -29,29 +42,33 @@
     ],
 
     properties: {
-    	
-    	selectedItems: {
-    		type: Array
-    	},
 
-    	selected:{
-    		type: String, 
-    		value: 'selected:'
-    	},
+      selectedItems: {
+        type: Array
+      },
 
-    	isRange: {
-    		type: Boolean
-    	}
+      selected: {
+        type: String,
+        value: 'selected:'
+      },
 
+      isRange: {
+        type: Boolean,
+        value: false
+      }
+
+    },
+
+    clear: function() {
+      this.fire('multi-clear');
     },
 
     __rangeFormat: function(items, index, format) {
-    	return format(this.selectedItems[index]);
+      return format(this.selectedItems[index]);
     },
 
-    __discreteSelection: function(items){
-    	return this.selectedItems.join(', ');
-    	
+    __discreteSelection: function(items) {
+      return this.selectedItems.join(', ');
     }
   });
   </script>

@@ -1,0 +1,105 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../multi-chart/multi-register-behavior.html">
+<link rel="import" href="multi-button-group.html">
+<!--
+`multi-verse-repeat`
+
+@demo demo/index.html 
+-->
+<dom-module id="multi-repeat">
+  <template>
+    <style>
+    
+    </style>
+    <content ></content>
+    <multi-button-group multi="[[multi]]">
+      <template id="repeat" is="dom-repeat" rendered-item-count="{{renderedItemCount}}" items="{{items}}" filter="[[filter]]" observe="[[observe]]">
+      </template>
+    </multi-button-group>
+  </template>
+  <script>
+  Polymer({
+
+    is: 'multi-repeat',
+
+    behaviors: [
+      multi.register
+    ],
+
+    properties: {
+      /* 
+       * `items` the items to use for the `dom-repeat` template
+       */
+      items: {
+        type: Array,
+        notify: true
+      },
+
+      renderedItemCount: {
+        type: Number,
+        notify: true
+
+      },
+
+      filter: {
+        type: Object
+      },
+
+      observe: {
+        type: String
+      },
+
+      /* 
+       * `selector` selector for the template to use
+       */
+      selector: {
+        type: String,
+        value: '.item'
+      },
+
+      /* 
+       * `multi` set true to allow multiple selection
+       */
+       multi : {
+         type:  Boolean,
+         value: false
+        }
+
+    },
+
+    /* 
+     * `render`  we need a anyc here - otherwise bound dom-repeat do not refresh
+     */
+    render: function() {
+      if(this._isRendering) {
+        return;
+      }
+      this._isRendering = true;
+      var items = this.items;
+      this.set('items', []);
+      this.async(function(){
+        this.set('items', items);
+        this._isRendering = false;
+      });
+    },
+
+     ready: function() {
+      var template = this.querySelector(this.selector);
+      if (template) {
+        this.$.repeat.templatize(template);
+        Polymer.Bind.prepareModel(this.$.repeat);
+        Polymer.Base.prepareModelNotifyPath(this.$.repeat);
+
+        var dataHost = this.dataHost;
+        if (dataHost) {
+          this.$.repeat._getRootDataHost = function() {
+            return dataHost._rootDataHost || dataHost;
+          };
+          
+        }
+      }
+    },
+
+  });
+  </script>
+</dom-module>

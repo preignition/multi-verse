@@ -1,0 +1,159 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
+<link rel="import" href="../../iron-menu-behavior/iron-menubar-behavior.html">
+<link rel="import" href="../../iron-selector/iron-multi-selectable.html">
+<link rel="import" href="../../multi-chart/multi-register-behavior.html">
+<!--
+`multi-verse-repeat`
+
+@demo demo/index.html 
+-->
+<dom-module id="multi-button-group">
+  <template>
+    <style>
+    :host {
+      display: block;
+      /*@apply(--layout-vertical);*/
+    }
+    </style>
+    <content id="items" select="*"></content>
+  </template>
+  <script>
+  Polymer({
+
+    is: 'multi-button-group',
+
+    behaviors: [
+      Polymer.IronMenubarBehavior,
+      Polymer.IronMultiSelectableBehavior,
+      // multi.register
+    ],
+
+    properties: {
+
+
+      /**
+       * Overriden from Polymer.IronSelectableBehavior
+       */
+      attrForSelected: {
+        type: String,
+        value: 'name'
+      },
+
+      /**
+       * Overriden from Polymer.IronSelectableBehavior
+       */
+      selectedAttribute: {
+        type: String,
+        value: 'active'
+      },
+
+      /**
+       * Overriden from Polymer.IronSelectableBehavior
+       */
+      selectable: {
+        type: String,
+        value: 'paper-button'
+      }
+
+      // groups: {
+      //   type: Array, 
+      //   notify: true
+      // }
+    },
+
+    // render: function(data)  {
+    //   // this.set('groups', data || this.data);
+    //   // this.push('groups', []);
+    //   // this.splice('groups', 1, this.groups.length);
+
+    //   this.set('groups', []);
+    //   this.async(function(){
+    //     this.set('groups', data || this.data);
+    //   }, 1);
+    // },
+    /**
+     * Selects the given value.
+     */
+    select: function(value) {
+      var newItem = this._valueToItem(value);
+      if (newItem && newItem.hasAttribute('disabled')) {
+        return;
+      }
+
+      // newItem.active = !newItem.active;
+
+      // if (this.selected) {
+      //   var oldItem = this._valueToItem(this.selected);
+
+      //   if (this.selected == value) {
+      //     // If deselecting is allowed we'll have to apply an empty selection.
+      //     // Otherwise, we should force the selection to stay and make this
+      //     // action a no-op.
+      //     if (this.allowEmptySelection) {
+      //       value = '';
+      //     } else {
+      //       if (oldItem)
+      //         oldItem.checked = true;
+      //       return;
+      //     }
+      //   }
+
+      //   if (oldItem)
+      //     oldItem.checked = false;
+      // }
+
+      Polymer.IronMultiSelectableBehaviorImpl.select.apply(this, [value]);
+      this.fire('multi-select', {
+        isRange: false,
+        selection: this.selectedValues.slice()
+      });
+      // this.fire('paper-radio-group-changed');
+    },
+
+    _activateFocusedItem: function() {
+      this._itemActivate(this._valueForItem(this.focusedItem), this.focusedItem);
+    },
+
+    _onUpKey: function(event) {
+      this._focusPrevious();
+      event.preventDefault();
+      this._activateFocusedItem();
+    },
+
+    _onDownKey: function(event) {
+      this._focusNext();
+      event.preventDefault();
+      this._activateFocusedItem();
+    },
+
+    // _onLeftKey: function(event) {
+    // Polymer.IronMenubarBehaviorImpl._onLeftKey.apply(this, arguments);
+    // this._activateFocusedItem();
+    // },
+
+    // _onRightKey: function(event) {
+    // Polymer.IronMenubarBehaviorImpl._onRightKey.apply(this, arguments);
+    // this._activateFocusedItem();
+    // }
+
+    // ready: function() {
+    //   var template = this.querySelector(this.selector);
+    //   if (template) {
+    //     this.$.repeat.templatize(template);
+    //     Polymer.Bind.prepareModel(this.$.repeat);
+    //     Polymer.Base.prepareModelNotifyPath(this.$.repeat);
+
+    //     var dataHost = this.dataHost;
+    //     if (dataHost) {
+    //       this.$.repeat._getRootDataHost = function() {
+    //         return dataHost._rootDataHost || dataHost;
+    //       };
+
+    //     }
+    //   }
+    // }
+
+  });
+  </script>
+</dom-module>

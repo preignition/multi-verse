@@ -1,4 +1,5 @@
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="multi-query-object-behavior.html">
 <!--
 `multi-group` will group `universe`  by their `groupBy` property and expose the result data set (so that a chart can render it)
 
@@ -24,88 +25,41 @@ Sample use:
 
     is: 'multi-group',
 
-    properties: {
-
-      /**
-       * `universe` passed on by a `multi-verse` component
-       */
-      universe: {
-        type: Object
-
-      },
-
-      /**
-       * `queryResult` a result of a `universe` query
-       */
-      queryResult: {
-        type: Object
-      },
-
-      /**
-       * `data` the data part of `queryResult` (`queryResult.data`)
-       */
-      data: {
-        type: Array,
-        notify: true
-      },
-
-      /**
-       * `groupBy` 
-       */
-      groupBy: {
-        type: String
-      }
-
-    },
-
-    observers: [
-      'observeForQuery(universe, groupBy)'
+    behaviors: [
+      multi.queryObject
     ],
 
     listeners: {
-      'multi-select': 'onSelect'
-      // 'multi-clear-filter': 'onClearFilter'
+      'multi-select': 'onSelect',
+      'multi-clear': 'onClear'
     },
 
-    behaviors: [],
-
-    /**
-     * `observeForQuery` when `universe` and `groupBy` are set, perform a query and set `queryResult` and `data` when the query Promise is resolved.
-     */
-    observeForQuery: function(universe, groupBy) {
-      var me = this;
-      universe.query({
-          groupBy: groupBy
-        })
-        .then(function(queryResult) {
-          me.set('queryResult', queryResult);
-          me.set('data', queryResult.data);
-        })
-        .catch(function(error) {
-          console.error(error, groupBy); // 'oh, no!'
-        });
-    },
 
     /**
      * `onSelect` filter the `universe` when a `multi-select` event is captured
      */
     onSelect: function(e, detail) {
       if (this.queryResult) {
-        // console.info('SELECTION: ', detail.selection);
+        // var me = this;
         if(detail.selection.length) {
-          this.queryResult.universe.filter(this.queryResult.column.key, detail.selection, !!detail.isRange);
+          // we need to replace the current filter (true as last parameter). otherwise, filtering is not properly working ...  
+          this.queryResult.universe.filter(this.queryResult.column.key, detail.selection, !!detail.isRange, true);
         } else {
           // clear the filter
           this.queryResult.universe.filter(this.queryResult.column.key);
         }
-
-
       }
     },
 
-
-
-
+    /* 
+     * `onClear`  clear the filter
+     */
+    onClear: function(e, detail) {
+      e.stopPropagation();
+      if (this.queryResult) {
+        this.queryResult.universe.filter(this.queryResult.column.key);
+      }
+    }
   });
   </script>
 </dom-module>

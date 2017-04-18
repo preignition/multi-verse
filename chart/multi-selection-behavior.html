@@ -47,7 +47,7 @@ window.multi.selectionBehavior = {
     hoveredItem: {
       type: String,
       // reflectToAttribute: true,
-      readOnly: true,
+      // readOnly: true,
       observer: '__observerHoveredItem',
       notify: true
     },
@@ -81,6 +81,9 @@ window.multi.selectionBehavior = {
     'multi-cell-out': '__onMultiMouseLeave'
   },
   
+  /* 
+   * `__observerHoveredItem` add `.hovered` class to all items with same key as hovered
+   */
   __observerHoveredItem: function(hovered)  {
     d3.select(this).selectAll('.selectable, g.cell').classed('hovered', function(d) {
       return d.data ? d.data.key === hovered : d.key ? d.key === hovered : d === hovered; 
@@ -88,11 +91,11 @@ window.multi.selectionBehavior = {
   },
 
   __onMultiMouseEnter: function(e,d) {
-    this._setHoveredItem(d.data ? d.data.key: d.key ? d.key : d);
+    this.hoveredItem = d.data ? d.data.key: d.key ? d.key : d;
   },
 
-  __onMultiMouseLeave: function(e,d) {
-    this._setHoveredItem(null);
+  __onMultiMouseLeave: function() {
+    this.hoveredItem = null;
     // this.set('hoveredItem', null);
   }
 

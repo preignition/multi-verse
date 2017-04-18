@@ -12,7 +12,7 @@
 Simple bar-chart 
 
 @element multi-verse-bar
-@demo demo/index.html 
+france
 -->
 <dom-module id="multi-verse-bar">
   <template>
@@ -22,7 +22,7 @@ Simple bar-chart
    
     <multi-chart-coordinate id="chart" 
         data="[[data]]"
-        x-pretend-continuous
+        x-pretend-continuous="[[xContinuous]]"
         x-accessor-path="[[xAccessorPath]]" 
         y-accessor-path="[[yAccessorPath]]" 
         color-domain="[[colorDomain]]" 
@@ -34,8 +34,11 @@ Simple bar-chart
         y-axis-text="[[yAxisText]]" 
         x-scale="{{xScale}}" 
         x-accessor="{{xAccessor}}" 
+        x-ticks="[[xTicks]]" 
         y-scale="{{yScale}}" 
-        y-accessor="{{yAccessor}}">
+        y-accessor="{{yAccessor}}"
+        y-ticks="[[yTicks]]" 
+        >
         <multi-shape-bar 
           index="count"
           height="[[height]]" 
@@ -63,6 +66,7 @@ Simple bar-chart
        */
       xContinuous: {
         type: Boolean,
+        value: false
       },
 
       colorDomain: {
@@ -86,10 +90,6 @@ Simple bar-chart
       multi.xCoordinates,
       multi.yCoordinates,
       multi.color
-      // Polymer.multiverseChartProperties,
-      // Polymer.multixCoordinatesProperties,
-      // Polymer.multiyCoordinatesProperties,
-      // Polymer.multiColorProperties   
     ]
 
   });

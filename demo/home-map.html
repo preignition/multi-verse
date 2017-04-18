@@ -1,0 +1,359 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../iron-ajax/iron-ajax.html">
+<link rel="import" href="../../paper-drawer-panel/paper-drawer-panel.html">
+<link rel="import" href="../../paper-header-panel/paper-header-panel.html">
+<link rel="import" href="../../paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../paper-button/paper-button.html">
+<link rel="import" href="../../paper-material/paper-material.html">
+<link rel="import" href="../../multi-verse/multi-verse-import.html">
+<link rel="import" href="../../multi-verse/multi-selector-display.html">
+<link rel="import" href="../../multi-chart/d3-geo/multi-geo-feature.html">
+<link rel="import" href="../../multi-chart/svg-proxy.html">
+<link rel="import" href="../../multi-chart/shape/multi-shape-geo-feature.html">
+<link rel="import" href="../../multi-verse/chart/multi-button-group.html">
+<link rel="import" href="../../multi-verse/chart/multi-repeat.html">
+<link rel="import" href="../../multi-verse/multi-query.html">
+<!-- <link rel="import" href="../../styles/shared-styles.html"> -->
+<!--
+The map appearing on the homepage
+-->
+<dom-module id="home-map">
+  <template>
+    <style >
+    :host {
+      display: block;
+    }
+    
+    paper-drawer-panel {
+      position: relative;
+      width: calc(100vw - 100px);
+      height: 100vh;
+      --paper-drawer-panel-scrim-opacity: 0;
+      --paper-drawer-panel-scrim: {
+        pointer-events: none;
+      }
+      ;
+      --paper-drawer-panel-drawer-container: {
+        background-color: rgba(255, 255, 255, 0.7);
+      }
+      ;
+    }
+    
+    paper-header-panel[main] paper-toolbar {
+      z-index: 2;
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    paper-material {
+      background-color: var(--primary-background-color);
+      min-height: 120px;
+      margin: 20px 40px 20px 20px;
+      padding: 15px;
+    }
+    
+    paper-button[active]:not([disabled]) {
+      /*@apply(--secondary-paint);*/
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    rect.background {
+      fill: #00276b;
+      /*mask: url(#mask-wave);*/
+      width: calc(100vw - 100px);
+      /*width: 100vw;*/
+      height: 100vh;
+    }
+    
+    multi-verse-choropleth {
+      height: 100vh;
+      width: 100vw;
+    }
+    
+    multi-selector-display {
+      color: var(--accent-color);
+    }
+    
+    /*overlayStuff*/
+    
+    :host::content .feature {
+      opacity: 0;
+      fill: none;
+    }
+    
+    :host::content .feature.highlighted {
+      fill-opacity: 0.9;
+      opacity: 1;
+      stroke: #FFF;
+      stroke-width: 2px;
+    }
+    
+    :host::content [partner] .feature.highlighted {
+      mask: url(#mask-stripe-thick);
+      fill: #00276b;
+    }
+    
+    :host::content [sector] .feature.highlighted {
+      mask: url(#mask-stripe-thick-inverse);
+      fill: white;
+      stroke: var(--secondary-color);
+    }
+    </style>
+    <iron-ajax auto url="countryCodes.json" handle-as="json" last-response="{{countryCodes}}"></iron-ajax>
+    <iron-ajax auto id="dataLoader" url="worldData.json" on-response="onDataLoaded" handle-as="json" last-response="{{data}}"></iron-ajax>
+    <template is="dom-if" if="{{dataLoaded}}">
+      <multi-verse data="[[data]]" universe="{{universe}}" pre-process="[[preProcess]]" columns="[[columns]]" generated-columns="[[generatedColumns]]">
+        <paper-drawer-panel force-narrow right-drawer drawer-width="512px" default-selected="drawer" selected="drawer">
+          <paper-header-panel drawer>
+            <paper-toolbar>title</paper-toolbar>
+            <paper-material elevation="2" data-value="partner" data-name="selectedLayer" on-mouseenter="setNameValue">
+              <h3>Partners</h3>
+              <multi-group id="partner-group" universe="[[universe]]" data="{{dataPartner}}" group-by="partner">
+                <multi-query universe="[[universe]]" group-by="country" keys="{{country-keys}}" filter='{"partner": {"$eq": [[hoveredPartner]]}}'></multi-query>
+                  <multi-repeat items="[[dataPartner]]" multi>
+                    <template class="item">
+                      <paper-button disabled$="[[!item.value.count]]" toggles raised name="[[item.key]]" data-value$='"[[item.key]]"' data-name="hoveredPartner" on-mouseenter="setNameValue" on-mouseleave="resetNameValue">[[item.key]]</paper-button>
+                    </template>
+                  </multi-repeat>
+              </multi-group>
+            </paper-material>
+            <paper-material elevation="2" data-value="sector" data-name="selectedLayer" on-mouseenter="setNameValue">
+              <h3>Sectors</h3>
+              <multi-group universe="[[universe]]" data="{{dataSector}}" group-by="area">
+                <multi-query universe="[[universe]]" group-by="country" keys="{{country-keys}}" filter='{"area": {"$eq": [[hoveredSector]]}}'></multi-query>
+                <multi-repeat  items="[[dataSector]]" multi>
+                  <template class="item">
+                    <paper-button disabled$="[[!item.value.count]]" toggles raised name="[[item.key]]" data-value$='"[[item.key]]"' data-name="hoveredSector" on-mouseenter="setNameValue" on-mouseleave="resetNameValue">[[item.key]]</paper-button>
+                  </template>
+                </multi-repeat>
+              </multi-group>
+            </paper-material>
+            <paper-material elevation="2">
+              <multi-group class="flex-3" universe="[[universe]]" data="{{dataFund}}" group-by="funding" select='{"fund": {"$sum":"fund"}}'>
+                <multi-verse-bar color-range="[[colorRange]]" selected-items="{{selectionFunds}}" y-accessor-path="value.fund.sum" data="[[dataFund]]" selection-type="multi" x-axis-text="type of funds" y-ticks='[5,".0s"]' y-axis-text="total (in k$)">
+                  <h3 id="chartCount" class="layout horizontal justified" header><span class="flex">Funding <small>(per type of funding in k$)</small><small><multi-selector-display selected-items="[[selectionFunds]]"></multi-selector-display></small></span></h3>
+                </multi-verse-bar>
+              </multi-group>
+            </paper-material>
+          </paper-header-panel>
+          <paper-header-panel mode="cover" main>
+            <paper-toolbar>
+              <h3>Preignition in figures</h3>
+              <span style="flex: 1;"></span>
+              <paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>
+            </paper-toolbar>
+            <multi-geo-feature feature="{{feature}}" filter="[[filterGeo]]" for-each="[[forEachGeo]]" data="{{geometries}}" name="countries" url="/data/worldSimplify01.json"></multi-geo-feature>
+            <!-- <multi-geo-mesh mesh="{{mesh}}" data="[[geometries]]" name="BGD_adm1"></multi-geo-mesh> -->
+            <multi-group universe="[[universe]]" data="{{data-country}}" group-by="country">
+              <multi-verse-choropleth id="geoChoropleth" auto-fit auto-scale attrs="[[mapAttrs]]" data="[[data-country]]" color-scale="{{colorScale}}" color-range="[[colorRangeMap]]" color-scale-type="scaleLinear" path="{{path}}" width="{{width}}" projection="{{projection}}" projection-type="[[projectionType]]" value-accessor-path="value.count" feature-key-accessor-path="properties.code" feature-key-accessor="{{featrureKeyAccessor}}" key-accessor-path="key" feature="[[feature]]" projection-scale="[[projectionScale]]" enable-zoom scale-extent="[1, 1.6]">
+                <multi-shape-geo-feature layer-type="{{selectedLayer}}" highlighted-keys="[[country-keys]]" class="hoverlayer" path="[[path]]" projection="[[projection]]" data="[[feature]]" feature-key-accessor="{{featrureKeyAccessor}}"></multi-shape-geo-feature>
+                <!-- <multi-legend legend scale="[[colorScale]]" chart-width="[[width]]" label-format=".0f" position="right"> </multi-legend> -->
+                <svg-proxy anchor="background">
+                  <svg>
+                    <rect class="background"></rect>
+                  </svg>
+                </svg-proxy>
+              </multi-verse-choropleth>
+            </multi-group>
+            <!-- </div> -->
+            <!-- </div> -->
+          </paper-header-panel>
+        </paper-drawer-panel>
+      </multi-verse>
+    </template>
+    <svg style="width:3000px; height: 3000px; position:absolute; top:-100000px;">
+      <defs>
+        <pattern id="pattern-stripe" width="5" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+          <rect width="0.5" height="4" transform="translate(0,0)" fill="white"></rect>
+        </pattern>
+        <pattern id="pattern-stripe-thick" width="5" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+          <rect width="2.5" height="4" transform="translate(0,0)" fill="white"></rect>
+        </pattern>
+        <pattern id="pattern-stripe-hor" width="5" height="4" patternUnits="userSpaceOnUse">
+          <rect width="0.5" height="4" transform="translate(0,0)" fill="white"></rect>
+        </pattern>
+        <pattern id="pattern-stripe-inverse" width="5" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <rect width="0.5" height="4" transform="translate(0,0)" fill="white"></rect>
+        </pattern>
+        <pattern id="pattern-stripe-thick-inverse" width="5" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <rect width="2.5" height="4" transform="translate(0,0)" fill="white"></rect>
+        </pattern>
+        <!--   <pattern id="pattern-wave" width="15" height="5" patternUnits="userSpaceOnUse">
+          <path fill="white" d="m 6.0507812,0 c -0.9825373,-0.047 -2.0971069,0.4086 -3.0332031,0.8437 -0.9360962,0.4352 -1.6699218,0.8809 -1.6699219,0.8809 l 0.5195313,0.8555 c 0,0 0.691274,-0.4186 1.5722656,-0.8282 0.8809917,-0.4095 1.9741032,-0.7801 2.5625,-0.7519 0.8002714,0.038 2.1052533,0.6329 3.4121094,1.2656 1.3068565,0.6327 2.6163245,1.3044 3.8046875,1.3457 1.145558,0.039 2.466608,-0.5356 3.570312,-1.0879 1.103705,-0.5522 1.964844,-1.1132 1.964844,-1.1132 l -0.544922,-0.8379 c 0,0 -0.819334,0.5323 -1.867187,1.0566 -1.047853,0.5243 -2.348609,1.0079 -3.087891,0.9824 -0.797046,-0.028 -2.098674,-0.614 -3.4042966,-1.2461 -1.3056222,-0.6321 -2.6147781,-1.3085 -3.7988282,-1.3652 z"></path>
+        </pattern -->>
+        <mask id="mask-stripe">
+          <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe)" />
+        </mask>
+        <mask id="mask-stripe-thick">
+          <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe-thick)" />
+        </mask>
+        <mask id="mask-stripe-inverse">
+          <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe-inverse)" />
+        </mask>
+        <mask id="mask-stripe-thick-inverse">
+          <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe-thick-inverse)" />
+        </mask>
+        <mask id="mask-stripe-hor">
+          <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe-hor)" />
+        </mask>
+        <!--  <mask id="mask-wave">
+          <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-wave)" />
+        </mask> -->
+      </defs>
+    </svg>
+  </template>
+  <script>
+  Polymer({
+
+    is: 'home-map',
+
+    properties: {
+
+      data: {
+        type: Object
+      },
+
+      dataLoaded: {
+        type: Boolean,
+        value: false
+      },
+
+      dataLoading: {
+        type: Boolean,
+        value: false
+      },
+
+      universe: {
+        type: Object
+      },
+
+      projectionType: {
+        type: String,
+        value: 'geoMercator'
+      },
+
+      projectionScale: {
+        type: Number,
+        value: 300
+      },
+
+      filterGeo: {
+        type: Function,
+        value: function() {
+          return function(f) {
+            return f.id !== 10;
+          };
+        }
+      },
+      countryCodes: {
+        type: Object
+      },
+
+      forEachGeo: {
+        type: Function,
+        computed: '_computeForEachGeo(countryCodes)'
+      },
+
+      colorRangeMap: {
+        type: Array,
+        value: ['red', 'orange']
+      },
+
+      colorRange: {
+        type: Array,
+        value: ['#3f51b5']
+      },
+
+      dataPartner: {
+        type: Array
+      },
+
+      dataSector: {
+        type: Array
+      },
+
+      hoveredPartner: {
+        type: String,
+        value: '"___null___"'
+      },
+
+      hoveredSector: {
+        type: String,
+        value: '"___null___"'
+      },
+
+      countryKeys: {
+        type: Array
+      },
+
+      /* 
+       * `selectedLayer` the selected layer for highlight - `partner`  or `sector`
+       */
+      selectedLayer: {
+        type: String,
+        value: 'sector'
+      },
+
+
+    },
+    /* 
+     * `decorate` we need to place thie function in the markup to make sure we have access to e.model.item highter up in the tree hierarchy 
+     */
+    decorate: function(e, d) {
+      console.log('ENRICH', e, e.model.item);
+    },
+
+    resetNameValue: function(e) {
+      var dataset = e.currentTarget.dataset;
+      var name = dataset.name;
+      if (!name) {
+        return this._error('setNameValue need a data-name attribute');
+      }
+      this.set(name, '"___null___"');
+      // this.selected = e.target.dataset.select || e.target.parentElement.dataset.select;
+    },
+
+    loadData: function(e) {
+      this.$.dataLoader.auto = true;
+      this.dataLoading = true;
+    },
+
+    onDataLoaded: function(e) {
+      this.dataLoaded = true;
+      this.dataLoading = false;
+    },
+
+    _computeForEachGeo: function(countryCodes) {
+      var getProperties = function(id) {
+        var country = countryCodes.find(function(c) {
+          return c['country-code'] * 1 === id * 1;
+        });
+        if (country) {
+          return {
+            name: country.name,
+            code: country['alpha-3']
+          };
+        }
+      };
+      return function(feature) {
+        Object.assign(feature.properties, getProperties(feature.id));
+      };
+    },
+
+    /**
+     * `setNameValue` is added so as to set values directly from markup
+     */
+    setNameValue: function(e) {
+      var dataset = e.currentTarget.dataset;
+      var name = dataset.name;
+      var value = dataset.value;
+      if (!name) {
+        return this._error('setNameValue need a data-name attribute');
+      }
+      this.set(name, value);
+      // this.selected = e.target.dataset.select || e.target.parentElement.dataset.select;
+    },
+  });
+  </script>
+</dom-module>

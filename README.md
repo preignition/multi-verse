@@ -12,6 +12,11 @@ polymer elements for multivariate analysis (built on top of [multi-chart](https:
   <img src="https://raw.githubusercontent.com/PolymerEl/multi-verse/master/images/analysis.png" width="600"></img>
 </div>
 
+## Other advanced example - available from the demo
+
+<div>
+  <img src="https://raw.githubusercontent.com/PolymerEl/multi-verse/master/images/dash.png" width="600"></img>
+</div>
 
 ## Simple Example
 

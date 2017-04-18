@@ -20,7 +20,10 @@ Sample use:
   </multi-verse>
 
 @element multi-verse
-@demo demo/index.html 
+@demo demo/index-advanced.html Advanced Demo 
+@demo demo/index.html Simple Demo
+@demo demo/index-bangladesh.html Bangladesh
+
 -->
 <dom-module id="multi-verse">
   <template>
@@ -65,11 +68,6 @@ Sample use:
       preProcess: {
         type: Function,
         value: null
-        // value: function() {
-        //   return function(item) {
-        //     return item;
-        //   }
-        // }
       },
 
       /**
@@ -113,10 +111,6 @@ Sample use:
 
     behaviors: [],
 
-    // _observePreProcess: function() {
-    //   console.info('PROPROCESS', arguments);
-    // },
-
     /**
      * `observeData` create a new `universe` with the provided data 
      * TODO: add a `multi-column` web-component to define additional universe.generatedColumns and a processing function
@@ -132,7 +126,10 @@ Sample use:
 
       function onFilter() {
         me.registeredItems.forEach(function(item) {
-          item.render();
+          if(item.render) {
+            item.render();
+          }
+          // item.fire('multi-verse-filter');
         });
       }
 
@@ -174,25 +171,9 @@ Sample use:
      */
     onMultiAttached: function(e, name) {
       if (!this.groupName || (this.groupName === name)) {
-        // e.stopPropagation();  
         this.push('registeredItems', e.srcElement);
       }
-    },
-
-    processNewNodes: function(nodes) {
-      var me = this;
-
-      nodes.filter(function(node) {
-        return node.localName === 'multi-column';
-      }).forEach(function(node) {
-        me.set('generatedColumns.' + node.key, node.accessor);
-      });
-    },
-
-    processRemovedNodes: function(nodes) {
-      // no need to do anything.
     }
-
 
   });
   </script>
