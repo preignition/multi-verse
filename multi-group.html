@@ -57,7 +57,7 @@ Sample use:
     onClear: function(e, detail) {
       e.stopPropagation();
       if (this.queryResult) {
-        this.queryResult.universe.filter(this.queryResult.column.key);
+        this.queryResult.universe.clear(this.queryResult.column.key);
       }
     }
   });

@@ -23,12 +23,12 @@
       margin-left: 10px;
     }
     </style>
-    <template is="dom-if" if="[[selectedItems.length]]">
+    <template is="dom-if" if="[[_hasSelection]]">
       <template is="dom-if" if="[[isRange]]">
-        <span>[[selected]] [[[__rangeFormat(selectedItems.*, 0, d3Format)]]-[[__rangeFormat(selectedItems.*, 1, d3Format)]]]</span>
+        <span>[[selected]] [[[_rangeFormat(selectedItems.*, 0, d3Format)]]-[[_rangeFormat(selectedItems.*, 1, d3Format)]]]</span>
       </template>
       <template is="dom-if" if="[[!isRange]]">
-        <span>[[selected]] [[__discreteSelection(selectedItems.*)]]</span>
+        <span>[[selected]] [[_discreteSelection(selectedItems.*)]]</span>
       </template>
       <paper-icon-button on-tap="clear" class="filter-clear" icon="clear">
     </template>
@@ -55,6 +55,11 @@
       isRange: {
         type: Boolean,
         value: false
+      },
+
+      _hasSelection: {
+        type: Boolean,
+        computed: '_computeHasSelection(selectedItems.length)'
       }
 
     },
@@ -63,11 +68,15 @@
       this.fire('multi-clear');
     },
 
-    __rangeFormat: function(items, index, format) {
+    _computeHasSelection: function() {
+      return this.selectedItems && this.selectedItems.length;
+    },
+
+    _rangeFormat: function(items, index, format) {
       return format(this.selectedItems[index]);
     },
 
-    __discreteSelection: function(items) {
+    _discreteSelection: function(items) {
       return this.selectedItems.join(', ');
     }
   });
