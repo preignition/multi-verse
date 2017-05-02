@@ -12,28 +12,44 @@ multi.queryObject = {
 
   properties: {
 
-      /**
-       * `universe` passed on by a `multi-verse` component
-       */
-      universe: {
-        type: Object
+    /**
+     * `universe` passed on by a `multi-verse` component
+     */
+    universe: {
+      type: Object
 
-      },
+    },
 
-      /**
-       * `queryResult` a result of a `universe` query
-       */
-      queryResult: {
-        type: Object
-      },
+    /**
+     * `queryResult` a result of a `universe` query
+     */
+    queryResult: {
+      type: Object
+    },
 
-      /**
-       * `data` the data part of `queryResult` (`queryResult.data`)
-       */
-      data: {
-        type: Array,
-        notify: true
-      },
+    /**
+     * `data` the data part of `queryResult` (`queryResult.data`)
+     */
+    data: {
+      type: Array,
+      notify: true
+    },
+
+    /* 
+     * `type` the type of queryObject (`isArray`)
+     */
+    // type: {
+    //   type: String,
+    //   value: null
+    // },
+
+    /* 
+     * `isArray` set to true to treat the column as an array
+     */
+     // isArray : {
+     //   type:  Boolean,
+     //   value: true
+     //   },
 
     /* 
      * `queryObject` the query object
@@ -118,6 +134,14 @@ multi.queryObject = {
     if (select) {
       query.select = select;
     }
+    // typa and isArray is derived from dataSample when universe makes the dimension  column.type = getType(sample) in columns.js. Is Sample is an array, the column is an array as well
+    // if (this.type) {
+    //   query.type = this.type;
+    // }
+    // if (this.isArray) {
+    //   query.array = true;
+    // }
+
     this.debounce('multi-query-set-object', function() {
       this.set('queryObject', query);
     });

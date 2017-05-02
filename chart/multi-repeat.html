@@ -9,9 +9,9 @@
 <dom-module id="multi-repeat">
   <template>
     <style>
-    
+
     </style>
-    <content ></content>
+    <content></content>
     <multi-button-group multi="[[multi]]">
       <template id="repeat" is="dom-repeat" rendered-item-count="{{renderedItemCount}}" items="{{items}}" filter="[[filter]]" observe="[[observe]]">
       </template>
@@ -42,7 +42,7 @@
       },
 
       filter: {
-        type: Object
+        type: Function
       },
 
       observe: {
@@ -60,10 +60,18 @@
       /* 
        * `multi` set true to allow multiple selection
        */
-       multi : {
-         type:  Boolean,
-         value: false
-        }
+      multi: {
+        type: Boolean,
+        value: false
+      },
+
+      /* 
+       * `forceRender` true for the repeated items to be set to [] everytime it changes. This is necessary when some properties are not computed when items changes 
+       */
+      forceRender: {
+        type: Boolean,
+        value: false
+      },
 
     },
 
@@ -71,19 +79,27 @@
      * `render`  we need a anyc here - otherwise bound dom-repeat do not refresh
      */
     render: function() {
-      if(this._isRendering) {
+      if (this._isRendering) {
         return;
       }
       this._isRendering = true;
-      var items = this.items;
-      this.set('items', []);
-      this.async(function(){
-        this.set('items', items);
+      if (this.forceRender) {
+        var items = this.items;
+        this.set('items', []);
+        this.async(function() {
+          this.set('items', items);
+          this.$.repeat.render();
+          this._isRendering = false;
+        });
+      } else {
+        // this.set('items', items);
+        this.$.repeat.render();
         this._isRendering = false;
-      });
+      }
+
     },
 
-     ready: function() {
+    ready: function() {
       var template = this.querySelector(this.selector);
       if (template) {
         this.$.repeat.templatize(template);
@@ -95,7 +111,7 @@
           this.$.repeat._getRootDataHost = function() {
             return dataHost._rootDataHost || dataHost;
           };
-          
+
         }
       }
     },

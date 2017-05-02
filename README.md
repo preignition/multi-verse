@@ -2,7 +2,7 @@
 
 # \<multi-verse\>
 
-polymer elements for multivariate analysis (built on top of [multi-chart](https://github.com/PolymerEl/multi-chart), and [universe](https://github.com/crossfilter/universe))
+polymer elements for multivariate analysis (built on top of [multi-chart](https://github.com/PolymerEl/multi-chart), and [universe](https://github.com/crossfilter/universe)) andu using [d3.js V4](https://github.com/d3/d3), [crossfilter](https://github.com/crossfilter/crossfilter) and [reductio](https://github.com/crossfilter/reductio) under the hood.
 
 
 
@@ -22,7 +22,7 @@ polymer elements for multivariate analysis (built on top of [multi-chart](https:
 
 ```html
  <!-- Load the data -->
-	<multi-csv url="flight.csv" data="{{data}}"></multi-csv>
+ <multi-csv url="flight.csv" data="{{data}}"></multi-csv>
  <!-- Start a multi-verse -->
   <multi-verse id="universe" data="[[data]]" universe="{{universe}}">
  		<!-- Group the data by distances-->
