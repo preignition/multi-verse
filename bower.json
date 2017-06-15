@@ -26,7 +26,7 @@
     "polymer": "Polymer/polymer#^1.6.0",
     "universe": "crossfilter/universe#^0.6.4",
     "d3-bundle-element": "^1.7.0",
-    "multi-chart": "PolymerEl/multi-chart"
+    "multi-chart": "*"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",

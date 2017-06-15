@@ -2,8 +2,9 @@
 
 # \<multi-verse\>
 
-polymer elements for multivariate analysis (built on top of [multi-chart](https://github.com/PolymerEl/multi-chart), and [universe](https://github.com/crossfilter/universe)) andu using [d3.js V4](https://github.com/d3/d3), [crossfilter](https://github.com/crossfilter/crossfilter) and [reductio](https://github.com/crossfilter/reductio) under the hood.
+Polymer elements for graphical and interactive multivariate analysis (built on top of [universe](https://github.com/crossfilter/universe)) and using [d3.js V4](https://github.com/d3/d3), [crossfilter](https://github.com/crossfilter/crossfilter) and [reductio](https://github.com/crossfilter/reductio) under the hood.
 
+Charts are rendered using [multi-chart](https://github.com/PolymerEl/multi-chart). They are data driven and reactive, providing instant feedback to user interaction.
 
 
 ## Example of multi-verse in a interactive dashboard
