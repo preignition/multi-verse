@@ -1,6 +1,6 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../../multi-chart/multi-register-behavior.html">
-<link rel="import" href="multi-button-group.html">
+<link rel="import" href="multi-selectable-wrapper.html">
 <!--
 `multi-verse-repeat`
 
@@ -12,10 +12,10 @@
 
     </style>
     <content></content>
-    <multi-button-group multi="[[multi]]">
+    <multi-selectable-wrapper multi="[[multi]]">
       <template id="repeat" is="dom-repeat" rendered-item-count="{{renderedItemCount}}" items="{{items}}" filter="[[filter]]" observe="[[observe]]">
       </template>
-    </multi-button-group>
+    </multi-selectable-wrapper>
   </template>
   <script>
   Polymer({
