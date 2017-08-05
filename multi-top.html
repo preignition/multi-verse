@@ -77,7 +77,7 @@
        * `offset` 
        */
       offset: {
-        type: Number, 
+        type: Number,
         value: 0
       },
 
@@ -85,10 +85,10 @@
       /**
        * `start`
        */
-       start: {
+      start: {
         type: Number,
         value: 0
-       },
+      },
 
 
       _dim: {
@@ -129,8 +129,8 @@
       // if (!this._dim) {
       //   this._error('dimension is not defined');
       // }
-      var dim =  this._findDim(this.universe, this.column);
-      if(!dim) {
+      var dim = this._findDim(this.universe, this.column);
+      if (!dim) {
         console.info('DIM not ready');
         return this.async(this.render, 200);
 

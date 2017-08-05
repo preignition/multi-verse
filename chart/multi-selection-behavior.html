@@ -63,14 +63,21 @@ multi.selectionBehavior = {
   /**
    * `clearSelection` clear the current selection 
    */
-  clearSelection: function() {
-    if (this.$.selector && this.$.selector.clearSelection) {
-      this.$.selector.clearSelection();
+  clearSelection: function(e) {
+    if (this.selector && this.selector.clearSelection) {
+      if(e) {
+        e.stopPropagation();
+      }
+      this.selector.clearSelection();
     }
   },
 
   __computeIsHovered: function(hoveredItem) {
     return !!hoveredItem;
+  },
+
+  get selector() {
+    return this.$.selector;
   },
 
   listeners: {

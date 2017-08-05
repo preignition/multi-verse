@@ -13,6 +13,7 @@
     <style>
     :host {
       display: inline;
+      color: var(--multi-selector-display-color, --primary-color);
       /*position: relative;*/
     }
     
@@ -30,7 +31,7 @@
       <template is="dom-if" if="[[!isRange]]">
         <span>[[selected]] [[_discreteSelection(selectedItems.*)]]</span>
       </template>
-      <paper-icon-button on-tap="clear" class="filter-clear" icon="clear">
+      <paper-icon-button on-tap="clear" icon="clear">
     </template>
   </template>
   <script>
