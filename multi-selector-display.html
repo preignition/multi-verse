@@ -29,7 +29,7 @@
         <span>[[selected]] [[[_rangeFormat(selectedItems.*, 0, d3Format)]]-[[_rangeFormat(selectedItems.*, 1, d3Format)]]]</span>
       </template>
       <template is="dom-if" if="[[!isRange]]">
-        <span>[[selected]] [[_discreteSelection(selectedItems.*)]]</span>
+        <span>[[selected]] [[_discreteSelection(selectedItems.length, labels)]]</span>
       </template>
       <paper-icon-button on-tap="clear" icon="clear">
     </template>
@@ -58,6 +58,14 @@
         value: false
       },
 
+      /* 
+       * `labels` as in http://d3-legend.susielu.com
+       */
+       labels : {
+         type:  Function, 
+         value: null
+        },
+
       _hasSelection: {
         type: Boolean,
         computed: '_computeHasSelection(selectedItems.length)'
@@ -77,7 +85,10 @@
       return format(this.selectedItems[index]);
     },
 
-    _discreteSelection: function(items) {
+    _discreteSelection: function(items, labels) {
+      if (this.labels && typeof this.labels === 'function') {
+        return this.selectedItems.map(function(k) {return labels(k)}).join(', ');
+      }
       return this.selectedItems.join(', ');
     }
   });
