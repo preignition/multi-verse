@@ -126,9 +126,6 @@
     },
 
     render: function() {
-      // if (!this._dim) {
-      //   this._error('dimension is not defined');
-      // }
       var dim = this._findDim(this.universe, this.column);
       if (!dim) {
         console.info('DIM not ready');

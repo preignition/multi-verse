@@ -125,12 +125,14 @@ Sample use:
       var columns = this.columns;
 
       function onFilter() {
-        me.registeredItems.forEach(function(item) {
-          if(item.render) {
-            item.render();
-          }
-          // item.fire('multi-verse-filter');
-        });
+        me.debounce('debounce-multi-filter', function() { 
+          me.registeredItems.forEach(function(item) {
+            if(item.render) {
+              item.render();
+            }
+            // item.fire('multi-verse-filter');
+          });
+        }, 30);
       }
 
       universe(data, {
