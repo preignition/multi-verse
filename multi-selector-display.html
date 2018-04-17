@@ -86,6 +86,7 @@
     },
 
     _discreteSelection: function(items, labels) {
+
       if (this.labels && typeof this.labels === 'function') {
         return this.selectedItems.map(function(k) {return labels(k)}).join(', ');
       }
