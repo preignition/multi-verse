@@ -107,10 +107,11 @@
     },
 
     attached: function() {
-      // this.callRegistered('hostAttached');
-
-      this.fire('multi-attached', this.groupName);
-      // this.render();
+      // Note(cg): registration is missed sometimes. We fire a bit later
+      // 
+      this.async(()=>{
+        this.fire('multi-attached', this.groupName);
+        }, 500);
     },
 
     detached: function() {
