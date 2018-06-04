@@ -70,6 +70,13 @@ Sample use:
         value: null
       },
 
+      /* 
+       * `postFilter` a function that will be called after each filter `postFilter(universe, data)`
+       */
+      postFilter: {
+        type: Function,
+      },
+
       /**
        * `registeredItems` Array of web-components that will be notified when `universe` has been queried/filtered
        */
@@ -90,12 +97,12 @@ Sample use:
       /**
        * [`columns`](https://github.com/crossfilter/universe#column-columnkeycolumnobject--)
        */
-       columns: {
+      columns: {
         type: Object,
         value: function() {
           return {};
         }
-       }
+      }
     },
 
 
@@ -121,37 +128,41 @@ Sample use:
         data.forEach(preProcess, this);
       }
 
-      var me = this;
-      var columns = this.columns;
-
-      function onFilter() {
-        me.debounce('debounce-multi-filter', function() { 
-          me.registeredItems.forEach(function(item) {
-            if(item.render) {
-              item.render();
-            }
-            // item.fire('multi-verse-filter');
-          });
-        }, 30);
-      }
-
       universe(data, {
           generatedColumns: this.generatedColumns
-        }).then(function(uni) {
+        }).then(uni => {
 
-          uni.onFilter(onFilter, 100);
+          uni.onFilter(() => {
+            console.info('ONFILTER', data, this.registeredItems);
+            this.debounce('debounce-multi-filter', () => {
+              this.registeredItems.forEach(item => {
+                if (item.render) {
+                  item.render();
+                }
+              });
+            }, 20);
 
-          if(Object.keys(columns).length) {
-             for (var k in columns) {
-               if (columns.hasOwnProperty(k)) {
-                  uni.column(columns[k]);
-               }
-             } 
+            if (this.postFilter) {
+              this.debounce('debounce-multi-post-filter', () => {
+                this.postFilter(uni, data);
+              }, 20);
+            }
+
+          });
+
+          const columns = this.columns;
+          if (Object.keys(columns).length) {
+            for (var k in columns) {
+              if (columns.hasOwnProperty(k)) {
+                uni.column(columns[k]);
+              }
+            }
           }
-          me._setUniverse(uni);
+          this._setUniverse(uni);
 
           return uni;
         })
+
         .catch(function(error) {
           console.error(error); // 'oh, no!'
         });
@@ -178,5 +189,6 @@ Sample use:
     }
 
   });
+
   </script>
 </dom-module>

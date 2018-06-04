@@ -130,7 +130,7 @@
       var dim = this._findDim(this.universe, this.column);
       if (!dim) {
         console.info('DIM not ready');
-        return this.async(this.render, 200);
+        return this.async(this.render, 400);
 
       }
       this.set('data', dim.top(this.top, this.offset));
