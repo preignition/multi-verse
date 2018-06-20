@@ -133,7 +133,7 @@ Sample use:
         }).then(uni => {
 
           uni.onFilter(() => {
-            console.info('ONFILTER', data, this.registeredItems);
+            // console.info('ONFILTER', data, this.registeredItems);
             this.debounce('debounce-multi-filter', () => {
               this.registeredItems.forEach(item => {
                 if (item.render) {
