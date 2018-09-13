@@ -29,9 +29,9 @@
         <span>[[selected]] [[[_rangeFormat(selectedItems.*, 0, d3Format)]]-[[_rangeFormat(selectedItems.*, 1, d3Format)]]]</span>
       </template>
       <template is="dom-if" if="[[!isRange]]">
-        <span>[[selected]] [[_discreteSelection(selectedItems.length, labels)]]</span>
+        <span>[[selected]] [[_discreteSelection(selectedItems.*, labels)]]</span>
       </template>
-      <paper-icon-button on-tap="clear" icon="clear">
+      <paper-icon-button on-tap="clear" icon="cancel">
     </template>
   </template>
   <script>
@@ -86,10 +86,14 @@
     },
 
     _discreteSelection: function(items, labels) {
-
-      if (this.labels && typeof this.labels === 'function') {
-        return this.selectedItems.map(function(k) {return labels(k)}).join(', ');
+      const isFunction = this.labels && typeof this.labels === 'function';
+      
+      if (this.labels ) {
+        return this.selectedItems.map(function(k) {
+          return isFunction ? labels(k) : (labels[k] || k);
+          }).join(', ');
       }
+
       return this.selectedItems.join(', ');
     }
   });

@@ -135,8 +135,8 @@ Sample use:
           uni.onFilter(() => {
             // console.info('ONFILTER', data, this.registeredItems);
             this.debounce('debounce-multi-filter', () => {
-              this.registeredItems.forEach(item => {
-                if (item.render) {
+              (this.registeredItems || []).forEach(item => {
+                if (item && item.render) {
                   item.render();
                 }
               });
