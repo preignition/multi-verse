@@ -1,0 +1,55 @@
+<dom-module id="multi-repeat-demo">
+  <template>
+    <style include="vaadin-component-demo-shared-styles">
+    :host {
+      display: block;
+    }
+
+    </style>
+    <h3>Multi Repeat</h3>
+    <p>Playing around with topojson feature and d3-projection.</p>
+    <vaadin-demo-snippet id='multi-repeat-demo-binding'>
+      <template preserve-content>
+        <dom-bind id="app">
+          <template>
+            <multi-repeat id="multi" items="[[items]]">
+              <template>
+                 <style>
+                  paper-button[active]{
+                    background: var(--primary-color);
+                    color: var(--light-theme-background-color);
+                  }
+                  </style>
+                <paper-button raised name="[[item]]">a[[item]]</paper-button>
+              </template>
+            </multi-repeat>
+          </template>
+        </dom-bind>
+      </template>
+    </vaadin-demo-snippet>
+    <script>
+    window.addDemoReadyListener('#multi-repeat-demo-binding', function(document) {
+
+      app = document.querySelector('#app');
+      app.items = [1, 2, 3];
+    });
+    </script>
+  </template>
+  <script>
+  (function() {
+
+    class MultiDemo extends DemoReadyEventEmitter(MultiVerse.Demo(Polymer.Element)) {
+      static get is() {
+        return 'multi-repeat-demo';
+      }
+    }
+    customElements.define(MultiDemo.is, MultiDemo);
+
+    if (!window.MultiChart) {
+      window.MultiChart = {};
+    }
+    window.MultiChart.MultiDemo = MultiDemo;
+
+  })();
+  </script>
+</dom-module>

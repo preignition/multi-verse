@@ -1,0 +1,89 @@
+<dom-module id="multi-basic-demo">
+  <template>
+    <style include="vaadin-component-demo-shared-styles">
+    :host {
+      display: block;
+    }
+    </style>
+    <h3>Multi Verse</h3>
+    <p></p>
+    <vaadin-demo-snippet id='multi-basic-demo-binding'>
+      <template preserve-content>
+        <dom-bind id="app">
+          <template>
+            <d3-csv url="flight.csv" data="{{data}}"></d3-csv>
+            <multi-verse id="universe" data="[[data]]" universe="{{universe}}">
+              <multi-group universe="[[universe]]" data="{{data-chart-distance}}"  group-by="distances">
+                <multi-verse-line data="[[data-chart-distance]]"  left-text="count" bottom-text="distance (in km)">
+                  <h4 slot="header">Count of flights by distance</h4>
+                </multi-verse-line>
+              </multi-group>
+              <multi-group universe="[[universe]]" data="{{data-chart-distance}}" group-by="distances">
+                <multi-verse-bar left-continuous data="[[data-chart-distance]]">
+                  <h3 header>distance (bar chart)</h3>
+                </multi-verse-bar>
+              </multi-group>
+              <multi-group universe="[[universe]]" data="{{data-chart-day}}" group-by="day">
+                <multi-verse-bar data="[[data-chart-day]]">
+                  <h3 header>day (chart)</h3>
+                </multi-verse-bar>
+              </multi-group>
+              <!-- <multi-group universe="[[universe]]" data="{{data-chart-day}}" group-by="day">
+                <multi-chart-pie data="[[data-chart-day]]" color-scale="{{colorScale}}" width="{{width}}">
+                  <h3 header>day (pie)</h3>
+                  <multi-legend legend chart-width="[[width]]" scale="[[colorScale]]" position="top-right"></multi-legend>
+                </multi-chart-pie>
+              </multi-group> -->
+            </multi-verse>
+          </template>
+        </dom-bind>
+      </template>
+    </vaadin-demo-snippet>
+    <script>
+    window.addDemoReadyListener('#multi-basic-demo-binding', function(document) {
+
+      app = document.querySelector('#app');
+
+      universel = app.$.universe
+
+      //TODO : this should be a Function property
+      function parseDate(d) {
+        return new Date(2001,
+          d.substring(0, 2) - 1,
+          d.substring(2, 4),
+          d.substring(4, 6),
+          d.substring(6, 8));
+      }
+
+      universel.preProcess = function(d, i) {
+        d.date = parseDate(d.date);
+      };
+
+      // var formatNumber = d3.format(',d'),
+      //   formatChange = d3.format('+,d'),
+      //   formatDate = d3.timeFormat('%B %d, %Y'),
+      //   formatTime = d3.timeFormat('%I:%M %p');
+
+      universel.generatedColumns = {
+        day: d => d3.timeFormat('%A')(d.date),
+        hour: d => Number(d3.timeFormat('%H')(d.date)),
+        dayOfWeek: d => d3.timeFormat('%A')(d.date),
+        arrivalDelay: d => Math.floor(+d.delay / 30) * 30,
+        distances: d => Math.floor(+d.distance / 200) * 200
+      };
+
+    });
+    </script>
+  </template>
+  <script>
+  (function() {
+
+    class MultiBasic extends DemoReadyEventEmitter(MultiVerse.Demo(Polymer.Element)) {
+      static get is() {
+        return 'multi-basic-demo';
+      }
+    }
+    customElements.define(MultiBasic.is, MultiBasic);
+  })();
+  </script>
+</dom-module>

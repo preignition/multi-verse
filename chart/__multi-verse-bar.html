@@ -1,0 +1,68 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../multi-chart/multi-selector.html">
+<link rel="import" href="../../multi-chart/shape/multi-shape-bar.html">
+<link rel="import" href="../../multi-chart/chart/multi-chart-coordinate.html">
+<link rel="import" href="../../multi-chart/properties/multi-x-coordinates-behavior.html">
+<link rel="import" href="../../multi-chart/properties/multi-y-coordinates-behavior.html">
+<link rel="import" href="../../multi-chart/properties/multi-color-behavior.html">
+<link rel="import" href="../multi-shared-styles.html">
+<link rel="import" href="multi-verse-behavior.html">
+<!--
+`multi-verse-bar`
+Simple bar-chart 
+
+@element multi-verse-bar
+france
+-->
+<dom-module id="multi-verse-bar">
+  <template>
+    <style is="custom-style" include="multi-shared-styles">
+
+    </style>
+    <multi-chart-coordinate id="chart" data="[[data]]" x-pretend-continuous="[[xContinuous]]" x-accessor-path="[[xAccessorPath]]" y-accessor-path="[[yAccessorPath]]" color-domain="[[colorDomain]]" width="{{width}}" height="{{height}}" color-range="[[colorRange]]" color-scale="{{colorScale}}" x-axis-text="[[xAxisText]]" y-axis-text="[[yAxisText]]" x-scale="{{xScale}}" x-accessor="{{xAccessor}}" x-ticks="[[xTicks]]" y-scale="{{yScale}}" y-accessor="{{yAccessor}}" y-ticks="[[yTicks]]">
+      <multi-shape-bar index="count" height="[[height]]" x-accessor="[[xAccessor]]" y-accessor="[[yAccessor]]" x-scale="[[xScale]]" y-scale="[[yScale]]" color-scale="[[colorScale]]"></multi-shape-bar>
+      <!-- <multi-legend legend chart-width="{{width}}" scale="[[colorScale]]" position="top-right" ></multi-legend> -->
+      <multi-selector id="selector" selected-items="{{selectedItems}}" is-range="{{isRange}}" has-selection="{{hasSelection}}" x-continuous="[[xContinuous]]" selection-type="[[selectionType]]" width="[[width]]" height="[[height]]" x-scale="[[xScale]]" accessor="[[xAccessor]]"></multi-selector>
+      <content></content>
+    </multi-chart-coordinate>
+  </template>
+  <script>
+  Polymer({
+
+    is: 'multi-verse-bar',
+
+    behaviors: [
+      multi.verseBehavior,
+      multi.xCoordinates,
+      multi.yCoordinates,
+      multi.color
+    ],
+
+    properties: {
+
+      /**
+       * `xContinuous` indicate true if we have a `continuous` scale on X when the xScale is `ordinal` (e.g. a scaleBand for bar charts). If true a `xContinuousScale` is computed on the selector.
+       * TODO: is there a way to infer this information otherwise (type of crossfilter group ? )
+       */
+      xContinuous: {
+        type: Boolean,
+        value: false
+      },
+
+      colorDomain: {
+        type: 'Array',
+        value: ['count']
+      },
+
+      /**
+       * `selectionType` the type of selection (either `multi`, `select`, `brushX`, `brushY`or `brush`)
+       */
+      selectionType: {
+        type: String,
+        value: 'brushX'
+      }
+
+    }
+  });
+  </script>
+</dom-module>

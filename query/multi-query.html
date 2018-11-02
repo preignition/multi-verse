@@ -1,0 +1,64 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../multi-verse-base.html">
+<link rel="import" href="multi-verse-query-mixin.html">
+<dom-module id="multi-query">
+  <script>
+  (function() {
+
+    /**
+     * ## MultiQuery
+     *
+     * `<multi-query>`  performs a query against `universe` and store the result under `queryResult`
+     *
+     * @memberof MultiVerse
+     * @customElement
+     * @polymer
+     * @demo
+     **/
+    class MultiQuery extends
+    MultiVerse.mixin.MultiVerseQuery(
+      MultiVerse.MultiVerseBase) {
+
+      static get is() { return 'multi-query'; }
+
+      static get properties() {
+        return {
+          /**
+           * `keys` keys of data which value is not 0
+           */
+          keys: {
+            type: Array,
+            notify: true
+          }
+        };
+      }
+
+      observeQueryObject(universe, queryObject) {
+        if (universe && queryObject) {
+          universe.query(queryObject)
+            .then(queryResult => {
+              this.set('queryResult', queryResult);
+              this.set('data', queryResult.data);
+              this.set('keys', queryResult.data.filter(d => d.value.count).map(d => d.key));
+            })
+            .catch(error => {
+              this._error('something went wrong in universe query', error, queryObject); // 'oh, no!'
+            });
+        }
+      }
+    }
+
+    customElements.define(MultiQuery.is, MultiQuery);
+
+    if (!window.MultiVerse) {
+      window.MultiVerse = {};
+    }
+
+    /* 
+     * @namespace MultiChart
+     */
+    window.MultiVerse.MultiQuery = MultiQuery;
+
+  })();
+  </script>
+</dom-module>

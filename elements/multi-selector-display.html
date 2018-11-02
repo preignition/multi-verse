@@ -1,0 +1,116 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../multi-chart/d3-format/d3-format-mixin.html">
+<link rel="import" href="../../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../multi-verse-base.html">
+<dom-module id="multi-selector-display">
+  <template>
+    <style>
+    :host {
+      display: inline;
+      color: var(--multi-selector-display-color, --primary-color);
+    }
+
+    paper-icon-button {
+      padding: 0;
+      width: 18px;
+      height: 18px;
+      margin-left: 10px;
+    }
+    </style>
+    <template is="dom-if" if="[[_hasSelection]]">
+      <template is="dom-if" if="[[isRange]]">
+        <span>[[selected]] [[[format(selectedItems.0)]]-[[format(selectedItems.1)]]]</span>
+      </template>
+      <template is="dom-if" if="[[!isRange]]">
+        <span>[[selected]] [[_discreteSelection(selectedItems.*, labels)]]</span>
+      </template>
+      <paper-icon-button on-tap="clear" icon="cancel">
+    </template>
+  </template>
+  <script>
+  (function() {
+
+    /**
+     * ## MultiSelectorDisplay
+     *
+     * `<multi-selector-display>` shows what has been selected and displays it 
+     * in a nice format
+     *
+     * @memberof MultiVerse
+     * @customElement
+     * @polymer
+     * @appliesMixin MultiChart.mixin.D3Format
+     * @demo
+     **/
+    class MultiSelectorDisplay extends 
+      MultiChart.mixin.D3Format(
+        MultiVerse.MultiVerseBase) {
+
+      static get is() { return 'multi-selector-display'; }
+
+      static get properties() {
+        return {
+          selectedItems: {
+            type: Array
+          },
+
+          selected: {
+            type: String,
+            value: 'selected:'
+          },
+
+          isRange: {
+            type: Boolean,
+            value: false
+          },
+
+          /* 
+           * `labels` as in http://d3-legend.susielu.com
+           */
+          labels: {
+            type: Function,
+            value: null
+          },
+
+          _hasSelection: {
+            type: Boolean,
+            computed: '_computeHasSelection(selectedItems.length)'
+          }
+        };
+      }
+
+      clear() {
+        this.fire('multi-clear');
+      }
+
+      _computeHasSelection() {
+        return this.selectedItems && this.selectedItems.length;
+      }
+
+      _discreteSelection(items, labels) {
+        const isFunction = this.labels && typeof this.labels === 'function';
+
+        if (this.labels) {
+          return this.selectedItems.map(k => {
+            return isFunction ? labels(k) : (labels[k] || k);
+          }).join(', ');
+        }
+
+        return this.selectedItems.join(', ');
+      }
+    }
+
+    customElements.define(MultiSelectorDisplay.is, MultiSelectorDisplay);
+
+    if (!window.MultiVerse) {
+      window.MultiVerse = {};
+    }
+
+    /* 
+     * @namespace MultiChart
+     */
+    window.MultiVerse.MultiSelectorDisplay = MultiSelectorDisplay;
+
+  })();
+  </script>
+</dom-module>

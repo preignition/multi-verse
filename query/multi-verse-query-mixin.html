@@ -1,0 +1,175 @@
+<script>
+(function() {
+
+  /**
+   * ##  MultiVerseQuery
+   * 
+   * mixin for constructyin the query object. used by `multi-group` and `multi-query`
+   * 
+   * @memberof MultiVerse.mixin
+   * @polymer
+   * @mixinFunction
+   */
+  const MultiVerseQuery = superClass => {
+
+    return class extends superClass {
+
+      static get properties() {
+        return {
+          /**
+           * `universe` passed on by a `multi-verse` component
+           */
+          universe: {
+            type: Object
+
+          },
+
+          /**
+           * `queryResult` a result of a `universe` query
+           */
+          queryResult: {
+            type: Object
+          },
+
+          /**
+           * `data` the data part of `queryResult` (`queryResult.data`)
+           */
+          data: {
+            type: Array,
+            notify: true
+          },
+
+          /* 
+           * `type` the type of queryObject (`isArray`)
+           */
+          // type: {
+          //   type: String,
+          //   value: null
+          // },
+
+          /* 
+           * `isArray` set to true to treat the column as an array
+           */
+          // isArray : {
+          //   type:  Boolean,
+          //   value: true
+          //   },
+
+          /* 
+           * `queryObject` the query object
+           */
+          queryObject: {
+            type: Object
+          },
+
+          /* 
+           * `groupBy` 
+           */
+          groupBy: {
+            type: String
+          },
+
+          /* 
+           * `select` the select Object
+           */
+          select: {
+            type: Object,
+            value: null
+          },
+
+          /* 
+           * [`filter`] (https://github.com/crossfilter/universe#api-query) the filter Object
+           */
+          filter: {
+            type: Object,
+            value: null
+          }
+        };
+      }
+
+      static get observers() {
+        return [
+          '_observeForQueryObject(groupBy, select, filter, select.*, filter.*)',
+          'observeQueryObject(universe, queryObject)'
+        ];
+      }
+
+      /**
+       * `observeQueryObject` when `universe` and `queryObject` are set, perform a query and set `queryResult` and `data` when the query Promise is resolved.
+       */
+      observeQueryObject(universe, queryObject) {
+        if (universe && queryObject) {
+          universe.query(queryObject)
+            .then(queryResult => {
+              this.set('queryResult', queryResult);
+              this.set('data', queryResult.data);
+            })
+            .catch(error => {
+              this._error('something went wrong in universe query',error, queryObject); // 'oh, no!'
+            });
+        }
+      }
+
+      _observeForQueryObject() {
+
+        if (!this.groupBy) { return; }
+
+        this.debounce('multi-verse-query-mixin', () => {
+
+          const query = {
+            groupBy: this.groupBy
+          };
+
+          let filter, select;
+          if (this.filter) {
+            try {
+              filter = typeof this.filter === 'string' ? JSON.parse(this.filter) : this.filter;
+            } catch (e) {
+              this._error('error with queryObject filter', e); // error in the above string (in this case, yes)!
+            }
+          }
+
+          if (this.select) {
+            try {
+              select = typeof this.select === 'string' ? JSON.parse(this.select) : this.select;
+            } catch (e) {
+              this._error('error with queryObject filter', e); // error in the above string (in this case, yes)!
+            }
+          }
+          if (filter) {
+            query.filter = filter;
+          }
+          if (select) {
+            query.select = select;
+          }
+          // type and isArray is derived from dataSample when universe makes the dimension  column.type = getType(sample) in columns.js. Is Sample is an array, the column is an array as well
+          // if (this.type) {
+          //   query.type = this.type;
+          // }
+          // if (this.isArray) {
+          //   query.array = true;
+          // }
+
+          this.set('queryObject', query);
+          // this.debounce('multi-query-set-object', function() {
+          // });
+        }, 20);
+      }
+    };
+  };
+
+  if (!window.MultiVerse) {
+    window.MultiVerse = {};
+  }
+
+  /* 
+   * @namespace MultiChart.mixin
+   */
+  window.MultiVerse.mixin = window.MultiVerse.mixin || {};
+  /* 
+   * @mixinFunction
+   */
+  window.MultiVerse.mixin.MultiVerseQuery = MultiVerseQuery;
+
+})();
+</script>

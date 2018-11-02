@@ -1,0 +1,132 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../iron-menu-behavior/iron-menubar-behavior.html">
+<link rel="import" href="../../multi-chart/helper/multi-registerable-mixin.html">
+<link rel="import" href="../multi-verse-base.html">
+<link rel="import" href="multi-repeat-select.html">
+<dom-module id="multi-repeat">
+  <template>
+    <slot id="slot"></slot>
+    <multi-repeat-select 
+    	selected="{{selected}}" 
+    	selected-item="{{selectedItem}}" 
+    	selected-values="{{selectedValues}}"
+    	selected-items="{{selectedItems}}"
+    	attr-for-selected="[[attrForSelected]]" 
+    	selected-attribute="[[selectedAttribute]]" 
+    	multi="[[multi]]">
+    <template 
+    	id="repeat" 
+    	is="dom-repeat" 
+      items="{{items}}" 
+      rendered-item-count="{{renderedItemCount}}"
+			filter="[[filter]]"
+			sort="[[sort]]"
+			observe="[[observe]]"
+			delay="[[delay]]"
+			as="[[as]]"
+			index-as="[[indexAs]]"
+      ></template>
+    </multi-repeat-select>
+  </template>
+  <script>
+  (function() {
+
+    /**
+     * ## MultiRepeat
+     *
+     * `<multi-repeat>` 
+     *
+     * @memberof MultiVerse
+     * @customElement
+     * @polymer
+     * @demo
+     **/
+    class MultiRepeat extends
+    	MultiChart.mixin.MultiRegisterable(
+      	MultiVerse.MultiVerseBase) { 
+
+      static get is() { return 'multi-repeat'; }
+
+      static get properties() {
+        return Object.assign({}, {
+          /**
+           * Overriden from Polymer.IronSelectableBehavior
+           */
+          attrForSelected: {
+            type: String,
+            value: 'name'
+          },
+
+          /**
+           * Overriden from Polymer.IronSelectableBehavior
+           */
+          selectedAttribute: {
+            type: String,
+            value: 'active'
+          },
+
+          /**
+           * Overriden from Polymer.IronSelectableBehavior
+           */
+          selectable: {
+            type: String,
+            value: 'paper-button'
+          },
+
+          /* 
+           * `multi` set true to allow multiple selection
+           */
+          multi: {
+            type: Boolean
+          }
+
+        });
+
+      }
+
+      ready() {
+        super.ready();
+        this.replaceTemplate();
+      }
+
+      dataChanged(data) {
+      	this.items = data;
+      }
+
+      replaceTemplate() {
+        const template = this.$.slot.assignedNodes().find(n => n.localName === 'template');
+        if (!template) {
+          // // Wait until childList changes and template should be there by then
+          let observer = new MutationObserver(() => {
+            if (this.querySelector('template')) {
+              observer.disconnect();
+              this.replaceTemplate();
+              // Note(cg): we need to reset rom-repeat.
+              this.$.repeat.__ctor = null;
+              this.$.repeat.__render();
+            } else {
+              throw new Error('multi-repeat requires a <template> to be passed to');
+            }
+          });
+        }
+        const currentTemplate = this.$.repeat.querySelector('template');
+        this.$.repeat.replaceChild(template, currentTemplate);
+
+      }
+
+    }
+
+    customElements.define(MultiRepeat.is, MultiRepeat);
+
+    if (!window.MultiVerse) {
+      window.MultiVerse = {};
+    }
+
+    /* 
+     * @namespace MultiChart
+     */
+    window.MultiVerse.MultiRepeat = MultiRepeat;
+
+  })();
+  </script>
+</dom-module>

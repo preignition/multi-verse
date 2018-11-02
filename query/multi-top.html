@@ -1,0 +1,149 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../multi-verse-base.html">
+<dom-module id="multi-top">
+  <template>
+    <slot></slot>
+  </template>
+  <script>
+  (function() {
+
+    /**
+     * ## MultiTop
+     *
+     * `<multi-top>`  for getting top `number` along a `column`
+     *
+     * @memberof MultiVerse
+     * @customElement
+     * @polymer
+     * @appliesMixin  MultiChart.mixin.MultiRegisterable
+     * @demo
+     **/
+    class MultiTop extends
+    MultiChart.mixin.MultiRegisterable(
+      MultiVerse.MultiVerseBase) {
+
+      static get is() { return 'multi-top'; }
+
+      static get properties() {
+        return {
+          /**
+           * `universe` passed on by a `multi-verse` component
+           */
+          universe: {
+            type: Object
+          },
+
+          /**
+           * `column` the name of a universe column
+           */
+          column: {
+            type: String
+          },
+
+          /**
+           * `data` the data part of `queryResult` (`queryResult.data`)
+           */
+          data: {
+            type: Array,
+            notify: true
+          },
+
+          /**
+           * `groupName` the name of the group (used when to registering this element under a multi-verse)
+           */
+          groupName: {
+            type: String
+          },
+
+          /**
+           * `length` total length of the dimension attached
+           */
+          length: {
+            type: Number,
+            notify: true
+          },
+
+          /**
+           * `top` 
+           */
+          top: {
+            type: Number,
+            value: 100
+          },
+
+          /**
+           * `offset` 
+           */
+          offset: {
+            type: Number,
+            value: 0
+          },
+
+
+          /**
+           * `start`
+           */
+          start: {
+            type: Number,
+            value: 0
+          },
+
+
+          _dim: {
+            type: Object,
+            computed: '_findDim(universe, column)'
+          }
+        };
+      }
+
+      static get observers() {
+        return [
+          '_observeForQuery(universe, column, top, offset)'
+        ];
+      }
+      _findDim(universe, column) {
+        return universe.column.find(column).dimension;
+      }
+
+      dataChanged() {
+        this.render();
+      }
+
+      _observeForQuery() {
+        if (Array.from(arguments).some(arg => arg === undefined)) {
+          return;
+        }
+        this.render();
+      }
+
+      render() {
+        const dim = this._findDim(this.universe, this.column);
+        if (!dim) {
+          this._warn('dimension not ready');
+          this._countError = this._countError || 1;
+          this._countError++;
+          if (this._countError < 4) {
+            return setTimeout(() => { this.render(); }, 50);
+          }
+          this._error('dimension never ready!');
+        } 
+        this._countError = 1;
+        this.data= dim.top(this.top, this.offset);
+        this.length = dim.top(Infinity).length;
+      }
+    }
+
+    customElements.define(MultiTop.is, MultiTop);
+
+    if (!window.MultiVerse) {
+      window.MultiVerse = {};
+    }
+
+    /* 
+     * @namespace MultiChart
+     */
+    window.MultiVerse.MultiTop = MultiTop;
+
+  })();
+  </script>
+</dom-module>

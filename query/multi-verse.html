@@ -1,0 +1,179 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../multi-chart/helper/multi-register-mixin.html">
+<link rel="import" href="../multi-verse-base.html">
+<dom-module id="multi-verse">
+  <template>
+    <slot></slot>
+  </template>
+  <script>
+  (function() {
+
+    /**
+     * ## MultiVerse
+     *
+     * `<multi-verse>` takes data as input and encapsulate a [`universe`](https://github.com/crossfilter/universe#create-a-new-universe) Object. 
+     * When `universe` changes (query or filtering), `registeredItems` (e.g. charts rendering `universe` data) are notified of the change and will render accordingly.
+     *
+     * ### Example
+     * ```html
+     *  <multi-verse id="universe" data="[[data]]" universe="{{universe}}">
+     *    <multi-group universe="[[universe]]" data="{{data-chart-distance}}" group-by="distances">
+     *      <multi-chart-bar title="distance" data="[[data-chart-distance]]"> </multi-chart-bar>
+     *    </multi-group>
+     *    <multi-group universe="[[universe]]" data="{{data-chart-day}}" group-by="day">
+     *      <multi-chart-pie title="day (pie)" data="[[data-chart-day]]" color-scale="{{colorScale}}" width="{{width}}">
+     *        <multi-legend legend chart-width="[[width]]" scale="[[colorScale]]" position="top-right"></multi-legend>
+     *      </multi-chart-pie>
+     *    </multi-group>
+     *  </multi-verse>
+     *
+     * @memberof MultiVerse
+     * @customElement
+     * @polymer
+     * @appliesMixin MultiChart.mixin.MultiRegister
+     * @appliesMixin MultiChart.mixin.Logger
+     * @demo
+     **/
+    class MV extends 
+      MultiChart.mixin.MultiRegister(
+          MultiVerse.MultiVerseBase) {
+
+      static get is() { return 'multi-verse'; }
+
+      static get properties() {
+        return {
+          /**
+           * `data`  the data to pass for creating a new [universe](https://github.com/crossfilter/universe#create-a-new-universe)
+           */
+          data: {
+            type: Array
+          },
+
+          /**
+           * `universe` expose the created universe instance
+           */
+          universe: {
+            type: Object,
+            notify: true,
+            readOnly: true
+          },
+
+          /**
+           * [`generatedColumns`](https://github.com/crossfilter/universe#universe-data--config--) optional column configuration to universe instance
+           */
+          generatedColumns: {
+            type: Object,
+            value: function() {
+              return {};
+            }
+          },
+
+          /**
+           * `preProcess` a function that will be called on all data item before the creation of the universe instance
+           */
+          preProcess: {
+            type: Function
+          },
+
+          /* 
+           * `postFilter` a function that will be called after each filter `postFilter(universe, data)`
+           */
+          postFilter: {
+            type: Function,
+          },
+
+          /**
+           * `groupName` if set will only register webcomponents with the same `groupName`. Otherwise, every web-component that fire a `multi-attached` event will be registered
+           */
+          groupName: {
+            type: String
+          },
+
+          /**
+           * [`columns`](https://github.com/crossfilter/universe#column-columnkeycolumnobject--)
+           */
+          columns: {
+            type: Object,
+            value: function() {
+              return {};
+            }
+          },
+
+
+          registerEvent: {
+            type:String,
+            value: 'multi-verse-added'
+          }
+        };
+      }
+
+      static get observers() {
+        return [
+          'observeData(preProcess, data)'
+        ];
+      }
+      /**
+       * `observeData` create a new `universe` with the provided data 
+       * TODO: add a `multi-column` web-component to define additional universe.generatedColumns and a processing function
+       */
+      observeData(preProcess, data) {
+
+          if(!data) {return;}
+
+          if (preProcess) {
+            data.forEach(preProcess, this);
+          }
+
+          universe(data, {
+              generatedColumns: this.generatedColumns
+            }).then(uni => {
+
+              uni.onFilter(() => {
+                this._warn('apply filter');
+                this.debounce('debounce-multi-filter', () => {
+                  this.callRegistered('dataChanged');
+                }, 20);
+
+                if (this.postFilter) {
+                  this.debounce('debounce-multi-post-filter', () => {
+                    this.postFilter(uni, data);
+                  }, 20);
+                }
+
+              });
+
+              const columns = this.columns;
+              if (Object.keys(columns).length) {
+                for (var k in columns) {
+                  if (columns.hasOwnProperty(k)) {
+                    uni.column(columns[k]);
+                  }
+                }
+              }
+              this._setUniverse(uni);
+
+              return uni;
+            })
+
+            .catch(function(error) {
+              this._error(error);
+            });
+
+        }
+
+    }
+
+    customElements.define(MV.is, MV);
+
+    if (!window.MultiVerse) {
+      window.MultiVerse = {};
+    }
+
+    /* 
+     * @namespace MultiChart
+     */
+    window.MultiVerse.MultiVerse = MV;
+
+  })();
+  </script>
+</dom-module>

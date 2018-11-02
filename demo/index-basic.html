@@ -1,0 +1,99 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>multi-poly demo</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
+  <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+  <link rel="import" href="../../paper-button/paper-button.html">
+  <link rel="import" href="../multi-verse.html">
+  <link rel="import" href="../multi-group.html">
+  <link rel="import" href="../multi-csv.html">
+  <link rel="import" href="../chart/multi-verse-bar.html">
+  <link rel="import" href="../chart/multi-verse-line.html">
+  <link rel="import" href="../chart/multi-verse-pie.html">
+  <link rel="import" href="../../d3-bundle-element/d3-element-multi.html">
+  
+  <link rel="stylesheet" href="../../multi-chart/multichart.css">
+  <style is="custom-style" include="demo-pages-shared-styles">
+  #barChart {
+    height: 400px;
+  }
+  </style>
+</head>
+
+<body>
+  <div class="vertical-section-container centered">
+    <h3>Basic multi-verse Demo</h3>
+    <p>This is a very simple example of the use of `multi-chart` and `multi-verse`, powered under the hood by `d3.js` and `universe.js`.</p>
+    <demo-snippet>
+      <template>
+        <template is="dom-bind" id="app">
+          <multi-csv url="flight.csv" data="{{data}}"></multi-csv>
+          <multi-verse id="universe" data="[[data]]" universe="{{universe}}">
+            <multi-group universe="[[universe]]" data="{{data-chart-distance}}" group-by="distances">
+              <multi-verse-line data="[[data-chart-distance]]"> 
+                <h3 header>distance (line chart)</h3>
+              </multi-verse-line>
+            </multi-group>
+            <multi-group universe="[[universe]]" data="{{data-chart-distance}}" group-by="distances">
+              <multi-verse-bar x-continuous data="[[data-chart-distance]]">
+                <h3 header>distance (bar chart)</h3>
+              </multi-verse-bar>
+            </multi-group>
+            <multi-group universe="[[universe]]" data="{{data-chart-day}}" group-by="day">
+              <multi-verse-bar  data="[[data-chart-day]]"> 
+                <h3 header>day (chart)</h3>
+              </multi-verse-bar>
+            </multi-group>
+            <multi-group universe="[[universe]]" data="{{data-chart-day}}" group-by="day">
+              <multi-verse-pie  data="[[data-chart-day]]" color-scale="{{colorScale}}" width="{{width}}">
+                <h3 header>day (pie)</h3>
+                <multi-legend legend chart-width="[[width]]" scale="[[colorScale]]" position="top-right"></multi-legend>
+              </multi-verse-pie>
+            </multi-group>
+          </multi-verse>
+          <!-- <paper-button raised on-tap="toggle">toggle data</paper-button> -->
+        </template>
+      </template>
+    </demo-snippet>
+  </div>
+</body>
+<script>
+window.addEventListener('WebComponentsReady', function() {
+  app = document.querySelector('#app');
+
+  universel = app.$.universe
+
+  //TODO : this should be a Function property
+  function parseDate(d) {
+    return new Date(2001,
+      d.substring(0, 2) - 1,
+      d.substring(2, 4),
+      d.substring(4, 6),
+      d.substring(6, 8));
+  }
+
+  universel.preProcess = function(d, i) {
+    d.date = parseDate(d.date);
+  };
+
+  // var formatNumber = d3.format(',d'),
+  //   formatChange = d3.format('+,d'),
+  //   formatDate = d3.timeFormat('%B %d, %Y'),
+  //   formatTime = d3.timeFormat('%I:%M %p');
+
+  universel.generatedColumns = {
+    day: d => d3.timeFormat('%A')(d.date),
+    hour: d => Number(d3.timeFormat('%H')(d.date)),
+    dayOfWeek: d => d3.timeFormat('%A')(d.date),
+    arrivalDelay: d => Math.floor(+d.delay / 30) * 30,
+    distances: d => Math.floor(+d.distance / 200) * 200
+  };
+});
+</script>
+
+</html>

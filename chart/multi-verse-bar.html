@@ -1,68 +1,80 @@
 <link rel="import" href="../../polymer/polymer.html">
-<link rel="import" href="../../multi-chart/multi-selector.html">
-<link rel="import" href="../../multi-chart/shape/multi-shape-bar.html">
-<link rel="import" href="../../multi-chart/chart/multi-chart-coordinate.html">
-<link rel="import" href="../../multi-chart/properties/multi-x-coordinates-behavior.html">
-<link rel="import" href="../../multi-chart/properties/multi-y-coordinates-behavior.html">
-<link rel="import" href="../../multi-chart/properties/multi-color-behavior.html">
-<link rel="import" href="../multi-shared-styles.html">
-<link rel="import" href="multi-verse-behavior.html">
-<!--
-`multi-verse-bar`
-Simple bar-chart 
-
-@element multi-verse-bar
-france
--->
+<link rel="import" href="../../multi-chart/chart/multi-chart-bar.html">
+<link rel="import" href="../../multi-chart/helper/multi-serie.html">
+<link rel="import" href="../../multi-chart/helper/multi-brush.html">
+<link rel="import" href="multi-verse-chart-property.html">
 <dom-module id="multi-verse-bar">
-  <template>
-    <style is="custom-style" include="multi-shared-styles">
-
-    </style>
-    <multi-chart-coordinate id="chart" data="[[data]]" x-pretend-continuous="[[xContinuous]]" x-accessor-path="[[xAccessorPath]]" y-accessor-path="[[yAccessorPath]]" color-domain="[[colorDomain]]" width="{{width}}" height="{{height}}" color-range="[[colorRange]]" color-scale="{{colorScale}}" x-axis-text="[[xAxisText]]" y-axis-text="[[yAxisText]]" x-scale="{{xScale}}" x-accessor="{{xAccessor}}" x-ticks="[[xTicks]]" y-scale="{{yScale}}" y-accessor="{{yAccessor}}" y-ticks="[[yTicks]]">
-      <multi-shape-bar index="count" height="[[height]]" x-accessor="[[xAccessor]]" y-accessor="[[yAccessor]]" x-scale="[[xScale]]" y-scale="[[yScale]]" color-scale="[[colorScale]]"></multi-shape-bar>
-      <!-- <multi-legend legend chart-width="{{width}}" scale="[[colorScale]]" position="top-right" ></multi-legend> -->
-      <multi-selector id="selector" selected-items="{{selectedItems}}" is-range="{{isRange}}" has-selection="{{hasSelection}}" x-continuous="[[xContinuous]]" selection-type="[[selectionType]]" width="[[width]]" height="[[height]]" x-scale="[[xScale]]" accessor="[[xAccessor]]"></multi-selector>
-      <content></content>
-    </multi-chart-coordinate>
+  <template id="subTpl">
+    <multi-serie label="[[serieLabel]]"  key-path="[[keyPath]]" ></multi-serie>
+    <multi-brush 
+    	x-scale="[[scales.bottom]]"
+    	selected-items="{{selectedItems}}"
+    	selected-values="{{selectedValues}}"
+    	></multi-brush>
   </template>
   <script>
-  Polymer({
+  (function() {
 
-    is: 'multi-verse-bar',
+    let subTemplate;
 
-    behaviors: [
-      multi.verseBehavior,
-      multi.xCoordinates,
-      multi.yCoordinates,
-      multi.color
-    ],
+    /**
+     * ## MultiVerseLine
+     *
+     * `<multi-verse-bar>` 
+     *
+     * @memberof MultiVerse
+     * @customElement
+     * @polymer
+     * @appliesMixin MuliVerse.mixin.ChartProperty
+     * @demo
+     **/
+    class MultiVerseBar extends
+    MultiVerse.mixin.ChartProperty(
+      MultiChart.MultiChartBar) {
 
-    properties: {
+      static get is() { return 'multi-verse-bar'; }
 
-      /**
-       * `xContinuous` indicate true if we have a `continuous` scale on X when the xScale is `ordinal` (e.g. a scaleBand for bar charts). If true a `xContinuousScale` is computed on the selector.
-       * TODO: is there a way to infer this information otherwise (type of crossfilter group ? )
-       */
-      xContinuous: {
-        type: Boolean,
-        value: false
-      },
+      static get properties() {
+        return {
+          keys: {
+            type: Array, 
+            value: ['count']
+          },
 
-      colorDomain: {
-        type: 'Array',
-        value: ['count']
-      },
-
-      /**
-       * `selectionType` the type of selection (either `multi`, `select`, `brushX`, `brushY`or `brush`)
-       */
-      selectionType: {
-        type: String,
-        value: 'brushX'
+          valuePath: {
+            type:String, 
+            value: 'value'
+          }
+        };
       }
 
+      // Note(cg): extend baseclass template by inserting `subTpl` within #chart.
+      static get template() {
+        if (!subTemplate) {
+          subTemplate = MultiChart.MultiChartBar.template.cloneNode(true);
+          const tpl = Polymer.DomModule.import('multi-verse-bar', 'template#subTpl').content;
+          const anchor = subTemplate.content.querySelector('#chart');
+
+          if (!anchor) {
+            throw ('trying to extend a chart, but the #chart anchor is not present in base Class');
+          }
+          subTemplate.content.querySelector('#chart').appendChild(tpl);
+        }
+        return subTemplate;
+      }
     }
-  });
+
+    customElements.define(MultiVerseBar.is, MultiVerseBar);
+
+    if (!window.MultiVerse) {
+      window.MultiVerse = {};
+    }
+
+    /* 
+     * @namespace MultiChart
+     */
+    window.MultiVerse.MultiVerseBar = MultiVerseBar;
+
+  })();
   </script>
 </dom-module>

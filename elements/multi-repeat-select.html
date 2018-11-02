@@ -1,0 +1,95 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../multi-verse-base.html">
+<dom-module id="multi-repeat-select">
+  <template>
+    <slot></slot>
+  </template>
+  <script>
+  (function() {
+
+    /**
+     * ## MultiRepeatSelect
+     *
+     * `<multi-repeat-select>` a wrapper arount `multi-select` to handle selection
+     *
+     * @memberof MultiChart
+     * @customElement
+     * @polymer
+     * @demo
+     **/
+    class MultiRepeatSelect extends
+    Polymer.mixinBehaviors([Polymer.IronMenubarBehavior], MultiVerse.MultiVerseBase) {
+
+      static get is() { return 'multi-repeat-select'; }
+
+      static get properties() {
+        return {
+          /**
+           * Overriden from Polymer.IronSelectableBehavior
+           */
+          attrForSelected: {
+            type: String,
+            value: 'name'
+          },
+
+          /**
+           * Overriden from Polymer.IronSelectableBehavior
+           */
+          selectedAttribute: {
+            type: String,
+            value: 'active'
+          },
+
+          /**
+           * Overriden from Polymer.IronSelectableBehavior
+           */
+          selectable: {
+            type: String,
+            value: 'paper-button'
+          }
+
+        };
+      }
+      select(value) {
+        var newItem = this._valueToItem(value);
+        if (newItem && newItem.hasAttribute('disabled')) {
+          return;
+        }
+        super.select(value);
+        this.fire('multi-select', {
+          isRange: false,
+          selection: this.selectedValues.slice()
+        });
+      }
+
+      _activateFocusedItem() {
+        this._itemActivate(this._valueForItem(this.focusedItem), this.focusedItem);
+      }
+
+      _onUpKey(event) {
+        this._focusPrevious();
+        event.preventDefault();
+        this._activateFocusedItem();
+      }
+
+      _onDownKey(event) {
+        this._focusNext();
+        event.preventDefault();
+        this._activateFocusedItem();
+      }
+    }
+
+    customElements.define(MultiRepeatSelect.is, MultiRepeatSelect);
+
+    if (!window.MultiChart) {
+      window.MultiChart = {};
+    }
+
+    /* 
+     * @namespace MultiChart
+     */
+    window.MultiChart.MultiRepeatSelect = MultiRepeatSelect;
+
+  })();
+  </script>
+</dom-module>

@@ -1,0 +1,46 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../multi-chart/helper/logger-mixin.html">
+<link rel="import" href="../multi-chart/helper/polymer-extends-mixin.html">
+
+<dom-module id="multi-verse-base">
+	<script>
+		(function() {
+
+		/**
+		 * ## MultiVerseBase
+		 *
+		 * `<multi-verse-base>` base class for multi-verse other elements
+		 *
+		 * @memberof MultiVerse
+		 * @customElement
+     * @polymer
+     * @appliesMixin MultiChart.mixin.Logger
+     * @appliesMixin MultiChart.mixin.PolymerExtends
+     * @demo
+		 **/
+		class MultiVerseBase extends
+			MultiChart.mixin.Logger(
+		 		MultiChart.mixin.PolymerExtends( 
+			  	Polymer.Element)) {
+
+			static get is() { return 'multi-verse-base'; }
+
+			get logPrefix() {
+				return '[multi-verse]';
+			}
+		}
+
+		customElements.define(MultiVerseBase.is, MultiVerseBase);
+
+		if (!window.MultiVerse) {
+		  window.MultiVerse = {};
+		}
+   
+   /* 
+    * @namespace MultiChart
+    */
+    window.MultiVerse.MultiVerseBase = MultiVerseBase;
+
+		})();
+	</script>
+</dom-module>
