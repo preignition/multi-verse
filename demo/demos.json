@@ -28,8 +28,18 @@
       "src": "multi-choropleth-demo.html",
       "meta":
       {
-        "title": "multi-geo – Choropleth Chart example",
+        "title": "Choropleth Chart example",
         "description": "a simple choropleth chart",
+        "image": ""
+      }
+    },  {
+      "name": "Dadhboard",
+      "url": "multi-dashboard-demo",
+      "src": "multi-dashboard-demo.html",
+      "meta":
+      {
+        "title": "Dashboard Chart example",
+        "description": "a simple dashboard chart",
         "image": ""
       }
     }

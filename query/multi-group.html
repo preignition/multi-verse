@@ -57,11 +57,10 @@
      * `onSelect` filter the `universe` when a `multi-select` event is captured
      */
     onSelect(e) {
-      this._log('onSelect', e.detail.selection);
       if (this.queryResult) {
         const selection = e.detail.selection
         // var me = this;
-        if(selection.length) {
+        if(selection && selection.length) {
           // we need to replace the current filter (true as last parameter). otherwise, filtering is not properly working ...  
           this.queryResult.universe.filter(this.queryResult.column.key, selection, !!e.detail.isRange, true);
         } else {

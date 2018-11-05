@@ -129,7 +129,6 @@
             }).then(uni => {
 
               uni.onFilter(() => {
-                this._warn('apply filter');
                 this.debounce('debounce-multi-filter', () => {
                   this.callRegistered('dataChanged');
                 }, 20);

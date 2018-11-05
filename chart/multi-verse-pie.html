@@ -1,120 +1,88 @@
 <link rel="import" href="../../polymer/polymer.html">
-<link rel="import" href="../../multi-chart/multi-selector.html">
-<link rel="import" href="../../multi-chart/chart/multi-chart-simple.html">
-<link rel="import" href="../../multi-chart/shape/multi-shape-pie.html">
-<link rel="import" href="../../multi-chart/d3-shape/d3-pie.html">
-<link rel="import" href="../multi-shared-styles.html">
-<link rel="import" href="multi-verse-behavior.html">
-<!--
-`multi-verse-pie`
-Simple pie-chart 
-
-@element multi-verse-pie
-@demo demo/index.html 
--->
+<link rel="import" href="../../multi-chart/chart/multi-chart-pie.html">
+<link rel="import" href="../../multi-chart/helper/multi-select.html">
+<link rel="import" href="multi-verse-chart-select-property.html">
 <dom-module id="multi-verse-pie">
-  <template>
-    <style is="custom-style" include="multi-shared-styles multi-hovered">
-
-    </style>
-    <multi-chart-simple id="chart" 
-        data="[[data]]"
-        margin="[[margin]]"  
-
-        width="{{width}}" 
-        height="{{height}}" 
-        center="{{center}}" 
-
-        color-range="[[colorRange]]"
-        color-scale="{{colorScale}}" 
-        
-        key-accessor-path="[[keyAccessorPath]]" 
-        key-accessor="{{keyAccessor}}" 
-        value-accessor-path="[[valueAccessorPath]]" 
-        value-accessor="{{valueAccessor}}"
-       >
-        <d3-pie  data="{{arcs}}" value="[[valueAccessor]]" pad-angle="[[padAngle]]" sort="[[sort]]" sort-values="[[sortValues]]"></d3-pie>
-        <multi-shape-pie 
-          width="[[width]]" 
-          height="[[height]]" 
-          center="[[center]]" 
-          arcs="[[arcs]]"
-          inner-radius="[[innerRadius]]"
-          pie-width="[[pieWidth]]"
-
-          color-scale="[[colorScale]]"></multi-shape-pie>
-         <multi-selector id="selector" selected-items="{{selectedItems}}" is-range="{{isRange}}" has-selection="{{hasSelection}}"  selection-type="select" accessor="[[keyAccessor]]"></multi-selector>  
-
-        <!-- <multi-legend legend chart-width="{{width}}" scale="[[colorScale]]" position="top-right" ></multi-legend> -->
-        <!-- <multi-selector selection-type="[[selectionType]]"  accessor="[[xAccessor]]"></multi-selector>  -->
-        <content></content>
-      </multi-chart-simple>
-
+  <template id="subTpl">
+    <multi-select
+      multi=[[multi]]
+      track-hover=[[trackHover]]
+      selected-items="{{selectedItems}}"
+      selected="{{selected}}"
+      selected-item="{{selectedItem}}"
+      selected-values="{{selectedValues}}"
+      ></multi-select>
   </template>
   <script>
-  Polymer({
+  (function() {
 
-    is: 'multi-verse-pie',
+    let subTemplate;
 
-    properties: {
+    /**
+     * ## MultiVerseLine
+     *
+     * `<multi-verse-pie>` 
+     *
+     * @memberof MultiVerse
+     * @customElement
+     * @polymer
+     * @appliesMixin MuliVerse.mixin.ChartSelectProperty
+     * @demo
+     **/
+    class MultiVersePie extends
+      MultiVerse.mixin.ChartSelectProperty(
+        MultiChart.MultiChartPie) {
 
-      /**
-       * `keyAccessorPath` path for computing the xAccessor function
-       * a value of ´key´ will generate  an accessor function like ´function(d) {return d.key}´ 
-       * a value of ´+value.count´ will generate  an accessor function like ´function(d) {return +d.value.count}´ 
-       */
-      keyAccessorPath: {
-        type: String,
-        value: 'key'
-      },
+      static get is() { return 'multi-verse-pie'; }
 
-       /**
-       * `valueAccessorPath` path for computing the xAccessor function
-       * a value of ´key´ will generate  an accessor function like ´function(d) {return d.key}´ 
-       * a value of ´+value.count´ will generate  an accessor function like ´function(d) {return +d.value.count}´ 
-       */
-      valueAccessorPath: {
-        type: String,
-        value: '+value.count'
-      },
+      static get properties() {
+        return {
 
-      /**
-       * `selectionType` the type of selection (either `multi` or `select`)
-       */
-       selectionType: {
-        type: String,
-        value: 'select'
-       },
+          valuePath: {
+            type: String, 
+            value: '+value.count'
+          },
 
-      /**
-       * `innerRadius` the inner radius for the pie chart. It might be calculated by setting `radiusWidth` property
-       */
-      innerRadius: {
-      },
+          padAngle: {
+            type: Number,
+            value: 0.03
+          },
 
-      /**
-       * `pieWidth` a way to indicate the width of the radius (either in % or absolute value). 
-       * If set, inner radius will be inferred. 
-       */
-      pieWidth: {
-        type: String
-      },
-
-      /**
-       * `outerRadius` the outer radius for the pie. Computed as half the max size of the chart. 
-       * It can be set as a Function :
-       * `function(d){return 20 + Math.sqrt(d.value)}` 
-       */
-      outerRadius: {
-        type: Function
+          pieWidth: {
+            type: String, 
+            value: '35%'
+          }
+  
+        };
       }
-      
-    },
 
-    behaviors: [
-      multi.verseBehavior
-    ]
+      // Note(cg): extend baseclass template by inserting `subTpl` within #chart.
+      static get template() {
+        if (!subTemplate) {
+          subTemplate = MultiChart.MultiChartPie.template.cloneNode(true);
+          const tpl = Polymer.DomModule.import('multi-verse-pie', 'template#subTpl').content;
+          const anchor = subTemplate.content.querySelector('#chart');
 
-  });
+          if (!anchor) {
+            throw ('trying to extend a chart, but the #chart anchor is not present in base Class');
+          }
+          subTemplate.content.querySelector('#chart').appendChild(tpl);
+        }
+        return subTemplate;
+      }
+    }
+
+    customElements.define(MultiVersePie.is, MultiVersePie);
+
+    if (!window.MultiVerse) {
+      window.MultiVerse = {};
+    }
+
+    /* 
+     * @namespace MultiChart
+     */
+    window.MultiVerse.MultiVersePie = MultiVersePie;
+
+  })();
   </script>
 </dom-module>
