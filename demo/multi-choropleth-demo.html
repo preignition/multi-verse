@@ -1,0 +1,91 @@
+<dom-module id="multi-choropleth-demo">
+  <template>
+    <style include="vaadin-component-demo-shared-styles">
+    :host {
+      display: block;
+  
+      /* feature stroke color */
+      --multi-drawable-feature-stroke-color: white
+    }
+    </style>
+    <h3>Multi Choropleth</h3>
+    <p></p>
+    <vaadin-demo-snippet id='multi-choropleth-demo-binding'>
+      <template preserve-content>
+        <dom-bind id="app">
+          <template>
+           <style>
+             #chart {
+                height: 500px;
+                display: block;
+              }
+            </style>
+            <d3-json url="bangladeshScores.json" data="{{raw}}"></d3-json>
+            <!-- construction of hexbin -->
+            <multi-project data="[[raw]]" coordinate-accessor-path="location" projection="[[projection]]" projected-data="{{data}}"></multi-project>
+            <d3-hexbin id="hexbin" x="[[x]]" y="[[y]]" hexbin="{{hexbin}}" bins="{{bins}}" width="[[width]]" height="[[height]]" points="[[data]]"></d3-hexbin>
+            
+            <!-- multiverse -->
+           <multi-verse id="universe" data="[[data]]" universe="{{universe}}">
+              <multi-group universe="[[universe]]" data="{{data-chart-district}}"  group-by="district">
+                <multi-verse-choropleth 
+                  id="chart"
+                  data="[[data-chart-district]]"
+                  feature-url="bangladeshSimplify02.json"
+                  feature-name="BGD_adm2"
+                  feature-accessor-path="properties.NAME_2"  
+                  mesh-name="BGD_adm1"
+                  mesh-attrs="[[meshAttrs]]"
+                  choropleth-attrs="[[choroplethAttrs]]"
+                  projection-type="geoMercator"
+                  projection="{{projection}}"
+                  >
+                  <h4 slot="header">Bangladesh score by District</h4>
+    
+                  <!-- TODO: revive hexbin -->
+                  <multi-shape-hexbin  
+                  layer-type="hexbin"
+
+                  data="[[bins]]" 
+                  path="[[hexbin]]"
+
+                ></multi-shape-hexbin>
+                </multi-verse-choropleth>
+              </multi-group>
+             
+            </multi-verse>
+          </template>
+        </dom-bind>
+      </template>
+    </vaadin-demo-snippet>
+    <script>
+    window.addDemoReadyListener('#multi-choropleth-demo-binding', function(document) {
+
+      app = document.querySelector('#app');
+
+      // TODO(cg): Revive hexbin.
+      var hexbin = app.$.hexbin;
+      app.x = function(d) {return d.__point__[0];}
+      app.y = function(d) {return d.__point__[1];}
+
+      app.meshAttrs ={
+        fill: 'none',
+        stroke: '#00acff',
+         'stroke-width': 2
+      }
+
+    });
+    </script>
+  </template>
+  <script>
+  (function() {
+
+    class MultiChoropleth extends DemoReadyEventEmitter(MultiVerse.Demo(Polymer.Element)) {
+      static get is() {
+        return 'multi-choropleth-demo';
+      }
+    }
+    customElements.define(MultiChoropleth.is, MultiChoropleth);
+  })();
+  </script>
+</dom-module>

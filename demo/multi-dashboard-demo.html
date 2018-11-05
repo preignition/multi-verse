@@ -1,0 +1,40 @@
+<link rel="import" href="home-map.html">
+
+<dom-module id="multi-dashboard-demo">
+  <template>
+    <style include="vaadin-component-demo-shared-styles">
+    :host {
+      display: block;
+    }
+    </style>
+    <h3>Multi Verse</h3>
+    <p></p>
+    <vaadin-demo-snippet id='multi-dashboard-demo-binding'>
+      <template preserve-content>
+        <dom-bind id="app">
+          <template>
+            <home-map></home-map>     
+          </template>
+        </dom-bind>
+      </template>
+    </vaadin-demo-snippet>
+    <script>
+    window.addDemoReadyListener('#multi-dashboard-demo-binding', function(document) {
+
+      app = document.querySelector('#app');
+     
+    });
+    </script>
+  </template>
+  <script>
+  (function() {
+
+    class MultiDashboard extends DemoReadyEventEmitter(MultiVerse.Demo(Polymer.Element)) {
+      static get is() {
+        return 'multi-dashboard-demo';
+      }
+    }
+    customElements.define(MultiDashboard.is, MultiDashboard);
+  })();
+  </script>
+</dom-module>

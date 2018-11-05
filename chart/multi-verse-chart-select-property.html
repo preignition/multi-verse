@@ -1,0 +1,99 @@
+<script>
+(function(){
+	
+	/**
+	 * ##  ChartSelectProperty
+	 * 
+	 * a mixin for grouping multi-verse-chart default properties
+	 * 
+	 * @memberof MultiVerse.mixin
+   * @polymer
+   * @mixinFunction
+   */
+	const ChartSelectProperty = superClass => {
+	  
+	  return class extends superClass {
+
+	    static get properties() {
+	      return {
+	      	
+          /**
+           * Gets or sets the selected elements. This is used instead of `selected` when `multi`
+           * is true.
+           */
+          selectedValues: {
+            type: Array,
+            notify: true
+          },
+
+          /**
+           * Returns an array of currently selected items.
+           */
+          selectedItems: {
+            type: Array,
+            notify: true
+          },
+
+          /**
+           * Gets or sets the selected element.
+           * is true.
+           */
+          selected: {
+            type: String,
+            notify: true
+          },
+
+          /**
+           * Returns the currently selected item.
+           */
+          selectedItem: {
+            type: Object,
+            notify: true
+          },
+
+          /* 
+           * `multi`  set true for allowing multi selection
+           */
+          multi: {
+            type: Boolean 
+          },
+
+          /* 
+           * `selecType` for charts that can implement brush and select at the same time (e.g. bar), set 'brush' to acticate brush. 
+           * Otherwise, default behavior is 'select'
+           */
+          selectType: {
+            type: String, 
+            value: ''
+          },
+
+          /* 
+           * `trackHover`  if true, will track mouseenter and ouseleave event
+           */
+          trackHover: {
+            type: Boolean 
+          }
+	      };
+	    }
+
+      isEqual(value, test) {
+          return value == test;
+        }
+	  };
+	};
+
+	if (!window.MultiVerse) {
+	 window.MultiVerse = {};
+	}
+
+	/* 
+	 * @namespace MultiChart.mixin
+	 */
+	window.MultiVerse.mixin = window.MultiVerse.mixin || {};
+	/* 
+	 * @mixinFunction
+	 */
+  window.MultiVerse.mixin.ChartSelectProperty = ChartSelectProperty;
+
+	})();	
+</script>
