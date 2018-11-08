@@ -1,4 +1,4 @@
-// webcomponents.org/polymerEl/multi-verse v2.0.0 Copyright 2018 Christophe Geiser
+// webcomponents.org/polymerEl/multi-verse v2.0.1 Copyright 2018 Christophe Geiser
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :

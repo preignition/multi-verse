@@ -1,5 +1,5 @@
 export var name = "multi-verse";
-export var version = "2.0.0";
+export var version = "2.0.1";
 export var description = "polymer elements for multivariate analysis (depend on crossfilter, universe, reductio, multichart and multiverse)";
 export var license = "MIT";
 export var author = {"name":"Christophe Geiser"};
