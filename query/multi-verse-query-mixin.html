@@ -103,6 +103,7 @@
             .then(queryResult => {
               this.set('queryResult', queryResult);
               this.set('data', queryResult.data);
+
             })
             .catch(error => {
               this._error('something went wrong in universe query',error, queryObject); // 'oh, no!'

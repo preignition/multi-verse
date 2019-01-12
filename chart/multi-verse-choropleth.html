@@ -1,5 +1,5 @@
 <link rel="import" href="../../polymer/polymer.html">
-<link rel="import" href="../../multi-chart/chart/multi-chart-choropleth.html">
+<link rel="import" href="../../multi-geo/chart/multi-chart-choropleth.html">
 <link rel="import" href="../../multi-chart/helper/multi-select.html">
 <link rel="import" href="../../multi-chart/helper/multi-select-property.html">
 <dom-module id="multi-verse-choropleth">
@@ -43,9 +43,13 @@
             value: '+value.count'
           },
 
-          keyAcessorPath: {
+          keyAccessorPath: {
             type:String, 
             value: 'key'
+          },
+
+          labelAccessorPath: {
+            type: String
           }
         };
       }

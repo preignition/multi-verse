@@ -7,7 +7,7 @@
     <style>
     :host {
       display: inline;
-      color: var(--multi-select-display-color, --primary-color);
+      color: var(--multi-select-display-color, var(--primary-color));
     }
 
     paper-icon-button {
@@ -80,7 +80,7 @@
       }
 
       clear() {
-        this.fire('multi-clear');
+        this.dispatchEvent(new CustomEvent('multi-clear', { bubbles: true, composed: true})); 
       }
 
       _computeHasSelection() {

@@ -78,7 +78,16 @@
            */
           multi: {
             type: Boolean
-          }
+          },
+          /* 
+           * `fireEventName`  the name of the event to be fired when connected. a contained with multi-register-mixin applied 
+           * will listed to this event to register the component.
+           */
+          fireEventName: {
+            type: String, 
+            value: 'multi-verse-added'
+          },
+
 
         });
 
@@ -90,7 +99,19 @@
       }
 
       dataChanged(data) {
-      	this.items = data;
+        if(data) {
+      	 this.items = data;
+        }
+        else {
+          this.forceNotify();
+        }
+      }
+
+      // Note(cg): we need to for rendering of repeat without loosing items .
+      forceNotify() {
+        for (var i = this.items.length - 1; i >= 0; i--) {
+          this.notifyPath(`items.${i}`, JSON.parse(JSON.stringify(this.items[i])));
+        }
       }
 
       replaceTemplate() {

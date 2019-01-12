@@ -1,0 +1,34 @@
+        <svg style="width:3000px; height: 3000px; position:absolute; top:-100000px;">
+      <defs>
+        <pattern id="pattern-stripe" width="5" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+          <rect width="0.5" height="4" transform="translate(0,0)" fill="white"></rect>
+        </pattern>
+        <pattern id="pattern-stripe-thick" width="5" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+          <rect width="2.5" height="4" transform="translate(0,0)" fill="white"></rect>
+        </pattern>
+        <pattern id="pattern-stripe-hor" width="5" height="4" patternUnits="userSpaceOnUse">
+          <rect width="0.5" height="4" transform="translate(0,0)" fill="white"></rect>
+        </pattern>
+        <pattern id="pattern-stripe-inverse" width="5" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <rect width="0.5" height="4" transform="translate(0,0)" fill="white"></rect>
+        </pattern>
+        <pattern id="pattern-stripe-thick-inverse" width="5" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <rect width="2.5" height="4" transform="translate(0,0)" fill="white"></rect>
+        </pattern>
+        <mask id="mask-stripe">
+          <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe)" />
+        </mask>
+        <mask id="mask-stripe-thick">
+          <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe-thick)" />
+        </mask>
+        <mask id="mask-stripe-inverse">
+          <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe-inverse)" />
+        </mask>
+        <mask id="mask-stripe-thick-inverse">
+          <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe-thick-inverse)" />
+        </mask>
+        <mask id="mask-stripe-hor">
+          <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe-hor)" />
+        </mask>
+      </defs>
+    </svg>

@@ -1,6 +1,6 @@
-<link rel="import" href="home-map.html">
+<link rel="import" href="layout-page.html">
 
-<dom-module id="multi-dashboard-demo">
+<dom-module id="layout-demo">
   <template>
     <style include="vaadin-component-demo-shared-styles">
     :host {
@@ -9,21 +9,22 @@
     /* we need this because of app-drawer positionning hack (top: -120px; padding: 120px 0;)*/
     vaadin-demo-snippet {
       overflow: hidden;
+      
     }
     </style>
-    <h3>Multi Verse</h3>
-    <p></p>
-    <vaadin-demo-snippet id='multi-dashboard-demo-binding'>
+    <h3>Layout Test</h3>
+    <p>testing how to use app-layout (drawer) within a page and not fit to window.</p>
+    <vaadin-demo-snippet id='layout-demo-binding'>
       <template preserve-content>
         <dom-bind id="app">
           <template>
-            <home-map></home-map>     
+            <layout-page></layout-page>     
           </template>
         </dom-bind>
       </template>
     </vaadin-demo-snippet>
     <script>
-    window.addDemoReadyListener('#multi-dashboard-demo-binding', function(document) {
+    window.addDemoReadyListener('#layout-demo-binding', function(document) {
 
       app = document.querySelector('#app');
      
@@ -33,12 +34,12 @@
   <script>
   (function() {
 
-    class MultiDashboard extends DemoReadyEventEmitter(MultiVerse.Demo(Polymer.Element)) {
+    class LayoutDemo extends DemoReadyEventEmitter(MultiVerse.Demo(Polymer.Element)) {
       static get is() {
-        return 'multi-dashboard-demo';
+        return 'layout-demo';
       }
     }
-    customElements.define(MultiDashboard.is, MultiDashboard);
+    customElements.define(LayoutDemo.is, LayoutDemo);
   })();
   </script>
 </dom-module>

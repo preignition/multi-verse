@@ -29,7 +29,6 @@
      * @memberof MultiChart
      * @customElement
      * @polymer
-     * @appliesMixin MultiChart.mixin.MultiRegister
      * @appliesMixin MultiChart.mixin.Logger
      * @demo
      **/
@@ -76,7 +75,8 @@
     onClear(e) {
       e.stopPropagation();
       if (this.queryResult) {
-        this.queryResult.universe.clear(this.queryResult.column.key);
+        // this.queryResult.universe.clear(this.queryResult.column.key);
+        this.queryResult.universe.filter(this.queryResult.column.key);
       }
     }
     }

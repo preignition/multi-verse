@@ -20,9 +20,10 @@
                     color: var(--light-theme-background-color);
                   }
                   </style>
-                <paper-button raised name="[[item]]">a[[item]]</paper-button>
+                <paper-button  disabled$="[[disableName(item.name)]]" raised name="[[item.name]]">a[[item.name]]</paper-button>
               </template>
             </multi-repeat>
+             <paper-button raised on-tap="doupdate">update</paper-button>
           </template>
         </dom-bind>
       </template>
@@ -31,7 +32,14 @@
     window.addDemoReadyListener('#multi-repeat-demo-binding', function(document) {
 
       app = document.querySelector('#app');
-      app.items = [1, 2, 3];
+      app.items = [{name:1}, {name:2}, {name:4}];
+      app.doupdate = () => {
+        console.info(app.items[2].name++);
+        app.set('items.2.name', app.items[2].name++);
+      };
+      app.disableName = (count) => {
+        return count == 5;
+      }
     });
     </script>
   </template>

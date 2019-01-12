@@ -2,6 +2,14 @@
 <link rel="import" href="../multi-verse-base.html">
 <dom-module id="multi-repeat-select">
   <template>
+    <style>
+      
+      ::slotted(*.iron-selected) {
+        background-color: var(--multi-repeat-select-background-color, var(--primary-color));
+        color: var(--multi-repeat-select-color, var(--primary-background-color));
+      }
+      
+    </style>
     <slot></slot>
   </template>
   <script>
@@ -56,10 +64,11 @@
           return;
         }
         super.select(value);
-        this.fire('multi-select', {
+         this.dispatchEvent(new CustomEvent('multi-select', {detail: {
           isRange: false,
           selection: this.selectedValues.slice()
-        });
+         }, bubbles: true, composed: true})); 
+        
       }
 
       _activateFocusedItem() {

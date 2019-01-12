@@ -103,7 +103,17 @@
           registerEvent: {
             type:String,
             value: 'multi-verse-added'
-          }
+          },
+
+        /* 
+         * `registerContainerName` the name of the container set to registered items. This is needed because
+         * some items can be registered agains mutiple domain. For instance, multi-g : as an resizable svg item 
+         * and against multi-verse.
+         */
+         registerContainerName : {
+           type:  String,
+           value: 'multiVerseHost'
+         }
         };
       }
 
@@ -131,12 +141,12 @@
               uni.onFilter(() => {
                 this.debounce('debounce-multi-filter', () => {
                   this.callRegistered('dataChanged');
-                }, 20);
+                }, 10);
 
                 if (this.postFilter) {
                   this.debounce('debounce-multi-post-filter', () => {
                     this.postFilter(uni, data);
-                  }, 20);
+                  }, 10);
                 }
 
               });

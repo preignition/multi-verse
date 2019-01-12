@@ -1,5 +1,6 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../multi-verse-base.html">
+<link rel="import" href="../../multi-chart/helper/multi-registerable-mixin.html">
 <dom-module id="multi-top">
   <template>
     <slot></slot>
@@ -92,7 +93,17 @@
           _dim: {
             type: Object,
             computed: '_findDim(universe, column)'
-          }
+          },
+
+          /* 
+           * `fireEventName`  the name of the event to be fired when connected. a contained with multi-register-mixin applied 
+           * will listed to this event to register the component.
+           * @override multi.registerable
+           */
+          fireEventName: {
+            type: String, 
+            value: 'multi-verse-added'
+          },
         };
       }
 
@@ -101,8 +112,11 @@
           '_observeForQuery(universe, column, top, offset)'
         ];
       }
+      
       _findDim(universe, column) {
-        return universe.column.find(column).dimension;
+        if(universe && column) {
+          return universe.column.find(column).dimension;
+        }
       }
 
       dataChanged() {
