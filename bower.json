@@ -38,6 +38,7 @@
     "paper-input": "^3.0.1",
     "iron-ajax": "PolymerElements/iron-ajax#^2.0.0",
     "test-fixture": "PolymerElements/test-fixture#^3.0.0-rc.1",
+    "shared-widget": "PolymerEl/shared-widget#^2.0.0",
     "vaadin-demo-helpers": "^2.1.0",
     "iron-component-page": "^3.0.0",
     "paper-checkbox": "^2.0.0",
