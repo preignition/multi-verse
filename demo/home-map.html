@@ -67,9 +67,9 @@
       height: 650px;
     }
 
-    svg[slot] {
+/*    svg[slot] {
       display: none;
-    }
+    }*/
     </style>
     <iron-ajax auto url="countryCodes.json" handle-as="json" last-response="{{countryCodes}}"></iron-ajax>
     <iron-ajax auto id="dataLoader" url="worldData.json" on-response="onDataLoaded" handle-as="json" last-response="{{data}}"></iron-ajax>
@@ -79,10 +79,9 @@
         <widget-app-header shadow>
           <app-toolbar >
              <h3 main-title>Preignition in figures</h3>
-              <!-- <span style="flex: 1;"></span> -->
               <paper-icon-button icon="menu" drawer-toggle on-tap="toggleDrawer"></paper-icon-button>
           </app-toolbar>
-      </widget-app-header>
+        </widget-app-header>
       
         <multi-group universe="[[universe]]" data="{{data-country}}" group-by="country">
            <multi-verse-choropleth 

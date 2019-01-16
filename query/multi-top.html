@@ -101,21 +101,26 @@
            * @override multi.registerable
            */
           fireEventName: {
-            type: String, 
+            type: String,
             value: 'multi-verse-added'
-          },
+          }
+
         };
       }
 
       static get observers() {
         return [
-          '_observeForQuery(universe, column, top, offset)'
+          '_observeForQuery(_dim, top, offset)'
         ];
       }
-      
+
       _findDim(universe, column) {
-        if(universe && column) {
-          return universe.column.find(column).dimension;
+        if (universe && column) {
+          const dim = universe.column.find(column).dimension;
+          if(!dim) {
+            this._warn('cannot find dimension');
+          }
+          return dim;
         }
       }
 
@@ -130,19 +135,14 @@
         this.render();
       }
 
+     
       render() {
-        const dim = this._findDim(this.universe, this.column);
+        const dim = this._dim;
         if (!dim) {
-          this._warn('dimension not ready');
-          this._countError = this._countError || 1;
-          this._countError++;
-          if (this._countError < 4) {
-            return setTimeout(() => { this.render(); }, 50);
-          }
-          this._error('dimension never ready!');
-        } 
-        this._countError = 1;
-        this.data= dim.top(this.top, this.offset);
+          this._warn('dimension not ready');        
+          return ;
+        }
+        this.data = dim.top(this.top, this.offset);
         this.length = dim.top(Infinity).length;
       }
     }

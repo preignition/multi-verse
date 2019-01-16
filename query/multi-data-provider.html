@@ -1,0 +1,100 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="multi-top.html">
+<dom-module id="multi-data-provider">
+  <script>
+  (function() {
+
+    /**
+     * ## MultiDataProvider
+     *
+     * `<multi-data-provider>`  exposes a dataProvider function to be used with vaadin-grid
+     *
+     * @memberof MultiVerse
+     * @customElement
+     * @polymer
+     * @appliesMixin  MultiChart.mixin.MultiRegisterable
+     * @demo
+     **/
+    class MultiDataProvider extends MultiVerse.MultiTop {
+
+      static get is() { return 'multi-data-provider'; }
+
+      static get properties() {
+        return {
+
+          /* 
+           * `dataProvider` a dataprovider function that can be reused in Vaadin-grid
+           * Function that provides items lazily. Receives arguments `params`, `callback`
+           *
+           * `params.page` Requested page index
+           *
+           * `params.pageSize` Current page size
+           *
+           * `params.filters` Currently applied filters
+           *
+           * `params.sortOrders` Currently applied sorting orders
+           *
+           * `params.parentItem` When tree is used, and sublevel items
+           * are requested, reference to parent item of the requested sublevel.
+           * Otherwise `undefined`.
+           *
+           * `callback(items, size)` Callback function with arguments:
+           *   - `items` Current page of items
+           *   - `size` Total number of items. When tree sublevel items
+           *     are requested, total number of items in the requested sublevel.
+           *     Optional when tree is not used, required for tree.
+           */
+          dataProvider: {
+            type: Function,
+            notify: true
+
+          }
+        };
+      }
+
+      static get observers() {
+        return [
+          // '_observeForQuery(universe, column, top, offset)',
+          // '_observeForDataProvider(universe, column)'
+        ];
+      }
+
+      //@override multi-top
+      _observeForQuery(dim) {
+        if(dim) {
+          this.dataProvider = (params, cb) =>{
+            const pageOffset = params.page * params.pageSize;
+            const length = dim.bottom(Infinity).length;         
+            const data = dim.bottom(params.pageSize, pageOffset);
+            this.length = length;
+            this.data = data;
+            cb(
+              data,
+              length
+            );
+          };
+        }
+      }
+      
+      render() {
+        if(this.dataProvider) {
+          this.dataProvider = this.dataProvider.bind(this);
+        }
+        return;
+      }
+    }
+
+    customElements.define(MultiDataProvider.is, MultiDataProvider);
+
+    if (!window.MultiVerse) {
+      window.MultiVerse = {};
+    }
+
+    /* 
+     * @namespace MultiChart
+     */
+    window.MultiVerse.MultiDataProvider = MultiDataProvider;
+
+  })();
+  </script>
+</dom-module>

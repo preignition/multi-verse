@@ -151,20 +151,27 @@
 
               });
 
-              const columns = this.columns;
-              if (Object.keys(columns).length) {
-                for (var k in columns) {
-                  if (columns.hasOwnProperty(k)) {
-                    uni.column(columns[k]);
-                  }
-                }
-              }
-              this._setUniverse(uni);
+              // const columns = this.columns;
+              return Promise.all(Object.keys(this.columns).map(k => {
+                 return uni.column(this.columns[k]);
+              }) )
+              .then( ()=>{
+                this._setUniverse(uni);
+                return uni;
+              }) ;
 
-              return uni;
+              // if (Object.keys(columns).length) {
+              //   for (var k in columns) {
+              //     if (columns.hasOwnProperty(k)) {
+              //       uni.column(columns[k]);
+              //     }
+              //   }
+              // }
+
+              // return uni;
             })
 
-            .catch(function(error) {
+            .catch(error => {
               this._error(error);
             });
 

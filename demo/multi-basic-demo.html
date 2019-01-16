@@ -1,3 +1,4 @@
+  <link rel="import" href="../../vaadin-grid/vaadin-grid.html">
 <dom-module id="multi-basic-demo">
   <template>
     <style include="vaadin-component-demo-shared-styles">
@@ -12,7 +13,7 @@
         <dom-bind id="app">
           <template>
             <d3-csv url="flight.csv" data="{{data}}"></d3-csv>
-            <multi-verse id="universe" data="[[data]]" universe="{{universe}}">
+            <multi-verse id="universe" data="[[data]]" universe="{{universe}}" columns="[[columns]]">
               <multi-group universe="[[universe]]" data="{{data-chart-distance}}"  group-by="distances">
                 <multi-verse-line data="[[data-chart-distance]]"  left-text="count" bottom-text="distance (in km)">
                   <h4 slot="header">Count of flights by distance</h4>
@@ -34,7 +35,49 @@
                   <multi-legend scale="[[colorScale]]" position="top-right"></multi-legend>
                 </multi-verse-pie>
               </multi-group>
-            </multi-verse>
+            
+            <multi-data-provider data-provider="{{dataProvider}}" universe="[[universe]]" column="$index" length="{{length}}">
+              <h3>Total Count: [[length]]</h3>
+             <vaadin-grid id="grid" _item-id-path="name.first" _items="[[items]]" data-provider="[[dataProvider]]" multi-selection column-reordering-allowed>
+                
+              <vaadin-grid-column width="145px" flex-grow="0" frozen resizable>
+                <template class="header">
+                  Index
+                </template>
+                <template>
+                    [[item.$index]]
+                </template>
+              </vaadin-grid-column>
+              <vaadin-grid-column flex-grow="1" >
+                <template class="header">
+                  Destination
+                </template>
+                <template>
+                    <paper-input value="{{item.destination}}" no-label-float></paper-input>
+                    
+                </template>
+              </vaadin-grid-column>
+              <vaadin-grid-column flex-grow="1" >
+                <template class="header">
+                  Origin
+                </template>
+                <template>
+                    [[item.origin]]
+                </template>
+              </vaadin-grid-column>
+              <vaadin-grid-column flex-grow="1" >
+                <template class="header">
+                  Date
+                </template>
+                <template>
+                    [[item.date]]
+                </template>
+              </vaadin-grid-column>
+
+            </vaadin-grid>
+
+            </multi-data-provider>
+          </multi-verse>
           </template>
         </dom-bind>
       </template>
@@ -43,6 +86,7 @@
     window.addDemoReadyListener('#multi-basic-demo-binding', function(document) {
 
       app = document.querySelector('#app');
+
 
       universel = app.$.universe
 
@@ -57,6 +101,7 @@
 
       universel.preProcess = function(d, i) {
         d.date = parseDate(d.date);
+        d.$index = i;
       };
 
       // var formatNumber = d3.format(',d'),
@@ -68,9 +113,27 @@
         day: d => d3.timeFormat('%A')(d.date),
         hour: d => Number(d3.timeFormat('%H')(d.date)),
         dayOfWeek: d => d3.timeFormat('%A')(d.date),
+        // $index: d => d.$index,
         arrivalDelay: d => Math.floor(+d.delay / 30) * 30,
         distances: d => Math.floor(+d.distance / 200) * 200
       };
+
+      universel.columns= {
+                $index: '$index'
+              };
+      // const  dataProvider = (params, cb) => {
+      //         const parentItem = params.parentItem;
+      //         const array = parentItem ? parentItem.children : dataBase;
+      //         const pageOffset = params.page * params.pageSize;
+      //         cb(
+      //           array.slice(
+      //             pageOffset, // start
+      //             pageOffset + params.pageSize // end
+      //           ),
+      //           array.length
+      //         );
+      //       };
+      //  app.dataProvider = dataProvider;     
 
     });
     </script>
