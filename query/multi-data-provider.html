@@ -67,18 +67,24 @@
 
       connectedCallback() {
         super.connectedCallback();
-        this._observer = new Polymer.FlattenedNodesObserver(this, info => {
-          // Note(cg): if we add a Vaadin-Grid,  set it as the grid
-          info.addedNodes.forEach( el =>{
-            if(el.localName ==='vaadin-grid') {
-              this.grid = el;
-            }
+
+        if(!this.grid) {
+          this._observer = new Polymer.FlattenedNodesObserver(this, info => {
+            // Note(cg): if we add a Vaadin-Grid,  set it as the grid
+            info.addedNodes.forEach( el =>{
+              if(el.localName ==='vaadin-grid') {
+                this.grid = el;
+              }
+            });
           });
-        });
+        }
       }
+      
       disconnectedCallback() {
         super.disconnectedCallback();
-        this._observer.disconnect();
+        if(this._observer) {
+          this._observer.disconnect();
+        }
       }
 
       getDataProvider(dim, provider) {
