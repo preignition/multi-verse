@@ -1,4 +1,6 @@
   <link rel="import" href="../../vaadin-grid/vaadin-grid.html">
+  <link rel="import" href="../../vaadin-grid/vaadin-grid-sort-column.html">
+  <link rel="import" href="../../vaadin-grid/vaadin-grid-filter-column.html">
 <dom-module id="multi-basic-demo">
   <template>
     <style include="vaadin-component-demo-shared-styles">
@@ -17,6 +19,7 @@
               <multi-group universe="[[universe]]" data="{{data-chart-distance}}"  group-by="distances">
                 <multi-verse-line data="[[data-chart-distance]]"  left-text="count" bottom-text="distance (in km)">
                   <h4 slot="header">Count of flights by distance</h4>
+                  <vaadin-grid-sort-column path="origin" header="Origin"></vaadin-grid-sort-column>
                 </multi-verse-line>
               </multi-group>
               <multi-group universe="[[universe]]" data="{{data-chart-distance}}" group-by="distances">
@@ -36,7 +39,7 @@
                 </multi-verse-pie>
               </multi-group>
             
-            <multi-data-provider data-provider="{{dataProvider}}" universe="[[universe]]" column="$index" length="{{length}}">
+            <multi-data-provider id="provider" data-provider="{{dataProvider}}" universe="[[universe]]" column="$index" length="{{length}}">
               <h3>Total Count: [[length]]</h3>
              <vaadin-grid id="grid" _item-id-path="name.first" _items="[[items]]" data-provider="[[dataProvider]]" multi-selection column-reordering-allowed>
                 
@@ -57,14 +60,16 @@
                     
                 </template>
               </vaadin-grid-column>
-              <vaadin-grid-column flex-grow="1" >
+              <vaadin-grid-sort-column path="origin" header="Origin"></vaadin-grid-sort-column>
+              <vaadin-grid-filter-column path="destination" header="Destination"></vaadin-grid-filter-column>
+             <!--  <vaadin-grid-column flex-grow="1" >
                 <template class="header">
                   Origin
                 </template>
                 <template>
                     [[item.origin]]
                 </template>
-              </vaadin-grid-column>
+              </vaadin-grid-column> -->
               <vaadin-grid-column flex-grow="1" >
                 <template class="header">
                   Date
@@ -87,6 +92,7 @@
 
       app = document.querySelector('#app');
 
+      // app.$.provider.grid = app.$.grid;
 
       universel = app.$.universe
 
