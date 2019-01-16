@@ -1,6 +1,6 @@
 {
   "name": "multi-verse",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "polymer elements for multivariate analysis (depend on crossfilter, universe, reductio, multichart and multiverse)",
   "license": "MIT",
   "authors": [
