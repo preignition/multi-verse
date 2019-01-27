@@ -1,4 +1,4 @@
-// webcomponents.org/polymerEl/multi-verse v2.0.1 Copyright 2018 Christophe Geiser
+// webcomponents.org/polymerEl/multi-verse v2.2.0 Copyright 2019 Christophe Geiser
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -446,7 +446,6 @@
       for (var j = this.length - 1; j >= n; j--) {
         this[i][j] = 0;
       }
-      this[i].length = n;
     }
     this.length = n;
   };
@@ -1037,31 +1036,31 @@
     reduceSubtract: crossfilter_reduceSubtract
   };
 
-  var _from = "crossfilter2@1.4.6";
+  var _from = "git://github.com/PolymerEl/crossfilter.git";
   var _id = "crossfilter2@1.4.6";
   var _inBundle = false;
-  var _integrity = "sha512-Fdmb6NqdUqreOuQ9qiNvTLOxMFBQRPDeRBBnqM8Zlebdf2i7Bn5hRhE8RlO9YzbGRyYxvYzdDXt6C1muyanolg==";
+  var _integrity = "";
   var _location = "/crossfilter2";
   var _phantomChildren = {
   };
   var _requested = {
-  	type: "version",
-  	registry: true,
-  	raw: "crossfilter2@1.4.6",
+  	type: "git",
+  	raw: "crossfilter2@git://github.com/PolymerEl/crossfilter.git",
   	name: "crossfilter2",
   	escapedName: "crossfilter2",
-  	rawSpec: "1.4.6",
-  	saveSpec: null,
-  	fetchSpec: "1.4.6"
+  	rawSpec: "git://github.com/PolymerEl/crossfilter.git",
+  	saveSpec: "git://github.com/PolymerEl/crossfilter.git",
+  	fetchSpec: "git://github.com/PolymerEl/crossfilter.git",
+  	gitCommittish: null
   };
   var _requiredBy = [
+  	"/",
   	"/reductio",
   	"/universe"
   ];
-  var _resolved = "https://registry.npmjs.org/crossfilter2/-/crossfilter2-1.4.6.tgz";
-  var _shasum = "c173f0d75a04344ad226b1f8ae747f0386f98750";
-  var _spec = "crossfilter2@1.4.6";
-  var _where = "/home/christophe/Programming/Polymer/2.0-wip/bower_components/multi-verse/node_modules/universe";
+  var _resolved = "git://github.com/PolymerEl/crossfilter.git#dbf40b6635960a94437cf3ec5aec7838a1d7ce57";
+  var _spec = "crossfilter2@git://github.com/PolymerEl/crossfilter.git";
+  var _where = "/home/christophe/Programming/Polymer/2.0-wip/bower_components/multi-verse";
   var author = {
   	name: "Mike Bostock",
   	url: "http://bost.ocks.org/mike"
@@ -1156,7 +1155,6 @@
   	_requested: _requested,
   	_requiredBy: _requiredBy,
   	_resolved: _resolved,
-  	_shasum: _shasum,
   	_spec: _spec,
   	_where: _where,
   	author: author,
@@ -1192,7 +1190,6 @@
     _requested: _requested,
     _requiredBy: _requiredBy,
     _resolved: _resolved,
-    _shasum: _shasum,
     _spec: _spec,
     _where: _where,
     author: author,

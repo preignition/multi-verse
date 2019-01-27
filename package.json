@@ -29,7 +29,7 @@
   ],
   "dependencies": {
     "universe": "git://github.com/PolymerEl/universe.git",
-    "crossfilter2": "^1.4.6",
+    "crossfilter2": "git://github.com/PolymerEl/crossfilter.git",
     "reductio": "git://github.com/PolymerEl/reductio.git#strict-mode"
   },
   "devDependencies": {
