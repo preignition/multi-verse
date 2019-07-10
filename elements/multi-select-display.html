@@ -19,10 +19,10 @@
     </style>
     <template is="dom-if" if="[[_hasSelection]]">
       <template is="dom-if" if="[[isRange]]">
-        <span>[[selected]] [[[format(selectedItems.0)]]-[[format(selectedItems.1)]]]</span>
+        <span>[[selectedText]] [[[format(selectedItems.0)]]-[[format(selectedItems.1)]]]</span>
       </template>
       <template is="dom-if" if="[[!isRange]]">
-        <span>[[selected]] [[_discreteSelection(selectedItems.*, labels)]]</span>
+        <span>[[selectedText]] [[_discreteSelection(selectedItems.*, labels)]]</span>
       </template>
       <paper-icon-button on-tap="clear" icon="cancel">
     </template>
@@ -56,6 +56,11 @@
 
           selected: {
             type: String,
+            observer: '_observeSelected'
+          },
+
+          selectedText: {
+            type: String,
             value: 'selected:'
           },
 
@@ -81,6 +86,16 @@
 
       clear() {
         this.dispatchEvent(new CustomEvent('multi-clear', { bubbles: true, composed: true})); 
+      }
+
+      // Note(cg): allow to pass single selection (e.g. when the associated chart does not have multiple-selection activated).
+      _observeSelected(selected, old) {
+        if(selected) {
+          this.selectedItems = [selected];
+        } 
+        if(old && !selected) {
+          this.selectedItems = [];
+        }
       }
 
       _computeHasSelection() {

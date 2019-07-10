@@ -6434,6 +6434,7 @@
           reducer: parent.reducer,
           original: parent.original,
           hash: parent.hash,
+          // array: parent.original.array,
 
           // It's own removeListeners
           removeListeners: [],

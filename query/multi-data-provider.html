@@ -92,7 +92,12 @@
         return function(params, cb) {
 
           const { sortOrders, page, pageSize } = params;
-          const offset = page * pageSize;
+          let offset = page * pageSize;
+
+          // Note(cg): select column sends page = 0 and pageSize = Ininity.
+          if(isNaN(offset)) {
+            offset = 0;
+          }
 
           let data = dim.bottom(Infinity);
           let filterLength;

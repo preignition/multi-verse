@@ -25,7 +25,7 @@
   ],
   "dependencies": {
     "polymer": "Polymer/polymer#^2.0.0",
-    "d3-bundle-element": "^2.0.0",
+    "d3-bundle-element": "*",
     "iron-menu-behavior": "^2.0.0",
     "multi-chart": "*",
     "multi-geo": "*"
