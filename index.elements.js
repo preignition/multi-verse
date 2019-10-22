@@ -1,0 +1,10 @@
+import './elements/multi-data-provider.js';
+import './elements/multi-group.js';
+import './elements/multi-query.js';
+import './elements/multi-select-display.js';
+import './elements/multi-top.js';
+import './elements/multi-verse-bar.js';
+import './elements/multi-verse-line.js';
+import './elements/multi-verse-pie.js';
+import './elements/multi-verse-choropleth.js';
+import './elements/multi-verse.js';
