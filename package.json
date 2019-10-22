@@ -36,12 +36,12 @@
   "module": "index.js",
   "dependencies": {
     "@morbidick/lit-element-notify": "^1.0.2",
-    "@preignition/multi-chart": "file:../multi-chart",
-    "@preignition/multi-geo": "file:../multi-geo",
-    "@preignition/preignition-mixin": "file:../preignition-mixin",
-    "crossfilter": "file:../crossfilter",
-    "reductio": "file:../reductio",
-    "universe": "file:../universe",
+    "@preignition/multi-chart": "^4",
+    "@preignition/multi-geo": "^4",
+    "@preignition/preignition-mixin": "^1",
+    "crossfilter": "git+https://github.com/preignition/crossfilter.git#ES6module",
+    "reductio": "git+https://github.com/preignition/reductio.git#ES6module",
+    "universe": "git+https://github.com/preignition/universe.git#ES6module",
     "d3-format": "1",
     "d3-time": "^1.1.0",
     "lit-element": "2"
