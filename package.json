@@ -18,7 +18,7 @@
   ],
   "repository": "https://github.com/preignition/multi-verse",
   "homepage": "webcomponents.org/preignition/multi-verse",
-  "name": "@polymer/multi-verse",
+  "name": "@preignition/multi-verse",
   "version": "4.0.0",
   "license": "MIT",
   "author": {
