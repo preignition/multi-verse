@@ -15,11 +15,11 @@ import { RegisterableMixin } from '@preignition/multi-chart';
  * @demo
  **/
 class MultiTop extends
-  RegisterableMixin(
-    Base) {
+RegisterableMixin(
+  Base) {
 
   render() {
-    return html `<slot></slot>`
+    return html `<slot></slot>`;
   }
 
   static get properties() {
@@ -66,7 +66,7 @@ class MultiTop extends
       },
 
       /**
-       * `top` 
+       * `top`
        */
       top: {
         type: Number,
@@ -74,7 +74,7 @@ class MultiTop extends
       },
 
       /**
-       * `offset` 
+       * `offset`
        */
       offset: {
         type: Number,
@@ -94,35 +94,24 @@ class MultiTop extends
       dimension: {
         type: Object,
         // computed: '_findDim(universe, column)'
-      },
-
-      /* 
-       * `fireEventName`  the name of the event to be fired when connected. a contained with multi-register-mixin applied 
-       * will listed to this event to register the component.
-       * @override multi.registerable
-       */
-      // fireEventName: {
-      //   type: String,
-      //   value: 'multi-verse-added'
-      // }
-
+      }
     };
   }
 
-  /* 
-   * `registerEventName`  the name of the event to be fired when connected. 
-   * A container with multi-register-mixin applied 
+  /*
+   * `registerEventName`  the name of the event to be fired when connected.
+   * A container with multi-register-mixin applied
    * will listen to this event to register the component.
    *
    */
   get registerEventDispatch() {
-    return 'multi-verse-added'
+    return 'multi-verse-added';
   }
 
   updated(props) {
-    super.updated(props)
-    if(props.has('column') || props.has('universe')) {
-      this.dimension = this.getDimension()
+    super.updated(props);
+    if (props.has('column') || props.has('universe')) {
+      this.dimension = this.getDimension();
     }
     if (props.has('top') || props.has('offset')) {
       this._computeTop();
@@ -133,7 +122,7 @@ class MultiTop extends
   getDimension(universe, column) {
     universe = universe || this.universe;
     column = column || this.column;
-    
+
     if (universe && column) {
       const dim = universe.column.find(column).dimension;
       if (!dim) {
@@ -154,4 +143,4 @@ class MultiTop extends
   }
 }
 
-export default MultiTop
+export default MultiTop;

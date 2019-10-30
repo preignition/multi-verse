@@ -1,6 +1,6 @@
 import { html } from 'lit-element';
-import { Bar, Select } from '@preignition/multi-chart'
-import { default as ChartProperties } from './properties/multi-verse-chart-properties.js'
+import { Bar, Select } from '@preignition/multi-chart';
+import { default as ChartProperties } from './properties/multi-verse-chart-properties.js';
 
 class MultiVerseBar extends Bar {
 
@@ -8,7 +8,7 @@ class MultiVerseBar extends Bar {
     return this.html `
       ${super.getContentRender()}
       <multi-serie .label="${this.serieLabel}" .path="${this.valuePath}" .keyPath="${this.keyPath}"></multi-serie>
-      ${this.selectType === 'brush' 
+      ${this.selectType === 'brush'
         ? this.html `<multi-brush
             @xContinuous 
             .log="${this.log}"
@@ -27,11 +27,11 @@ class MultiVerseBar extends Bar {
             @selected-changed="${e => this.selected = e.detail.value}"
           ></multi-select>`
       }
-    `
+    `;
   }
 
   static get properties() {
-    
+   
     return {
 
       ...super.properties,

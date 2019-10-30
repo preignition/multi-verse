@@ -14,27 +14,27 @@ export default {
    */
   keyPath: {
     type: String,
-    attribute: 'key-path', 
+    attribute: 'key-path',
     value: 'key'
   },
 
-  /* 
+  /*
    * `serieLabel` label to apply to the serie
    */
   serieLabel: {
     type: String,
-    attribute: 'serie-label', 
+    attribute: 'serie-label',
     value: 'count'
   },
 
   leftTickArguments: {
     type: String,
-    attribute: 'left-tick-format', 
-    value: [5,'.1s']
+    attribute: 'left-tick-format',
+    value: [5, '.1s']
   },
 
   leftMargin: {
-    type: Number, 
+    type: Number,
     value: 40
   }
 };

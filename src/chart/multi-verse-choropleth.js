@@ -1,11 +1,11 @@
-import { Choropleth } from '@preignition/multi-geo'
-import { Select } from '@preignition/multi-chart'
-import { default as ChartProperties } from './properties/multi-verse-chart-properties.js'
+import { Choropleth } from '@preignition/multi-geo';
+import { Select } from '@preignition/multi-chart';
+import { default as ChartProperties } from './properties/multi-verse-chart-properties.js';
 
 /**
  * ## MultiVerseLine
  *
- * `<multi-verse-choropleth>` 
+ * `<multi-verse-choropleth>`
  *
  * @memberof MultiVerse
  * @customElement
@@ -15,9 +15,9 @@ import { default as ChartProperties } from './properties/multi-verse-chart-prope
  **/
 class MultiVerseChoropleth extends Choropleth {
 
- getContentRender() {
-    
-    return this.html`
+  getContentRender() {
+
+    return this.html `
       ${super.getContentRender()}
       <multi-select 
           .multi="${this.multi}" 
@@ -29,31 +29,31 @@ class MultiVerseChoropleth extends Choropleth {
           @selected-values-changed="${e => this.selectedValues = e.detail.value}"
           @selected-changed="${e => this.selected = e.detail.value}"
           ></multi-select>
-    `
+    `;
   }
 
   static get properties() {
     return {
 
-      ...super.properties, 
+      ...super.properties,
 
       ...Select.properties,
 
       ...ChartProperties,
 
       valuePath: {
-        type:String, 
+        type: String,
         attribute: 'value-path',
         value: '+value.count'
       },
 
       keyPath: {
-        type:String, 
+        type: String,
         attribute: 'key-path',
         value: 'key'
       },
       leftMargin: {
-        type: Number, 
+        type: Number,
         value: 0
       }
     };

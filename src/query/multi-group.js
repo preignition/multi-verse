@@ -7,8 +7,8 @@ import MultiVerseQuery from './multi-verse-query-mixin.js';
  * ## MultiGroup
  *
  * `<multi-group>`  will group `universe`  by their `groupBy` property and expose the result data set (so that a chart can render it)
- * 
- * `multi-group` are also responsible for listening to `multi-select` events triggered for instance by `multi-chart` instances 
+ *
+ * `multi-group` are also responsible for listening to `multi-select` events triggered for instance by `multi-chart` instances
  * (e.g. selecting a range of data from a bar chart or clicking on a pie element).
  *
  * ### Exampple
@@ -16,7 +16,7 @@ import MultiVerseQuery from './multi-verse-query-mixin.js';
  *    <multi-group universe="[[universe]]" data="{{data-chart-distance}}" group-by="distances">
  *      <multi-chart-bar title="distance" data="[[data-chart-distance]]"> </multi-chart-bar>
  *    </multi-group>
- *  </multi-verse>     
+ *  </multi-verse>
  *
  * @memberof MultiChart
  * @customElement
@@ -30,12 +30,12 @@ RegisterMixin(
     Base)) {
 
   render() {
-    return html `<slot></slot>`
+    return html `<slot></slot>`;
   }
 
 
   constructor() {
-    super()
+    super();
     this.addEventListener('multi-select', this.onSelect);
     this.addEventListener('multi-clear', this.onClear);
   }
@@ -44,10 +44,10 @@ RegisterMixin(
    */
   onSelect(e) {
     if (this.queryResult) {
-      const selection = e.detail.selection
+      const selection = e.detail.selection;
       // var me = this;
       if (selection && selection.length) {
-        // we need to replace the current filter (true as last parameter). otherwise, filtering is not properly working ...  
+        // we need to replace the current filter (true as last parameter). otherwise, filtering is not properly working ...
         this.queryResult.universe.filter(this.queryResult.column.key, selection, !!e.detail.isRange, true);
       } else {
         // clear the filter
@@ -56,7 +56,7 @@ RegisterMixin(
     }
   }
 
-  /* 
+  /*
    * `onClear`  clear the filter
    */
   onClear(e) {
@@ -68,4 +68,4 @@ RegisterMixin(
   }
 }
 
-export default MultiGroup
+export default MultiGroup;

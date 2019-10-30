@@ -2,11 +2,11 @@ import { default as MultiTop } from './multi-top.js';
 import { FlattenedNodesObserver } from '@polymer/polymer/lib/utils/flattened-nodes-observer.js';
 
 const deep = (action, obj, keys, id, key) => {
-  keys = keys.split(".");
+  keys = keys.split('.');
   id = keys.splice(-1, 1);
   for (key in keys) obj = obj[keys[key]] = obj[keys[key]] || {};
   return action(obj, id);
-}
+};
 const get = (obj, prop) => obj[prop];
 const deepget = (obj, path) => deep(get, obj, path);
 /**
@@ -27,7 +27,7 @@ class MultiDataProvider extends MultiTop {
 
       ...super.properties,
 
-      /* 
+      /*
        * `dataProvider` a dataprovider function that can be reused in Vaadin-grid
        * Function that provides items lazily. Receives arguments `params`, `callback`
        *
@@ -56,8 +56,8 @@ class MultiDataProvider extends MultiTop {
 
       },
 
-      /* 
-       * `grid` the grid where filters and sorters are stored. 
+      /*
+       * `grid` the grid where filters and sorters are stored.
        */
       grid: {
         type: Object,
@@ -67,7 +67,7 @@ class MultiDataProvider extends MultiTop {
 
   updated(props) {
     super.updated(props);
-    if(props.has('dimension') || props.has('grid')) {
+    if (props.has('dimension') || props.has('grid')) {
       this._observeForGrid(this.dimension, this.grid);
     }
   }
@@ -110,7 +110,8 @@ class MultiDataProvider extends MultiTop {
       let filterLength;
       provider.length = data.length;
 
-
+      // Note(cg): provider is already performing an update - this change is not notified.
+      provider.dispatchEvent(new CustomEvent('length-changed', { detail: { value: provider.length }, bubble: true, composed: true }));
 
       if ((this._filters && this._filters.length) || (sortOrders && sortOrders.length)) {
         if (this._filters && this._checkPaths(this._filters, 'filtering', data)) {
@@ -126,6 +127,7 @@ class MultiDataProvider extends MultiTop {
       }
 
       provider.data = data;
+
       cb(
         data,
         filterLength || provider.length
@@ -142,7 +144,7 @@ class MultiDataProvider extends MultiTop {
   }
 
   dataChanged() {
-    super.dataChanged();
+    super.dataChanged && super.dataChanged();
     if (this.dimension && this.grid) {
       this.dataProvider = this.getDataProvider(this.dimension, this).bind(this.grid);
     }

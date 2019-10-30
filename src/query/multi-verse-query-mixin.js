@@ -3,9 +3,9 @@ import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 import { dedupingMixin } from '@polymer/polymer/lib/utils/mixin.js';
 /**
  * ##  MultiVerseQuery
- * 
+ *
  * mixin for constructyin the query object. used by `multi-group` and `multi-query`
- * 
+ *
  * @memberof MultiVerse.mixin
  * @polymer
  * @mixinFunction
@@ -49,15 +49,7 @@ const MultiVerseQuery = dedupingMixin(superClass => {
           notify: true
         },
 
-        /* 
-         * `type` the type of queryObject (`isArray`)
-         */
-        // type: {
-        //   type: String,
-        //   value: null
-        // },
-
-        /* 
+        /*
          * `isArray` set to true to treat the column as an array
          */
         isArray: {
@@ -65,7 +57,7 @@ const MultiVerseQuery = dedupingMixin(superClass => {
           attribute: 'is-array'
         },
 
-        /* 
+        /*
          * `queryObject` the query object
          */
         queryObject: {
@@ -73,15 +65,15 @@ const MultiVerseQuery = dedupingMixin(superClass => {
           attribute: 'query-object'
         },
 
-        /* 
-         * `groupBy` 
+        /*
+         * `groupBy
          */
         groupBy: {
           type: String,
           attribute: 'group-by'
         },
 
-        /* 
+        /*
          * `select` the select Object
          */
         select: {
@@ -89,7 +81,7 @@ const MultiVerseQuery = dedupingMixin(superClass => {
           value: null
         },
 
-        /* 
+        /*
          * [`filter`] (https://github.com/crossfilter/universe#api-query) the filter Object
          */
         filter: {
@@ -97,21 +89,21 @@ const MultiVerseQuery = dedupingMixin(superClass => {
           value: null
         },
 
-       /**
-       * `keys` keys for this grouo
-       */
-      keys: {
-        type: Array,
-        notify: true
-      }
+        /**
+         * `keys` keys for this grouo
+         */
+        keys: {
+          type: Array,
+          notify: true
+        }
       };
     }
 
 
     updated(props) {
-      super.updated(props)
+      super.updated(props);
       if (props.has('groupBy') || props.has('select') || props.has('filter')) {
-        this._observeForQueryObject()
+        this._observeForQueryObject();
       }
       if (props.has('universe') || props.has('queryObject')) {
         this.observeQueryObject();
@@ -129,14 +121,14 @@ const MultiVerseQuery = dedupingMixin(superClass => {
             this.queryResult = queryResult;
             this.data = queryResult.data;
             this.length = this.data.length;
-            if(!this.keys)  {
-                this.keys = queryResult.data.map(d => d.key);
+            if (!this.keys) {
+              this.keys = queryResult.data.map(d => d.key);
             }
             this.log && console.info('observeQueryObject Result', this.data, queryResult);
 
           })
           .catch(error => {
-            console.error('something went wrong in universe query', error, this.queryObject)
+            console.error('something went wrong in universe query', error, this.queryObject);
           });
       }
     }
@@ -193,6 +185,6 @@ const MultiVerseQuery = dedupingMixin(superClass => {
         }, 20);
     }
   };
-})
+});
 
-export default MultiVerseQuery
+export default MultiVerseQuery;

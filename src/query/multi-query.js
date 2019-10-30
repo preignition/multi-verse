@@ -18,7 +18,7 @@ MultiVerseQuery(
 
 
   render() {
-    return html `<slot></slot>`
+    return html `<slot></slot>`;
   }
 
   static get properties() {
@@ -48,11 +48,10 @@ MultiVerseQuery(
 
         })
         .catch(error => {
-          console.error('something went wrong in universe query', error, this.queryObject)
+          console.error('something went wrong in universe query', error, this.queryObject);
         });
     }
   }
-
 }
 
-export default MultiQuery
+export default MultiQuery;

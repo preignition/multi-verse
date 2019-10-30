@@ -8,7 +8,7 @@ import { Debouncer } from '@polymer/polymer/lib/utils/debounce.js';
 /**
  * ## MultiVerse
  *
- * `<multi-verse>` takes data as input and encapsulate a [`universe`](https://github.com/crossfilter/universe#create-a-new-universe) Object. 
+ * `<multi-verse>` takes data as input and encapsulate a [`universe`](https://github.com/crossfilter/universe#create-a-new-universe) Object.
  * When `universe` changes (query or filtering), `registeredItems` (e.g. charts rendering `universe` data) are notified of the change and will render accordingly.
  *
  * ### Example
@@ -36,7 +36,7 @@ RegisterMixin(
   Base) {
 
   render() {
-    return html `<slot></slot>`
+    return html `<slot></slot>`;
   }
 
 
@@ -76,7 +76,7 @@ RegisterMixin(
         attribute: 'pre-process'
       },
 
-      /* 
+      /*
        * `postFilter` a function that will be called after each filter `postFilter(universe, data)`
        */
       postFilter: {
@@ -102,9 +102,9 @@ RegisterMixin(
         }
       },
 
-      /* 
+      /*
        * `registerContainerName` the name of the container set to registered items. This is needed because
-       * some items can be registered agains mutiple domain. For instance, multi-g : as an resizable svg item 
+       * some items can be registered agains mutiple domain. For instance, multi-g : as an resizable svg item
        * and against multi-verse.
        */
       registerContainerName: {
@@ -119,18 +119,18 @@ RegisterMixin(
    * @override Register
    */
   get registerEventListen() {
-    return 'multi-verse-added'
+    return 'multi-verse-added';
   }
 
   updated(props) {
-    super.updated(props)
+    super.updated(props);
     if (props.has('preProcess') || props.has('data')) {
       this.observeData();
     }
   }
 
   /**
-   * `observeData` create a new `universe` with the provided data 
+   * `observeData` create a new `universe` with the provided data
    * TODO: add a `multi-column` web-component to define additional universe.generatedColumns and a processing function
    */
   observeData() {

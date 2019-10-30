@@ -1,6 +1,6 @@
 import { html } from 'lit-element';
-import { Pie, Select } from '@preignition/multi-chart'
-import { default as ChartProperties } from './properties/multi-verse-chart-properties.js'
+import { Pie, Select } from '@preignition/multi-chart';
+import { default as ChartProperties } from './properties/multi-verse-chart-properties.js';
 
 class MultiVersePie extends Pie {
 
@@ -17,11 +17,11 @@ class MultiVersePie extends Pie {
             .selected="${this.selected}"
             @selected-values-changed="${e => this.selectedValues = e.detail.value}"
             @selected-changed="${e => this.selected = e.detail.value}"
-            ></multi-select>`
+            ></multi-select>`;
   }
 
   static get properties() {
-    
+
     return {
 
       ...super.properties,
@@ -43,8 +43,8 @@ class MultiVersePie extends Pie {
       },
 
       pieWidth: {
-        type: String, 
-        attribute:'pie-width',
+        type: String,
+        attribute: 'pie-width',
         value: '35%'
       }
     };
@@ -54,5 +54,3 @@ class MultiVersePie extends Pie {
 }
 
 export default MultiVersePie;
-
-

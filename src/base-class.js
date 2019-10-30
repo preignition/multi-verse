@@ -32,7 +32,7 @@ DefaultValueMixin(
       log: {
         type: Boolean,
       }
-    }
+    };
   }
 
   dispatch(name) {

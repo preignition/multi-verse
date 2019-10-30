@@ -1,2 +1,2 @@
-export { default as SelectDisplay } from './multi-select-display.js'
+export { default as SelectDisplay } from './multi-select-display.js';
 
