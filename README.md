@@ -1,4 +1,5 @@
 [![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://webcomponents.org/element/polymerEl/multi-verse)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/c20b8b59-7a10-4ec4-ba14-a984583d04e3/deploy-status)](https://app.netlify.com/sites/multi-verse/deploys)
 
 # \<multi-verse\>
 
@@ -12,6 +13,9 @@ Multi-verse is inspired by [dc.js](http://dc-js.github.io/dc.js/), a charting li
 While `dc.js` requires users to code some of the chart logic and data intagration in javascript, `multi-verse` proposes a markup-first approach. This allows to build complex dashboard simply by combining `multi-verse` and `multi-chart` web components together, as illustrated in the example below. 
 
 `Multi-verse` components leverages `crossfilter` and are responsible for data management (aggregation, sorting, grouping), while `multi-charts` components render processed data in customizable visulalizations.
+
+## Demo and API
+Demo and API are now available on [netlify](https://multi-verse.netlify.com/).
 
 ## Simple Example
 
