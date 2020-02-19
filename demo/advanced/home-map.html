@@ -1,0 +1,413 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/app-layout/app-layout.html">
+<link rel="import" href="../../bower_components/shared-widget/widget-app-drawer.html">
+<link rel="import" href="../../bower_components/shared-widget/widget-app-header.html">
+<link rel="import" href="../../bower_components/paper-styles/element-styles/paper-material-styles.html">
+<!-- <link rel="import" href="masks.svg"> -->
+
+<dom-module id="home-map">
+  <template>
+    <style include="paper-material-styles">
+    :host {
+      display: block;
+      position: relative;
+      --app-drawer-width: 512px;
+    }
+    
+    widget-app-header app-toolbar {
+      background-color: var(--primary-color);
+    }
+    widget-app-drawer app-toolbar {
+      background-color: var(--light-primary-color);
+    }
+
+    app-toolbar {
+      color: #fff;
+    }
+
+    app-header paper-icon-button {
+      --paper-icon-button-ink-color: white;
+    }
+
+    paper-icon-button[drawer-toggle] {
+      z-index: 10;
+      --paper-icon-button-ink-color: white;
+    }
+    
+    widget-app-drawer {
+      text-align:center;
+      --widget-app-drawer-background-color: rgba(0,0,0,0.1);
+    }
+  
+    multi-verse-choropleth {
+      stroke-width: 0.1px;
+    }
+
+    multi-verse-choropleth.sector {
+      --multi-highlight-fill: var(--primary-background-color);
+      --multi-highlight-mask: url(#mask-stripe-thick);
+    }
+
+    multi-verse-choropleth.partner {
+      --multi-highlight-fill: var(--light-primary-color);
+      --multi-highlight-mask: url(#mask-stripe-thick-inverse);
+    }
+
+    .paper-material {
+      padding: 10px;
+      margin: 10px;
+      background-color: var(--primary-background-color);
+    }
+
+    #geoChoropleth {
+      height: 700px;
+    }
+
+/*    svg[slot] {
+      display: none;
+    }*/
+    </style>
+    <iron-ajax auto url="/demo/data/countryCodes.json" handle-as="json" last-response="{{countryCodes}}"></iron-ajax>
+    <iron-ajax auto id="dataLoader" url="/demo/data/worldData.json" on-response="onDataLoaded" handle-as="json" last-response="{{data}}"></iron-ajax>
+    <template is="dom-if" if="{{dataLoaded}}">
+      <multi-verse data="[[data]]" universe="{{universe}}" pre-process="[[preProcess]]" columns="[[columns]]" generated-columns="[[generatedColumns]]">
+
+        <widget-app-header shadow>
+          <app-toolbar >
+             <h3 main-title>Preignition in figures</h3>
+              <paper-icon-button icon="menu" drawer-toggle on-tap="toggleDrawer"></paper-icon-button>
+          </app-toolbar>
+        </widget-app-header>
+      
+        <multi-group universe="[[universe]]" data="{{data-country}}" group-by="country">
+           <multi-verse-choropleth 
+                enable-zoom
+                pattern
+                class$="[[selectedLayer]]"
+
+
+                id="geoChoropleth" 
+
+                feature-url="/demo/data/worldSimplify01.json"
+                feature-name="countries"
+                feature-filter="[[featureFilter]]"
+                feature-for-each="[[featureForEach]]"
+                projection-type="[[projectionType]]" 
+
+                color-range="[[colorRangeMap]]" 
+                color-scale="{{colorScale}}" 
+
+                attrs="[[mapAttrs]]" 
+                data="[[data-country]]" 
+                value-accessor-path="+value.count" 
+                key-accessor-path="key" 
+                color-scale-type="scaleLinear" 
+                color-domain-min="0"
+                feature-path="properties.code" 
+                label-accessor-path="properties.name" 
+
+                path="{{path}}" 
+                projection="{{projection}}" 
+                feature="{{feature}}" 
+                projection-scale="[[projectionScale]]" 
+                scale-extent="[1, 3]">
+                <svg slot="svg" >
+                  <g slot-svg="slot-background" >
+                    <rect width="100%" height="100%" fill="#00276b"></rect>
+                  </g>
+                </svg>
+                 <multi-container-layer 
+                    layer="highlight"
+                    highlighted-keys="[[countryKeys]]" 
+                    multi-position="2"
+                    
+                    >
+                  <multi-drawable-feature 
+                    layer-type="{{selectedLayer}}" 
+                    path="[[path]]" 
+                    projection="[[projection]]" 
+                    geo-data="[[feature]]" 
+                    feature-path="properties.code" 
+                    ></multi-drawable-feature>
+                  </multi-container-layer>
+                  <!-- <multi-legend legend scale="[[colorScale]]" chart-width="[[width]]" label-format=".0f" position="right"> </multi-legend> -->
+                </multi-verse-choropleth>
+      </multi-group>
+     
+      <widget-app-drawer id="drawer" align="end" opened remove-scrim>
+        <app-toolbar><h3>menu</h3></app-toolbar>
+         <div class="paper-material" elevation="2" data-value="partner" data-name="selectedLayer" on-mouseenter="setNameValue">
+            <h3>Partners</h3>
+            <multi-group id="partner-group" universe="[[universe]]" data="{{dataPartner}}" group-by="partner">
+              <multi-query universe="[[universe]]" group-by="country" keys="{{countryKeys}}" filter='{"partner": {"$eq": [[hoveredPartner]]}}'></multi-query>
+              <multi-repeat items="[[dataPartner]]" multi>
+                <template >
+                  <paper-button disabled$="[[!item.value.count]]" toggles raised name="[[item.key]]" data-value$='"[[item.key]]"' data-name="hoveredPartner" on-mouseenter="setNameValue" on-mouseleave="resetNameValue">[[item.key]]</paper-button>
+                </template>
+              </multi-repeat>
+            </multi-group>
+          </div>
+          <div class="paper-material" elevation="2" data-value="sector" data-name="selectedLayer" on-mouseenter="setNameValue">
+            <h3>Sectors</h3>
+            <multi-group universe="[[universe]]" data="{{dataSector}}" group-by="area">
+              <multi-query universe="[[universe]]" group-by="country" keys="{{countryKeys}}" filter='{"area": {"$eq": [[hoveredSector]]}}'></multi-query>
+              <multi-repeat items="[[dataSector]]" multi>
+                <template >
+                  <paper-button disabled$="[[!item.value.count]]" toggles raised name="[[item.key]]" data-value$='"[[item.key]]"' data-name="hoveredSector" on-mouseenter="setNameValue" on-mouseleave="resetNameValue">[[item.key]]</paper-button>
+                </template>
+              </multi-repeat>
+            </multi-group>
+          </div>
+          <div class="paper-material" elevation="2">
+            <multi-group class="flex-3" universe="[[universe]]" data="{{dataFund}}" group-by="funding" select='{"fund": {"$sum":"fund"}}'>
+              <multi-verse-bar 
+                multi
+                bottom-axis
+                left-axis
+                data="[[dataFund]]" 
+                value-path="value.fund.sum" 
+                __keys='["sum"]'
+                color-range="[[colorRange]]" 
+                selected-values="{{selectionFunds}}" 
+                bottom-text="type of funds" 
+                left-ticks='[5,".0s"]' 
+                left-text="total (in k$)">
+                <h3 id="chartCount" class="layout horizontal justified" slot="header">
+                  <span class="flex">Funding <small>(per type of funding in k$)</small>
+                  <small><multi-select-display selected-values="[[selectionFunds]]"></multi-select-display></small>
+                </span></h3>
+              </multi-verse-bar>
+            </multi-group>
+          </div>
+      </widget-app-drawer>
+
+      </multi-verse>
+    </template>
+<!--     <svg style="width:3000px; height: 3000px; position:absolute; top:-100000px;">
+      <defs>
+        <pattern id="pattern-stripe" width="5" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+          <rect width="0.5" height="4" transform="translate(0,0)" fill="white"></rect>
+        </pattern>
+        <pattern id="pattern-stripe-thick" width="5" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+          <rect width="2.5" height="4" transform="translate(0,0)" fill="white"></rect>
+        </pattern>
+        <pattern id="pattern-stripe-hor" width="5" height="4" patternUnits="userSpaceOnUse">
+          <rect width="0.5" height="4" transform="translate(0,0)" fill="white"></rect>
+        </pattern>
+        <pattern id="pattern-stripe-inverse" width="5" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <rect width="0.5" height="4" transform="translate(0,0)" fill="white"></rect>
+        </pattern>
+        <pattern id="pattern-stripe-thick-inverse" width="5" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <rect width="2.5" height="4" transform="translate(0,0)" fill="white"></rect>
+        </pattern>
+        <mask id="mask-stripe">
+          <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe)" />
+        </mask>
+        <mask id="mask-stripe-thick">
+          <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe-thick)" />
+        </mask>
+        <mask id="mask-stripe-inverse">
+          <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe-inverse)" />
+        </mask>
+        <mask id="mask-stripe-thick-inverse">
+          <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe-thick-inverse)" />
+        </mask>
+        <mask id="mask-stripe-hor">
+          <rect x="0" y="0" width="100%" height="100%" fill="url(#pattern-stripe-hor)" />
+        </mask>
+      </defs>
+    </svg> -->
+  </template>
+  <script>
+  (function() {
+
+    /**
+     * ## HomeMap
+     *
+     * `<home-map>` 
+     *
+     * @memberof MultiChart
+     * @customElement
+     * @polymer
+     * @demo
+     **/
+    class HomeMap extends Polymer.Element {
+
+      static get is() { return 'home-map'; }
+
+      static get properties() {
+        return {
+          data: {
+            type: Object
+          },
+
+          dataLoaded: {
+            type: Boolean,
+            value: false
+          },
+
+          dataLoading: {
+            type: Boolean,
+            value: false
+          },
+
+          universe: {
+            type: Object
+          },
+
+          projectionType: {
+            type: String,
+            value: 'geoMercator'
+          },
+
+          projectionScale: {
+            type: Number,
+            value: 300
+          },
+
+          /* 
+           * `featureFilter` removes antartic feature
+           */
+          featureFilter: {
+            type: Function,
+            value: function() {
+              return function(f) {
+                return f.id !== 10;
+              };
+            }
+          },
+
+          /* 
+           * `featureForEach`  is run for each geo feature (to get codes and label). 
+           */
+          featureForEach: {
+            type: Function,
+            computed: '_computeForEachFeature(countryCodes)'
+          },
+
+          countryCodes: {
+            type: Object
+          },
+
+
+          colorRangeMap: {
+            type: Array,
+            value: ['yellow', 'red']
+          },
+
+          colorRange: {
+            type: Array,
+            value: ['#3f51b5']
+          },
+
+          dataPartner: {
+            type: Array
+          },
+
+          dataSector: {
+            type: Array
+          },
+
+          hoveredPartner: {
+            type: String,
+            value: '"___null___"'
+          },
+
+          hoveredSector: {
+            type: String,
+            value: '"___null___"'
+          },
+
+          countryKeys: {
+            type: Array
+          },
+
+          /* 
+           * `selectedLayer` the selected layer for highlight - `partner`  or `sector`
+           */
+          selectedLayer: {
+            type: String,
+            value: 'sector'
+          },
+        };
+      }
+
+      /* 
+       * `decorate` we need to place thie function in the markup to make sure we have access to e.model.item highter up in the tree hierarchy 
+       */
+      decorate(e) {
+        console.log('ENRICH', e, e.model.item);
+      }
+
+      toggleDrawer() {
+        this.shadowRoot.querySelector('#drawer').toggle();
+      }
+
+      resetNameValue(e) {
+        var dataset = e.currentTarget.dataset;
+        var name = dataset.name;
+        if (!name) {
+          return this._error('setNameValue need a data-name attribute');
+        }
+        this.set(name, '"___null___"');
+        // this.selected = e.target.dataset.select || e.target.parentElement.dataset.select;
+      }
+
+      /**
+       * `setNameValue` is added so as to set values directly from markup
+       */
+      setNameValue(e) {
+        var dataset = e.currentTarget.dataset;
+        var name = dataset.name;
+        var value = dataset.value;
+        if (!name) {
+          return this._error('setNameValue need a data-name attribute');
+        }
+        this.set(name, value);
+        // this.selected = e.target.dataset.select || e.target.parentElement.dataset.select;
+      }
+
+      loadData(e) {
+        this.$.dataLoader.auto = true;
+        this.dataLoading = true;
+      }
+
+      onDataLoaded(e) {
+        this.dataLoaded = true;
+        this.dataLoading = false;
+      }
+
+      _computeForEachFeature(countryCodes) {
+        var getProperties = function(id) {
+          var country = countryCodes.find(function(c) {
+            return c['country-code'] * 1 === id * 1;
+          });
+          if (country) {
+            return {
+              name: country.name,
+              code: country['alpha-3']
+            };
+          }
+        };
+        return function(feature) {
+          Object.assign(feature.properties, getProperties(feature.id));
+        };
+      }
+
+    }
+
+    customElements.define(HomeMap.is, HomeMap);
+
+    if (!window.MultiChart) {
+      window.MultiChart = {};
+    }
+
+    /* 
+     * @namespace MultiChart
+     */
+    window.MultiChart.HomeMap = HomeMap;
+
+  })();
+
+  </script>
+</dom-module>

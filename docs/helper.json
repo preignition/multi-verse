@@ -1,0 +1,68 @@
+{
+  "version": "experimental",
+  "tags": [
+    {
+      "name": "",
+      "path": "./../src/helper/multi-select-display.js",
+      "description": "## MultiSelectorDisplay\n\n`<multi-select-display>` shows what has been selected and displays it\nin a nice format",
+      "attributes": [
+        {
+          "name": "selected-values",
+          "type": "array"
+        },
+        {
+          "name": "selected",
+          "type": "string"
+        },
+        {
+          "name": "selected-text",
+          "type": "string",
+          "default": "\"selected:\""
+        },
+        {
+          "name": "is-range",
+          "type": "boolean",
+          "default": "false"
+        },
+        {
+          "name": "labels",
+          "description": "`labels` as in http://d3-legend.susielu.com"
+        }
+      ],
+      "properties": [
+        {
+          "name": "selectedValues",
+          "attribute": "selected-values",
+          "type": "array"
+        },
+        {
+          "name": "selected",
+          "attribute": "selected",
+          "type": "string"
+        },
+        {
+          "name": "selectedText",
+          "attribute": "selected-text",
+          "type": "string",
+          "default": "\"selected:\""
+        },
+        {
+          "name": "isRange",
+          "attribute": "is-range",
+          "type": "boolean",
+          "default": "false"
+        },
+        {
+          "name": "labels",
+          "attribute": "labels",
+          "description": "`labels` as in http://d3-legend.susielu.com"
+        }
+      ],
+      "events": [
+        {
+          "name": "multi-clear"
+        }
+      ]
+    }
+  ]
+}

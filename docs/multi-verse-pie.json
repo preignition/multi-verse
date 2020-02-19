@@ -1,0 +1,47 @@
+{
+  "version": "experimental",
+  "tags": [
+    {
+      "name": "multi-verse-pie",
+      "path": "./../src/chart/multi-verse-pie.js",
+      "description": "# MultiVersePie\n\n  pie chart for multi-verse",
+      "attributes": [
+        {
+          "name": "value-path",
+          "type": "string",
+          "default": "\"+value.count\""
+        },
+        {
+          "name": "pad-angle",
+          "type": "number",
+          "default": "0.03"
+        },
+        {
+          "name": "pie-width",
+          "type": "string",
+          "default": "\"35%\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "valuePath",
+          "attribute": "value-path",
+          "type": "string",
+          "default": "\"+value.count\""
+        },
+        {
+          "name": "padAngle",
+          "attribute": "pad-angle",
+          "type": "number",
+          "default": "0.03"
+        },
+        {
+          "name": "pieWidth",
+          "attribute": "pie-width",
+          "type": "string",
+          "default": "\"35%\""
+        }
+      ]
+    }
+  ]
+}

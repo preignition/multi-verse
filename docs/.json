@@ -1,0 +1,728 @@
+{
+  "version": "experimental",
+  "tags": [
+    {
+      "name": "",
+      "path": "./../src/helper/multi-select-display.js",
+      "description": "## MultiSelectorDisplay\n\n`<multi-select-display>` shows what has been selected and displays it\nin a nice format",
+      "attributes": [
+        {
+          "name": "selected-values",
+          "type": "array"
+        },
+        {
+          "name": "selected",
+          "type": "string"
+        },
+        {
+          "name": "selected-text",
+          "type": "string",
+          "default": "\"selected:\""
+        },
+        {
+          "name": "is-range",
+          "type": "boolean",
+          "default": "false"
+        },
+        {
+          "name": "labels",
+          "description": "`labels` as in http://d3-legend.susielu.com"
+        }
+      ],
+      "properties": [
+        {
+          "name": "selectedValues",
+          "attribute": "selected-values",
+          "type": "array"
+        },
+        {
+          "name": "selected",
+          "attribute": "selected",
+          "type": "string"
+        },
+        {
+          "name": "selectedText",
+          "attribute": "selected-text",
+          "type": "string",
+          "default": "\"selected:\""
+        },
+        {
+          "name": "isRange",
+          "attribute": "is-range",
+          "type": "boolean",
+          "default": "false"
+        },
+        {
+          "name": "labels",
+          "attribute": "labels",
+          "description": "`labels` as in http://d3-legend.susielu.com"
+        }
+      ],
+      "events": [
+        {
+          "name": "multi-clear"
+        }
+      ]
+    },
+    {
+      "name": "",
+      "path": "./../src/query/multi-verse.js",
+      "description": "## MultiVerse\n\n`<multi-verse>` takes data as input and encapsulate a [`universe`](https://github.com/crossfilter/universe#create-a-new-universe) Object.\nWhen `universe` changes (query or filtering), `registeredItems` (e.g. charts rendering `universe` data) are notified of the change and will render accordingly.\n\n### Example\n```html\n  <multi-verse id=\"universe\" data=\"[[data]]\" universe=\"{{universe}}\">\n    <multi-group universe=\"[[universe]]\" data=\"{{data-chart-distance}}\" group-by=\"distances\">\n      <multi-chart-bar title=\"distance\" data=\"[[data-chart-distance]]\"> </multi-chart-bar>\n    </multi-group>\n    <multi-group universe=\"[[universe]]\" data=\"{{data-chart-day}}\" group-by=\"day\">\n      <multi-chart-pie title=\"day (pie)\" data=\"[[data-chart-day]]\" color-scale=\"{{colorScale}}\" width=\"{{width}}\">\n        <multi-legend legend chart-width=\"[[width]]\" scale=\"[[colorScale]]\" position=\"top-right\"></multi-legend>\n      </multi-chart-pie>\n    </multi-group>\n  </multi-verse>",
+      "attributes": [
+        {
+          "name": "data",
+          "description": "`data`  the data to pass for creating a new [universe](https://github.com/crossfilter/universe#create-a-new-universe)",
+          "type": "array"
+        },
+        {
+          "name": "universe",
+          "description": "`universe` expose the created universe instance",
+          "type": "object"
+        },
+        {
+          "name": "generated-columns",
+          "description": "[`generatedColumns`](https://github.com/crossfilter/universe#universe-data--config--) optional column configuration to universe instance",
+          "type": "object",
+          "default": "{}"
+        },
+        {
+          "name": "pre-process",
+          "description": "`preProcess` a function that will be called on all data item before the creation of the universe instance"
+        },
+        {
+          "name": "post-filter",
+          "description": "`postFilter` a function that will be called after each filter `postFilter(universe, data)`"
+        },
+        {
+          "name": "group",
+          "description": "`group` if set will only register webcomponents with the same `group`. Otherwise, every web-component that fire a `multi-attached` event will be registered",
+          "type": "string",
+          "default": "\"default\""
+        },
+        {
+          "name": "columns",
+          "description": "[`columns`](https://github.com/crossfilter/universe#column-columnkeycolumnobject--)",
+          "type": "object"
+        },
+        {
+          "name": "register-container-name",
+          "description": "`registerContainerName` the name of the container set to registered items. This is needed because\nsome items can be registered agains mutiple domain. For instance, multi-g : as an resizable svg item\nand against multi-verse.",
+          "type": "string",
+          "default": "\"multiVerseHost\""
+        },
+        {
+          "name": "log",
+          "description": "`log`  true to show log",
+          "type": "boolean"
+        }
+      ],
+      "properties": [
+        {
+          "name": "data",
+          "attribute": "data",
+          "description": "`data`  the data to pass for creating a new [universe](https://github.com/crossfilter/universe#create-a-new-universe)",
+          "type": "array"
+        },
+        {
+          "name": "universe",
+          "attribute": "universe",
+          "description": "`universe` expose the created universe instance",
+          "type": "object"
+        },
+        {
+          "name": "generatedColumns",
+          "attribute": "generated-columns",
+          "description": "[`generatedColumns`](https://github.com/crossfilter/universe#universe-data--config--) optional column configuration to universe instance",
+          "type": "object",
+          "default": "{}"
+        },
+        {
+          "name": "preProcess",
+          "attribute": "pre-process",
+          "description": "`preProcess` a function that will be called on all data item before the creation of the universe instance"
+        },
+        {
+          "name": "postFilter",
+          "attribute": "post-filter",
+          "description": "`postFilter` a function that will be called after each filter `postFilter(universe, data)`"
+        },
+        {
+          "name": "group",
+          "attribute": "group",
+          "description": "`group` if set will only register webcomponents with the same `group`. Otherwise, every web-component that fire a `multi-attached` event will be registered",
+          "type": "string",
+          "default": "\"default\""
+        },
+        {
+          "name": "columns",
+          "attribute": "columns",
+          "description": "[`columns`](https://github.com/crossfilter/universe#column-columnkeycolumnobject--)",
+          "type": "object"
+        },
+        {
+          "name": "registerContainerName",
+          "attribute": "register-container-name",
+          "description": "`registerContainerName` the name of the container set to registered items. This is needed because\nsome items can be registered agains mutiple domain. For instance, multi-g : as an resizable svg item\nand against multi-verse.",
+          "type": "string",
+          "default": "\"multiVerseHost\""
+        },
+        {
+          "name": "registerEventListen",
+          "description": "",
+          "type": "string"
+        },
+        {
+          "name": "log",
+          "attribute": "log",
+          "description": "`log`  true to show log",
+          "type": "boolean"
+        }
+      ]
+    },
+    {
+      "name": "",
+      "path": "./../src/query/multi-group.js",
+      "description": "## MultiGroup\n\n`<multi-group>`  will group `universe`  by their `groupBy` property and expose the result data set (so that a chart can render it)\n\n`multi-group` are also responsible for listening to `multi-select` events triggered for instance by `multi-chart` instances\n(e.g. selecting a range of data from a bar chart or clicking on a pie element).\n\n### Exampple\n  <multi-verse id=\"universe\" data=\"[[data]]\" universe=\"{{universe}}\">\n    <multi-group universe=\"[[universe]]\" data=\"{{data-chart-distance}}\" group-by=\"distances\">\n      <multi-chart-bar title=\"distance\" data=\"[[data-chart-distance]]\"> </multi-chart-bar>\n    </multi-group>\n  </multi-verse>",
+      "attributes": [
+        {
+          "name": "universe",
+          "description": "`universe` passed on by a `multi-verse` component",
+          "type": "object"
+        },
+        {
+          "name": "query-result",
+          "description": "`queryResult` a result of a `universe` query",
+          "type": "object"
+        },
+        {
+          "name": "data",
+          "description": "`data` the data part of `queryResult` (`queryResult.data`)",
+          "type": "array"
+        },
+        {
+          "name": "length",
+          "description": "`length` number of keys in data",
+          "type": "number"
+        },
+        {
+          "name": "is-array",
+          "description": "`isArray` set to true to treat the column as an array",
+          "type": "boolean"
+        },
+        {
+          "name": "query-object",
+          "description": "`queryObject` the query object",
+          "type": "object"
+        },
+        {
+          "name": "group-by",
+          "description": "`groupBy",
+          "type": "string"
+        },
+        {
+          "name": "select",
+          "description": "`select` the select Object",
+          "type": "object"
+        },
+        {
+          "name": "filter",
+          "description": "[`filter`] (https://github.com/crossfilter/universe#api-query) the filter Object",
+          "type": "object"
+        },
+        {
+          "name": "keys",
+          "description": "`keys` keys for this grouo",
+          "type": "array"
+        },
+        {
+          "name": "log",
+          "description": "`log`  true to show log",
+          "type": "boolean"
+        }
+      ],
+      "properties": [
+        {
+          "name": "universe",
+          "attribute": "universe",
+          "description": "`universe` passed on by a `multi-verse` component",
+          "type": "object"
+        },
+        {
+          "name": "queryResult",
+          "attribute": "query-result",
+          "description": "`queryResult` a result of a `universe` query",
+          "type": "object"
+        },
+        {
+          "name": "data",
+          "attribute": "data",
+          "description": "`data` the data part of `queryResult` (`queryResult.data`)",
+          "type": "array"
+        },
+        {
+          "name": "length",
+          "attribute": "length",
+          "description": "`length` number of keys in data",
+          "type": "number"
+        },
+        {
+          "name": "isArray",
+          "attribute": "is-array",
+          "description": "`isArray` set to true to treat the column as an array",
+          "type": "boolean"
+        },
+        {
+          "name": "queryObject",
+          "attribute": "query-object",
+          "description": "`queryObject` the query object",
+          "type": "object"
+        },
+        {
+          "name": "groupBy",
+          "attribute": "group-by",
+          "description": "`groupBy",
+          "type": "string"
+        },
+        {
+          "name": "select",
+          "attribute": "select",
+          "description": "`select` the select Object",
+          "type": "object"
+        },
+        {
+          "name": "filter",
+          "attribute": "filter",
+          "description": "[`filter`] (https://github.com/crossfilter/universe#api-query) the filter Object",
+          "type": "object"
+        },
+        {
+          "name": "keys",
+          "attribute": "keys",
+          "description": "`keys` keys for this grouo",
+          "type": "array"
+        },
+        {
+          "name": "log",
+          "attribute": "log",
+          "description": "`log`  true to show log",
+          "type": "boolean"
+        }
+      ]
+    },
+    {
+      "name": "",
+      "path": "./../src/query/multi-top.js",
+      "description": "## MultiTop\n\n`<multi-top>`  for getting top `number` along a `column`",
+      "attributes": [
+        {
+          "name": "universe",
+          "description": "`universe` passed on by a `multi-verse` component",
+          "type": "object"
+        },
+        {
+          "name": "column",
+          "description": "`column` the name of a universe column",
+          "type": "string"
+        },
+        {
+          "name": "data",
+          "description": "`data` the data part of `queryResult` (`queryResult.data`)",
+          "type": "array"
+        },
+        {
+          "name": "group",
+          "description": "`group` the name of the group (used when to registering this element under a multi-verse)",
+          "type": "string",
+          "default": "\"default\""
+        },
+        {
+          "name": "length",
+          "description": "`length` total length of the dimension attached",
+          "type": "number"
+        },
+        {
+          "name": "top",
+          "description": "`top`",
+          "type": "number",
+          "default": "100"
+        },
+        {
+          "name": "offset",
+          "description": "`offset`",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "name": "start",
+          "description": "`start`",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "name": "dimension",
+          "type": "object"
+        },
+        {
+          "name": "log",
+          "description": "`log`  true to show log",
+          "type": "boolean"
+        }
+      ],
+      "properties": [
+        {
+          "name": "universe",
+          "attribute": "universe",
+          "description": "`universe` passed on by a `multi-verse` component",
+          "type": "object"
+        },
+        {
+          "name": "column",
+          "attribute": "column",
+          "description": "`column` the name of a universe column",
+          "type": "string"
+        },
+        {
+          "name": "data",
+          "attribute": "data",
+          "description": "`data` the data part of `queryResult` (`queryResult.data`)",
+          "type": "array"
+        },
+        {
+          "name": "group",
+          "attribute": "group",
+          "description": "`group` the name of the group (used when to registering this element under a multi-verse)",
+          "type": "string",
+          "default": "\"default\""
+        },
+        {
+          "name": "length",
+          "attribute": "length",
+          "description": "`length` total length of the dimension attached",
+          "type": "number"
+        },
+        {
+          "name": "top",
+          "attribute": "top",
+          "description": "`top`",
+          "type": "number",
+          "default": "100"
+        },
+        {
+          "name": "offset",
+          "attribute": "offset",
+          "description": "`offset`",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "name": "start",
+          "attribute": "start",
+          "description": "`start`",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "name": "dimension",
+          "attribute": "dimension",
+          "type": "object"
+        },
+        {
+          "name": "registerEventDispatch",
+          "description": "`registerEventName`  the name of the event to be fired when connected.\nA container with multi-register-mixin applied\nwill listen to this event to register the component.\n",
+          "type": "string"
+        },
+        {
+          "name": "log",
+          "attribute": "log",
+          "description": "`log`  true to show log",
+          "type": "boolean"
+        }
+      ]
+    },
+    {
+      "name": "",
+      "path": "./../src/query/multi-data-provider.js",
+      "description": "## MultiDataProvider\n\n`<multi-data-provider>`  exposes a dataProvider function to be used with vaadin-grid",
+      "attributes": [
+        {
+          "name": "data-provider",
+          "description": "`dataProvider` a dataprovider function that can be reused in Vaadin-grid\nFunction that provides items lazily. Receives arguments `params`, `callback`\n\n`params.page` Requested page index\n\n`params.pageSize` Current page size\n\n`params.filters` Currently applied filters\n\n`params.sortOrders` Currently applied sorting orders\n\n`params.parentItem` When tree is used, and sublevel items\nare requested, reference to parent item of the requested sublevel.\nOtherwise `undefined`.\n\n`callback(items, size)` Callback function with arguments:\n- `items` Current page of items\n- `size` Total number of items. When tree sublevel items\nare requested, total number of items in the requested sublevel.\nOptional when tree is not used, required for tree."
+        },
+        {
+          "name": "grid",
+          "description": "`grid` the grid where filters and sorters are stored.",
+          "type": "object"
+        },
+        {
+          "name": "universe",
+          "description": "`universe` passed on by a `multi-verse` component",
+          "type": "object"
+        },
+        {
+          "name": "column",
+          "description": "`column` the name of a universe column",
+          "type": "string"
+        },
+        {
+          "name": "data",
+          "description": "`data` the data part of `queryResult` (`queryResult.data`)",
+          "type": "array"
+        },
+        {
+          "name": "group",
+          "description": "`group` the name of the group (used when to registering this element under a multi-verse)",
+          "type": "string",
+          "default": "\"default\""
+        },
+        {
+          "name": "length",
+          "description": "`length` total length of the dimension attached",
+          "type": "number"
+        },
+        {
+          "name": "top",
+          "description": "`top`",
+          "type": "number",
+          "default": "100"
+        },
+        {
+          "name": "offset",
+          "description": "`offset`",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "name": "start",
+          "description": "`start`",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "name": "dimension",
+          "type": "object"
+        },
+        {
+          "name": "log",
+          "description": "`log`  true to show log",
+          "type": "boolean"
+        }
+      ],
+      "properties": [
+        {
+          "name": "dataProvider",
+          "attribute": "data-provider",
+          "description": "`dataProvider` a dataprovider function that can be reused in Vaadin-grid\nFunction that provides items lazily. Receives arguments `params`, `callback`\n\n`params.page` Requested page index\n\n`params.pageSize` Current page size\n\n`params.filters` Currently applied filters\n\n`params.sortOrders` Currently applied sorting orders\n\n`params.parentItem` When tree is used, and sublevel items\nare requested, reference to parent item of the requested sublevel.\nOtherwise `undefined`.\n\n`callback(items, size)` Callback function with arguments:\n- `items` Current page of items\n- `size` Total number of items. When tree sublevel items\nare requested, total number of items in the requested sublevel.\nOptional when tree is not used, required for tree."
+        },
+        {
+          "name": "grid",
+          "attribute": "grid",
+          "description": "`grid` the grid where filters and sorters are stored.",
+          "type": "object"
+        },
+        {
+          "name": "universe",
+          "attribute": "universe",
+          "description": "`universe` passed on by a `multi-verse` component",
+          "type": "object"
+        },
+        {
+          "name": "column",
+          "attribute": "column",
+          "description": "`column` the name of a universe column",
+          "type": "string"
+        },
+        {
+          "name": "data",
+          "attribute": "data",
+          "description": "`data` the data part of `queryResult` (`queryResult.data`)",
+          "type": "array"
+        },
+        {
+          "name": "group",
+          "attribute": "group",
+          "description": "`group` the name of the group (used when to registering this element under a multi-verse)",
+          "type": "string",
+          "default": "\"default\""
+        },
+        {
+          "name": "length",
+          "attribute": "length",
+          "description": "`length` total length of the dimension attached",
+          "type": "number"
+        },
+        {
+          "name": "top",
+          "attribute": "top",
+          "description": "`top`",
+          "type": "number",
+          "default": "100"
+        },
+        {
+          "name": "offset",
+          "attribute": "offset",
+          "description": "`offset`",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "name": "start",
+          "attribute": "start",
+          "description": "`start`",
+          "type": "number",
+          "default": "0"
+        },
+        {
+          "name": "dimension",
+          "attribute": "dimension",
+          "type": "object"
+        },
+        {
+          "name": "registerEventDispatch",
+          "description": "`registerEventName`  the name of the event to be fired when connected.\nA container with multi-register-mixin applied\nwill listen to this event to register the component.\n",
+          "type": "string"
+        },
+        {
+          "name": "log",
+          "attribute": "log",
+          "description": "`log`  true to show log",
+          "type": "boolean"
+        }
+      ],
+      "events": [
+        {
+          "name": "length-changed"
+        }
+      ]
+    },
+    {
+      "name": "",
+      "path": "./../src/query/multi-query.js",
+      "description": "## MultiQuery\n\n`<multi-query>`  performs a query against `universe` and store the result under `queryResult`",
+      "attributes": [
+        {
+          "name": "universe",
+          "description": "`universe` passed on by a `multi-verse` component",
+          "type": "object"
+        },
+        {
+          "name": "query-result",
+          "description": "`queryResult` a result of a `universe` query",
+          "type": "object"
+        },
+        {
+          "name": "data",
+          "description": "`data` the data part of `queryResult` (`queryResult.data`)",
+          "type": "array"
+        },
+        {
+          "name": "length",
+          "description": "`length` number of keys in data",
+          "type": "number"
+        },
+        {
+          "name": "is-array",
+          "description": "`isArray` set to true to treat the column as an array",
+          "type": "boolean"
+        },
+        {
+          "name": "query-object",
+          "description": "`queryObject` the query object",
+          "type": "object"
+        },
+        {
+          "name": "group-by",
+          "description": "`groupBy",
+          "type": "string"
+        },
+        {
+          "name": "select",
+          "description": "`select` the select Object",
+          "type": "object"
+        },
+        {
+          "name": "filter",
+          "description": "[`filter`] (https://github.com/crossfilter/universe#api-query) the filter Object",
+          "type": "object"
+        },
+        {
+          "name": "keys",
+          "description": "`keys` keys of data which value is not 0",
+          "type": "array"
+        },
+        {
+          "name": "log",
+          "description": "`log`  true to show log",
+          "type": "boolean"
+        }
+      ],
+      "properties": [
+        {
+          "name": "universe",
+          "attribute": "universe",
+          "description": "`universe` passed on by a `multi-verse` component",
+          "type": "object"
+        },
+        {
+          "name": "queryResult",
+          "attribute": "query-result",
+          "description": "`queryResult` a result of a `universe` query",
+          "type": "object"
+        },
+        {
+          "name": "data",
+          "attribute": "data",
+          "description": "`data` the data part of `queryResult` (`queryResult.data`)",
+          "type": "array"
+        },
+        {
+          "name": "length",
+          "attribute": "length",
+          "description": "`length` number of keys in data",
+          "type": "number"
+        },
+        {
+          "name": "isArray",
+          "attribute": "is-array",
+          "description": "`isArray` set to true to treat the column as an array",
+          "type": "boolean"
+        },
+        {
+          "name": "queryObject",
+          "attribute": "query-object",
+          "description": "`queryObject` the query object",
+          "type": "object"
+        },
+        {
+          "name": "groupBy",
+          "attribute": "group-by",
+          "description": "`groupBy",
+          "type": "string"
+        },
+        {
+          "name": "select",
+          "attribute": "select",
+          "description": "`select` the select Object",
+          "type": "object"
+        },
+        {
+          "name": "filter",
+          "attribute": "filter",
+          "description": "[`filter`] (https://github.com/crossfilter/universe#api-query) the filter Object",
+          "type": "object"
+        },
+        {
+          "name": "keys",
+          "attribute": "keys",
+          "description": "`keys` keys of data which value is not 0",
+          "type": "array"
+        },
+        {
+          "name": "log",
+          "attribute": "log",
+          "description": "`log`  true to show log",
+          "type": "boolean"
+        }
+      ]
+    }
+  ]
+}

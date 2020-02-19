@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en-GB">
+
+<head>
+  <title>Multi-verse demo</title>
+  <!-- <base href="/demo/"> -->
+  <meta charset="utf-8">
+  <style>
+    body {
+      background: #fafafa;
+    }
+  </style>
+</head>
+
+<script src="/bower_components/webcomponentsjs/webcomponents-loader.js"></script>
+
+<!-- Import required Polymer components  -->
+<link rel="import" href="./demo/demo-import.html">
+<!-- <link rel="import" href="./bower_components/polymer/polymer.html">
+<link rel="import" href="./bower_components/vaadin-tabs/vaadin-tabs.html"> -->
+<!-- 
+<link rel="import" href="./bower_components/paper-card/paper-card.html">
+<link rel="import" href="/bower_components/vaadin-tabs/vaadin-tab.html">
+<link rel="import" href="./bower_components/multi-verse-element/multi-grid-selection-column.html">
+<link rel="import" href="./bower_components/multi-verse-element/multi-repeat.html">
+<link rel="import" href="./bower_components/paper-button/paper-button.html">
+<link rel="import" href="./bower_components/paper-input/paper-input.html">
+<link rel="import" href="./bower_components/vaadin-grid/vaadin-grid.html">
+<link rel="import" href="./bower_components/vaadin-grid/src/vaadin-grid-column.html">
+<link rel="import" href="./bower_components/vaadin-grid/src/vaadin-grid-sort-column.html">
+<link rel="import" href="./bower_components/vaadin-grid/src/vaadin-grid-filter-column.html">
+<link rel="import" href="./bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="./bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="./bower_components/paper-icon-button/paper-icon-button.html"> 
+-->
+
+<!-- <link rel="import" href="./bower_components/vaadin-tabs/vaadin-tabs.html"> -->
+<!-- <link rel="import" href="/src/03-advanced/home-map.html"> -->
+<!-- import other required components -->
+
+<script type="importmap">
+  {
+      "imports": {
+        "@morbidick/lit-element-notify": "/web_modules/@morbidick/lit-element-notify.js",
+        "@preignition/preignition-mixin": "/web_modules/@preignition/preignition-mixin.js",
+        "@preignition/preignition-widget": "/web_modules/@preignition/preignition-widget.js",
+        "@preignition/preignition-demo": "/web_modules/@preignition/preignition-demo.js",
+        "@preignition/multi-chart": "/web_modules/@preignition/multi-chart.js",
+        "@preignition/multi-geo": "/web_modules/@preignition/multi-geo.js",
+        "@polymer/": "/web_modules/@polymer/",
+        "@vaadin/router": "/web_modules/@vaadin/router.js",
+        "pwa-helpers/media-query.js": "/web_modules/pwa-helpers/media-query.js",
+        "marked": "/web_modules/marked.js",
+        "tslib": "/web_modules/tslib.js",
+        "lit-element": "/web_modules/lit-element.js",
+        "lit-html": "/web_modules/lit-html.js",
+        "lit-html/": "/web_modules/lit-html/",
+        "universe": "/web_modules/universe.js",
+        "reductio": "/web_modules/reductio.js",
+        "d3-array": "/web_modules/d3-array.js",
+        "d3-axis": "/web_modules/d3-axis.js",
+        "d3-brush": "/web_modules/d3-brush.js",
+        "d3-fetch": "/web_modules/d3-fetch.js",
+        "d3-interpolate": "/web_modules/d3-interpolate.js",
+        "d3-selection": "/web_modules/d3-selection.js",
+        "d3-selection-multi": "/web_modules/d3-selection-multi.js",
+        "d3-shape": "/web_modules/d3-shape.js",
+        "d3-transition": "/web_modules/d3-transition.js",
+        "d3-format": "/web_modules/d3-format.js",
+        "d3-time-format": "/web_modules/d3-time-format.js",
+        "d3-random": "/web_modules/d3-random.js",
+        "d3-scale": "/web_modules/d3-scale.js",
+        "d3-time": "/web_modules/d3-time.js",
+        "d3-scale-chromatic": "/web_modules/d3-scale-chromatic.js",
+        "d3-svg-legend": "/web_modules/d3-svg-legend.js",
+        "d3-zoom": "/web_modules/d3-zoom.js",
+        "api-viewer-element": "/web_modules/api-viewer-element.js"
+    }
+  }
+  </script>
+
+<style>
+  body {
+      margin: 0;
+    }
+  
+  body, html {
+   font-family: 'Roboto', 'Noto', sans-serif;
+  }
+  
+  html {
+    --primary-color: #0277bd;
+    --light-primary-color: #58a5f0;
+    --dark-primary-color: #004c8c;
+    --primary-color-tr: #0277bd22;
+    --secondary-color: #00acc1;
+    --light-secondary-color: #5ddef4;
+    --dark-secondary-color: #007c91;
+    --secondary-color-tr: #00acc122;
+    --accent-color: #00b8d4;
+    --accent-color-tr: #00b8d422;
+    --primary-background-color: #ffffff;
+    --secondary-background-color: #b2bfcb;
+    --primary-text-color: #212121;
+    --secondary-text-color: #727272;
+    --disabled-text-color: #646464;
+    --divider-color: #b6b6b6;
+  }
+</style>
+
+<body>
+  <div id="demo">
+  </div>
+  <script type="module">
+    import { html, render } from 'lit-html';
+    import '/index.elements.js';
+    import '/demo/multi-verse-demo.js';
+    
+
+    render(
+      html`
+        <multi-verse-demo></multi-verse-demo>          
+      `,
+      document.querySelector('#demo')
+    );
+  </script>
+</body>
+
+</html>

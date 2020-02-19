@@ -1,0 +1,136 @@
+{
+  "version": "experimental",
+  "tags": [
+    {
+      "name": "multi-verse-pie",
+      "path": "./../src/chart/multi-verse-pie.js",
+      "description": "# MultiVersePie\n\n  pie chart for multi-verse",
+      "attributes": [
+        {
+          "name": "value-path",
+          "type": "string",
+          "default": "\"+value.count\""
+        },
+        {
+          "name": "pad-angle",
+          "type": "number",
+          "default": "0.03"
+        },
+        {
+          "name": "pie-width",
+          "type": "string",
+          "default": "\"35%\""
+        }
+      ],
+      "properties": [
+        {
+          "name": "valuePath",
+          "attribute": "value-path",
+          "type": "string",
+          "default": "\"+value.count\""
+        },
+        {
+          "name": "padAngle",
+          "attribute": "pad-angle",
+          "type": "number",
+          "default": "0.03"
+        },
+        {
+          "name": "pieWidth",
+          "attribute": "pie-width",
+          "type": "string",
+          "default": "\"35%\""
+        }
+      ]
+    },
+    {
+      "name": "multi-verse-line",
+      "path": "./../src/chart/multi-verse-line.js",
+      "description": "# MultiVerseLine\n\n  line chart for multi-verse"
+    },
+    {
+      "name": "multi-verse-bar",
+      "path": "./../src/chart/multi-verse-bar.js",
+      "description": "# MultiVerseBar\n\nbar chart for multi-verse",
+      "attributes": [
+        {
+          "name": "keys",
+          "type": "array",
+          "default": "[\"count\"]"
+        },
+        {
+          "name": "value-path",
+          "type": "string",
+          "default": "\"value.count\""
+        },
+        {
+          "name": "bottom-padding",
+          "type": "number",
+          "default": "0.3"
+        }
+      ],
+      "properties": [
+        {
+          "name": "keys",
+          "attribute": "keys",
+          "type": "array",
+          "default": "[\"count\"]"
+        },
+        {
+          "name": "valuePath",
+          "attribute": "value-path",
+          "type": "string",
+          "default": "\"value.count\""
+        },
+        {
+          "name": "bottomPadding",
+          "attribute": "bottom-padding",
+          "type": "number",
+          "default": "0.3"
+        }
+      ]
+    },
+    {
+      "name": "multi-verse-choropleth",
+      "path": "./../src/chart/multi-verse-choropleth.js",
+      "description": "# MultiVerseChropleth\n\nchoropleth chart for multi-verse4",
+      "attributes": [
+        {
+          "name": "value-path",
+          "type": "string",
+          "default": "\"+value.count\""
+        },
+        {
+          "name": "key-path",
+          "type": "string",
+          "default": "\"key\""
+        },
+        {
+          "name": "leftMargin",
+          "type": "number",
+          "default": "0"
+        }
+      ],
+      "properties": [
+        {
+          "name": "valuePath",
+          "attribute": "value-path",
+          "type": "string",
+          "default": "\"+value.count\""
+        },
+        {
+          "name": "keyPath",
+          "attribute": "key-path",
+          "type": "string",
+          "default": "\"key\""
+        },
+        {
+          "name": "leftMargin",
+          "attribute": "leftMargin",
+          "type": "number",
+          "default": "0"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "version": "experimental",
+  "tags": [
+    {
+      "name": "multi-verse-line",
+      "path": "./../src/chart/multi-verse-line.js",
+      "description": "# MultiVerseLine\n\n  line chart for multi-verse"
+    }
+  ]
+}

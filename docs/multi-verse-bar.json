@@ -1,0 +1,47 @@
+{
+  "version": "experimental",
+  "tags": [
+    {
+      "name": "multi-verse-bar",
+      "path": "./../src/chart/multi-verse-bar.js",
+      "description": "# MultiVerseBar\n\nbar chart for multi-verse",
+      "attributes": [
+        {
+          "name": "keys",
+          "type": "array",
+          "default": "[\"count\"]"
+        },
+        {
+          "name": "value-path",
+          "type": "string",
+          "default": "\"value.count\""
+        },
+        {
+          "name": "bottom-padding",
+          "type": "number",
+          "default": "0.3"
+        }
+      ],
+      "properties": [
+        {
+          "name": "keys",
+          "attribute": "keys",
+          "type": "array",
+          "default": "[\"count\"]"
+        },
+        {
+          "name": "valuePath",
+          "attribute": "value-path",
+          "type": "string",
+          "default": "\"value.count\""
+        },
+        {
+          "name": "bottomPadding",
+          "attribute": "bottom-padding",
+          "type": "number",
+          "default": "0.3"
+        }
+      ]
+    }
+  ]
+}

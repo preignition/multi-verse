@@ -1,0 +1,37 @@
+{
+  "name": "multi-verse",
+  "authors": [
+    "christophe-g <christophe.geiser@gmail.com>"
+  ],
+  "description": "boilerplate component to test multi-verse-demo",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "^2",
+    "vaadin-grid": "^5.4.11",
+    "paper-button": "2.1.3",
+    "paper-input": "^2",
+    "iron-menu-behavior": "2.1.1",
+    "app-layout": "^2",
+    "iron-ajax": "^2",
+    "iron-icons": "^2",
+    "paper-icon-button": "^2",
+    "paper-styles": "^2",
+    "shared-widget": "git@github.com:PolymerEl/shared-widget.git#master",
+    "multi-verse-element": "git@github.com:preignition/multi-verse-dependency.git#master",
+    "paper-card": "polymerElements/paper-card#2.1.0",
+    "vaadin-tabs": "vaadin/vaadin-tabs#2.1.2"
+  },
+  "resolutions": {
+    "paper-button": "2.1.3",
+    "iron-menu-behavior": "2.1.1",
+    "webcomponentsjs": "^v1.1.0",
+    "vaadin-tabs": "2.1.2"
+  }
+}

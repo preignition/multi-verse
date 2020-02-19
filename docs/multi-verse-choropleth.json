@@ -1,0 +1,47 @@
+{
+  "version": "experimental",
+  "tags": [
+    {
+      "name": "multi-verse-choropleth",
+      "path": "./../src/chart/multi-verse-choropleth.js",
+      "description": "# MultiVerseChropleth\n\nchoropleth chart for multi-verse4",
+      "attributes": [
+        {
+          "name": "value-path",
+          "type": "string",
+          "default": "\"+value.count\""
+        },
+        {
+          "name": "key-path",
+          "type": "string",
+          "default": "\"key\""
+        },
+        {
+          "name": "leftMargin",
+          "type": "number",
+          "default": "0"
+        }
+      ],
+      "properties": [
+        {
+          "name": "valuePath",
+          "attribute": "value-path",
+          "type": "string",
+          "default": "\"+value.count\""
+        },
+        {
+          "name": "keyPath",
+          "attribute": "key-path",
+          "type": "string",
+          "default": "\"key\""
+        },
+        {
+          "name": "leftMargin",
+          "attribute": "leftMargin",
+          "type": "number",
+          "default": "0"
+        }
+      ]
+    }
+  ]
+}

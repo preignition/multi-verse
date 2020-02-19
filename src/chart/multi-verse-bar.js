@@ -2,6 +2,13 @@ import { html } from 'lit-element';
 import { Bar, Select } from '@preignition/multi-chart';
 import { default as ChartProperties } from './properties/multi-verse-chart-properties.js';
 
+/**
+ * # MultiVerseBar
+ *
+ * bar chart for multi-verse
+ * 
+ * @element multi-verse-bar
+ */
 class MultiVerseBar extends Bar {
 
   getContentRender() {

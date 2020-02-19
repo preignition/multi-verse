@@ -229,4 +229,4 @@ class MultiDataProvider extends MultiTop {
   }
 }
 
-export default MultiDataProvider
+export default MultiDataProvider;

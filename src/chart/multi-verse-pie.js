@@ -2,6 +2,13 @@ import { html } from 'lit-element';
 import { Pie, Select } from '@preignition/multi-chart';
 import { default as ChartProperties } from './properties/multi-verse-chart-properties.js';
 
+/**
+ * # MultiVersePie
+ *
+ *  pie chart for multi-verse
+ * 
+ * @element multi-verse-pie
+ */
 class MultiVersePie extends Pie {
 
   getContentRender() {

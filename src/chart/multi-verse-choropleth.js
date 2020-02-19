@@ -3,16 +3,12 @@ import { Select } from '@preignition/multi-chart';
 import { default as ChartProperties } from './properties/multi-verse-chart-properties.js';
 
 /**
- * ## MultiVerseLine
+ * # MultiVerseChropleth
  *
- * `<multi-verse-choropleth>`
- *
- * @memberof MultiVerse
- * @customElement
- * @polymer
- * @appliesMixin MuliVerse.mixin.ChartSelectProperty
- * @demo
- **/
+ * choropleth chart for multi-verse4
+ * 
+ * @element multi-verse-choropleth
+ */
 class MultiVerseChoropleth extends Choropleth {
 
   getContentRender() {

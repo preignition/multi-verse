@@ -1,6 +1,13 @@
 import { Line, Select } from '@preignition/multi-chart';
 import { default as ChartProperties } from './properties/multi-verse-chart-properties.js';
 
+/**
+ * # MultiVerseLine
+ *
+ *  line chart for multi-verse
+ * 
+ * @element multi-verse-line
+ */
 class MultiVerseLine extends Line {
 
   getContentRender() {
