@@ -36,31 +36,33 @@
   "module": "index.js",
   "dependencies": {
     "@morbidick/lit-element-notify": "^1.0.2",
-    "@preignition/multi-chart": "^4",
-    "@preignition/multi-geo": "^4",
-    "@preignition/preignition-mixin": "^1",
-    "crossfilter": "git+https://github.com/preignition/crossfilter.git#ES6module",
-    "reductio": "git+https://github.com/preignition/reductio.git#ES6module",
-    "universe": "git+https://github.com/preignition/universe.git#ES6module",
-    "d3-format": "1",
+    "@preignition/multi-chart": "file:../multi-chart",
+    "@preignition/multi-geo": "file:../multi-geo",
+    "@preignition/preignition-mixin": "file:../preignition-mixin",
+    "reductio": "file:../reductio",
+    "universe": "file:../universe",
+    "crossfilter2": "^1.5.2",
+    "d3-format": "^1.4.3",
     "d3-time": "^1.1.0",
     "lit-element": "2"
   },
   "devDependencies": {
-    "@import-maps/generate": "^0.1.6",
+    "@import-maps/generate": "^0.1.9",
     "@jspm/core": "^1.0.4",
-    "@open-wc/demoing-storybook": "~0.3.0",
     "@open-wc/testing": "~0.11.1",
-    "@open-wc/testing-karma": "^3.0.0",
+    "@open-wc/testing-karma": "^3.2.30",
     "@polymer/paper-button": "^3.0.0",
-    "@polymer/polymer": "3",
-    "@webcomponents/webcomponentsjs": "^2.0.0",
+    "@polymer/polymer": "^3.3.1",
+    "@webcomponents/webcomponentsjs": "^2.4.1",
     "d3-array": "*",
+    "d3-ease": "*",
     "d3-scale": "*",
     "d3-scale-chromatic": "*",
-    "d3-time-format": "^2.1.3",
-    "es-dev-server": "^1.17.2",
-    "eslint": "^6.4.0",
+    "d3-selection": "*",
+    "d3-time-format": "^2.2.3",
+    "d3-transition": "*",
+    "es-dev-server": "^1.36.2",
+    "eslint": "^6.8.0",
     "eslint-plugin-lit": "^1.2.0",
     "http-server": "~0.11.1",
     "lit-html": "1",
@@ -88,7 +90,7 @@
   },
   "importMap": {
     "resolutions": {
-      "crossfilter2": "1.4.7"
+      "crossfilter2": "1.5.2"
     }
   }
 }

@@ -182,9 +182,10 @@ const MultiVerseQuery = dedupingMixin(superClass => {
           // this.set('queryObject', query);
           // this.debounce('multi-query-set-object', function() {
           // });
-        }, 20);
+        });
     }
   };
 });
 
 export default MultiVerseQuery;
+

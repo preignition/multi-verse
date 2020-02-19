@@ -135,7 +135,7 @@ RegisterMixin(
    */
   observeData() {
     this.log && console.log('observeData', this.data);
-    if (!this.data) { return; }
+    if (!this.data || !this.data.length) { return; }
 
     if (this.preProcess) {
       this.data.forEach(this.preProcess, this);
