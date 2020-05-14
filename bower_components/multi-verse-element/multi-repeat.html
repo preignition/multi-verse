@@ -1,0 +1,221 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="multi-registerable-mixin.html">
+<link rel="import" href="multi-repeat-select.html">
+<dom-module id="multi-repeat">
+  <template>
+    <slot id="slot"></slot>
+    <multi-repeat-select selected="{{selected}}" selected-item="{{selectedItem}}" selected-values="{{selectedValues}}" selected-items="{{selectedItems}}" attr-for-selected="[[attrForSelected]]" selected-attribute="[[selectedAttribute]]" multi="[[multi]]">
+      <template id="repeat" is="dom-repeat" items="{{items}}" rendered-item-count="{{renderedItemCount}}" filter="[[filter]]" sort="[[sort]]" observe="[[observe]]" delay="[[delay]]" as="[[as]]" index-as="[[indexAs]]"></template>
+    </multi-repeat-select>
+  </template>
+  <script>
+  (function() {
+
+    /**
+     * ## MultiRepeat
+     *
+     * `<multi-repeat>` 
+     *
+     * @memberof MultiVerse
+     * @customElement
+     * @polymer
+     * @demo
+     **/
+    class MultiRepeat extends
+    MultiVerse.mixin.MultiRegisterable(
+      Polymer.Element) {
+
+      static get is() { return 'multi-repeat'; }
+
+      static get properties() {
+        return Object.assign({}, {
+          /**
+           * Overriden from Polymer.IronSelectableBehavior
+           */
+          attrForSelected: {
+            type: String,
+            value: 'name'
+          },
+
+          /**
+           * Overriden from Polymer.IronSelectableBehavior
+           */
+          selectedAttribute: {
+            type: String,
+            value: 'active'
+          },
+
+          /**
+           * Overriden from Polymer.IronSelectableBehavior
+           */
+          selectable: {
+            type: String,
+            value: 'paper-button'
+          },
+
+          /* 
+           * `multi` set true to allow multiple selection
+           */
+          multi: {
+            type: Boolean
+          },
+          /* 
+           * `fireEventName`  the name of the event to be fired when connected. a contained with multi-register-mixin applied 
+           * will listed to this event to register the component.
+           */
+          fireEventName: {
+            type: String,
+            value: 'multi-verse-added'
+          },
+
+          renderedItemCount: {
+            type: Number,
+            notify: true
+          },
+
+          /**
+           * Gets or sets the selected element. The default is to use the index of the item.
+           * @type {string|number}
+           */
+          selected: {
+            type: String,
+            notify: true
+          },
+
+          /**
+           * Returns the currently selected item.
+           *
+           * @type {?Object}
+           */
+          selectedItem: {
+            type: Object,
+            readOnly: true,
+            notify: true
+          },
+
+          selectedValues: {
+            type: Array,
+            notify: true
+          },
+
+          /**
+           * Returns the currently selected items.
+           *
+           * @type {?Object}
+           */
+          selectedItems: {
+            type: Object,
+            notify: true
+          },
+
+        /**
+         * A function that should determine the sort order of the items.  This
+         * property should either be provided as a string, indicating a method
+         * name on the element's host, or else be an actual function.  The
+         * function should match the sort function passed to `Array.sort`.
+         * Using a sort function has no effect on the underlying `items` array.
+         */
+        sort: {
+          type: Function,
+          // observer: '__sortChanged'
+        },
+
+        /**
+         * A function that can be used to filter items out of the view.  This
+         * property should either be provided as a string, indicating a method
+         * name on the element's host, or else be an actual function.  The
+         * function should match the sort function passed to `Array.filter`.
+         * Using a filter function has no effect on the underlying `items` array.
+         */
+        filter: {
+          type: Function,
+          // observer: '__filterChanged'
+        },
+
+        /**
+         * When using a `filter` or `sort` function, the `observe` property
+         * should be set to a space-separated list of the names of item
+         * sub-fields that should trigger a re-sort or re-filter when changed.
+         * These should generally be fields of `item` that the sort or filter
+         * function depends on.
+         */
+        observe: {
+          type: String,
+          // observer: '__observeChanged'
+        },
+
+
+        });
+
+      }
+
+      ready() {
+        super.ready();
+        this.replaceTemplate();
+      }
+
+      dataChanged(data) {
+        if (data) {
+          this.items = data;
+        } else {
+          this.forceNotify();
+        }
+      }
+
+      // Note(cg): we need to for rendering of repeat without loosing items .
+      forceNotify() {
+        if (!this.items) {
+          return;
+        }
+        for (var i = this.items.length - 1; i >= 0; i--) {
+          this.notifyPath(`items.${i}`, JSON.parse(JSON.stringify(this.items[i])));
+        }
+      }
+
+      replaceTemplate( ) {
+        const template = this.$.slot.assignedNodes().find(n => n.localName === 'template');
+        if (!template) {
+          // // Wait until childList changes and template should be there by then
+          let observer = new MutationObserver(() => {
+            if (this.querySelector('template')) {
+              observer.disconnect();
+              this.replaceTemplate();
+              // Note(cg): we need to reset rom-repeat.
+              this.$.repeat.__ctor = null;
+              if(this.sort) {
+                this.$.repeat.sort = this.sort;
+              }
+              if(this.filter) {
+                this.$.repeat.filter = this.filter;
+              }
+               if(this.observe) {
+                this.$.repeat.observe = this.observe;
+              }
+              this.$.repeat.__render();
+            } else {
+              throw new Error('multi-repeat requires a <template> to be passed to');
+            }
+          });
+        }
+        const currentTemplate = this.$.repeat.querySelector('template');
+        this.$.repeat.replaceChild(template, currentTemplate);
+
+      }
+
+    }
+
+    customElements.define(MultiRepeat.is, MultiRepeat);
+
+    if (!window.MultiVerse) {
+      window.MultiVerse = {};
+    }
+
+    /* 
+     * @namespace MultiChart
+     */
+    window.MultiVerse.MultiRepeat = MultiRepeat;
+
+  })();
+
+  </script>
+</dom-module>

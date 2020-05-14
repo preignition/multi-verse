@@ -1,0 +1,214 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<dom-module id="widget-process">
+  <template>
+    <style include="iron-flex ">
+    :host {
+      display: block;
+    }
+
+    :host([use-toast]) {
+      display: hidden;
+    }
+
+    paper-progress {
+      --paper-progress-active-color: var(--accent-color);
+      width: initial;
+    }
+
+    .error {
+      color: var(--paper-input-container-invalid-color, var(--error-color));
+      @apply --paper-input-error;
+    }
+
+    .success {
+      color: var(--success-color, var(--primary-color));
+    }
+
+    .message {
+      @apply --paper-font-caption;
+    }
+
+    </style>
+    <firebase-document path="/triggerStatus/[[path]]" data="{{status}}" exists="{{exists}}"></firebase-document>
+    <!-- <firebase-document path="/triggerError/[[path]]" data="{{error}}" exists="{{hasError}}"></firebase-document> -->
+    <template is="dom-if" if="[[!useToast]]">
+      <paper-progress value="[[lastPercent]]"></paper-progress>
+      <template is="dom-if" if="[[hasError]]">
+        <iron-icon icon="error" class="error"></iron-icon> <span class="message error"> [[lastMessage]] </span>
+      </template>
+      <template is="dom-if" if="[[exists]]">
+        <template is="dom-if" if="[[isEqual(status.status, 'success')]]">
+          <iron-icon icon="check-circle" class="success"></iron-icon> <span class="message success"> Success: [[lastMessage]] </span>
+        </template>
+        <template is="dom-if" if="[[isEqual(status.status, 'processing')]]">
+          <span class="message"> ... processing </span>
+          <span class="message">[[status.step]]</span>
+        </template>
+      </template>
+    </template>
+  </template>
+  <script>
+  (function() {
+
+    /**
+     * ## WidgetProcess
+     *
+     * `<widget-process>` show process handeld by function triggers
+     * a simple widget bound to process data - used to inform user
+     *
+     * @memberof Preignition
+     * @customElement
+     * @polymer
+     * @demo
+     **/
+    class WidgetProcess extends
+      Preignition.mixin.Template(
+        Polymer.Element) {
+
+      static get is() {
+        return 'widget-process';
+      }
+
+      static get properties() {
+        return {
+          /* 
+           * `useToast` set true to hide visuals and use toast messages as notification
+           */
+          useToast: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
+          },
+
+          /* 
+           * `lastMessage` persist message (in case we remove data at `process`)
+           */
+          lastMessage: {
+            type: String
+          },
+
+          /* 
+           * `status` of the active process (processing, success or error)
+           */
+          status: {
+            type: Object
+          },
+
+          exists: {
+            type: Boolean
+          },
+
+
+          hasError: {
+            type: Boolean,
+            notify: true
+          },
+
+          /* 
+           * `lastStatus` persist status
+           */
+          lastStatus: {
+            type: String
+          },
+
+          /* 
+           * `lastPercent` persist percent
+           */
+          lastPercent: {
+            type: String
+          },
+
+
+          /* 
+           * `path` the location of stored process (/processTrigger/{entityType}/{entityKey}/{verb}/{entityType2})
+           */
+          path: {
+            type: String,
+            observer: '_observePath'
+          },
+
+
+          /* 
+           * `completed`  flag that turns true when completed. 
+           * Completed is set to true when `exists` goes from true to false (e.g. the process was existing and is now removed = processed without error)
+           */
+          completed: {
+            type: Boolean,
+            value: false,
+            notify: true,
+          },
+
+          /* 
+           * `active`  flag that turns true when active
+           */
+          active: {
+            type: Boolean,
+            computed: '_computeActive(status.status, exists)',
+            reflectToAttribute: true,
+            notify: true,
+          }
+        };
+      }
+
+      static get observers() {
+        return [
+          '_reflectValue(status.percent, "lastPercent")',
+          '_reflectValue(status.message, "lastMessage")',
+          '_observeStatus(status.status)',
+
+        ];
+      }
+
+      _reflectValue(value, name) {
+        if (value || value === 0) {
+          this.set(name, value);
+        }
+        if (name === 'lastMessage' && this.useToast && value) {
+          this.dispatchEvent(new CustomEvent(`toast-${this.status && this.status.status === 'error' ? 'error' : 'auto'}`, { detail: value, bubbles: true, composed: true }));
+        }
+      }
+
+      _observeStatus(status) {
+        if (status === 'success') {
+          this.debounce('widget-process-debounce', () => {
+            this.completed = true;
+          }, 100);
+        }
+        if (status === 'error') {
+          this.hasError = true;
+        }
+      }
+
+      // *** reset the completed whenever the path changes
+      _observePath(path, old) {
+        this.hasError = null;
+        this.completed = false;
+        this.lastPercent = 0;
+        this.lastMessage = '';
+        // Note(cg): we remove process status at db level.
+        if (old) {
+          firebase.database().ref(`/triggerStatus/${old}`).remove();
+        }
+      }
+
+      _computeActive(status, exists) {
+        return exists === true && status !== 'success';
+      }
+    }
+
+    customElements.define(WidgetProcess.is, WidgetProcess);
+
+    if (!window.Preignition) {
+      window.Preignition = {};
+    }
+
+    /* 
+     * @namespace MultiChart
+     */
+    window.Preignition.WidgetProcess = WidgetProcess;
+
+  })();
+
+  </script>
+</dom-module>

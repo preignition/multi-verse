@@ -1,0 +1,125 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../app-layout/app-drawer/app-drawer.html">
+<link rel="import" href="../vaadin-themable-mixin/vaadin-themable-mixin.html">
+
+<dom-module id="widget-app-drawer-style" theme-for="widget-app-drawer">
+  <template>
+    <style>
+			:host{
+				position:absolute;
+				top:0;
+				bottom:0;
+				pointer-events: none;
+			}
+			#contentContainer {
+				padding: 0;
+				background-color: var(--widget-app-drawer-background-color);
+				pointer-events: initial;
+				/* we add a margin (together with pointer-envent stuff) so that button can be clicked through  */
+    		/*margin-top: 64px;*/
+			}
+			
+			/*::slotted(app-toolbar) {*/
+				/* we add a margin (together with pointer-envent stuff) so that button can be clicked through  */
+    		/*margin-top: -64px;*/
+			/*}*/
+
+    </style>
+  </template>
+</dom-module>
+
+<dom-module id="widget-app-drawer">
+	<script>
+		(function() {
+
+			const Cls = customElements.get('app-drawer');
+
+		/**
+		 * ## WidgetAppDrawer
+		 *
+		 * `<widget-app-drawer>` override of app-layout/app-drawer that can be used in analytics. 
+		 * Difference with original:
+		 * - is not placed top of screen
+		 * - does not have a scrim
+		 *
+		 * @memberof Preignition
+		 * @customElement
+     * @polymer
+     * @demo
+		 **/
+		class WidgetAppDrawer extends 
+			Vaadin.ThemableMixin(Cls) {
+
+			static get is() { return 'widget-app-drawer'; }
+
+			static get properties() {
+				return {
+
+					/* 
+					 * `removeScrim` when true, scrim is removed
+					 */
+					removeScrim: {
+						type:Boolean,
+						observer: '_observeRemoveScrim'
+					}
+				};
+			}
+			_observeRemoveScrim(hide, old) {
+				if(hide === true) {
+					this.shadowRoot.removeChild(this.$.scrim);
+				}
+			}
+			// Note(cg): we need to override this function so as to avoid drawer state changer body overflow.
+			_resetDrawerState() {
+        var oldState = this._drawerState;
+
+        // If the drawer was flinging, we need to reset the style attributes.
+        if (oldState === this._DRAWER_STATE.FLINGING) {
+          this._styleTransitionDuration(this.transitionDuration);
+          this._styleTransitionTimingFunction('');
+          this.style.visibility = '';
+        }
+
+        this._savedWidth = null;
+
+        if (this.opened) {
+          this._drawerState = this.persistent ?
+              this._DRAWER_STATE.OPENED_PERSISTENT :
+              this._DRAWER_STATE.OPENED;
+        } else {
+          this._drawerState = this._DRAWER_STATE.CLOSED;
+        }
+
+        if (oldState !== this._drawerState) {
+          if (this._drawerState === this._DRAWER_STATE.OPENED) {
+          	// Note(cg): we remove _setKeyboard .. to avoid the page jumping to drawer when lazy importing it.
+            // this._setKeyboardFocusTrap();
+            document.addEventListener('keydown', this._boundEscKeydownHandler);
+            // document.body.style.overflow = 'hidden';
+          } else {
+            document.removeEventListener('keydown', this._boundEscKeydownHandler);
+            // document.body.style.overflow = '';
+          }
+
+          // Don't fire the event on initial load.
+          if (oldState !== this._DRAWER_STATE.INIT) {
+            this.fire('app-drawer-transitioned');
+          }
+        }
+      }
+		}
+
+		customElements.define(WidgetAppDrawer.is, WidgetAppDrawer);
+
+		if (!window.Preignition) {
+		  window.Preignition = {};
+		}
+   
+   /* 
+    * @namespace MultiChart
+    */
+    window.Preignition.WidgetAppDrawer = WidgetAppDrawer;
+
+		})();
+	</script>
+</dom-module>

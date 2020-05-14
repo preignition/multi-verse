@@ -1,0 +1,75 @@
+<link rel="import" href="../../polymer/polymer.html">
+<dom-module id="paper-breadcrumb-tab-styles" theme-for="paper-breadcrumb-tab">
+  <template>
+    <style>
+    :host {
+      overflow: inherit;
+      padding: 0;
+    }
+
+    :host(:not(.iron-selected))>.tab-content {
+      /*opacity: 1;*/
+      /* we need to override 0.8 opacity as does not work well with :before content; */
+      /*background: var(--paper-tab-content-color, var(--paper-blue-300));*/
+    }
+
+    .tab-content {
+      /*margin-bottom: 4px;*/
+      background: var(--paper-tab-content-color, var(--paper-blue-500));
+    }
+
+/*    .tab-content> ::slotted(*) {
+      z-index: 3;
+    }
+*/
+    :host(:not([no-bread])):before {
+      content: '';
+      clip-path: polygon(0 0, 100% 50%, 0 100%);
+      position: absolute;
+      top: -9px;
+      right: -26px;
+      width: 26px;
+      height: 66px;
+      z-index: 2;
+      background: var(--paper-tab-background-color, var(--paper-blue-900));
+    }
+
+    :host(:not(.iron-selected)):after {
+        opacity: 0.8;
+      }
+
+    :host(:not([no-bread])):after {
+      content: '';
+      clip-path: polygon(0 0, 100% 50%, 0 100%);
+      position: absolute;
+      top: -1px;
+      right: -19.7px;
+      width: 20px;
+      height: 50px;
+      z-index: 2;
+      background: var(--paper-tab-content-color, var(--paper-blue-500));
+    }
+
+    /* :host(:not([no-bread])):after {
+        content: '';
+
+        position: absolute;
+        top: 6px;
+        right: -12px;
+        width: 36px;
+        height: 36px;
+        z-index: 2;
+        background: var(--paper-tab-content-selected-color, var(--paper-blue-500));
+        border-radius: 0 4px 0 0;
+        box-shadow: var(--paper-tabs-content-color, var(--paper-blue-900)) 3px -3px 0;
+        transform: rotate(45deg);
+      }*/
+
+/*    :host(:not(.iron-selected)):after {
+      background: var(--paper-tab-content-color, var(--paper-blue-300));
+
+    }*/
+
+    </style>
+  </template>
+</dom-module>

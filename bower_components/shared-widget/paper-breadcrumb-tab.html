@@ -1,0 +1,78 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-tabs/paper-tabs.html">
+<link rel="import" href="../vaadin-themable-mixin/vaadin-themable-mixin.html">
+<link rel="import" href="./themes/paper-breadcrumb-tab-styles.html">
+
+<dom-module id="paper-breadcrumb-tab">
+<!--   <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      .tab-content:before {
+        content: '';
+        position: absolute;
+        top: 4px;
+        right: -13px;
+        width: 26px;
+        height: 26px;
+        z-index: 2;
+        background: #83b5ed;
+        border-radius: 0 4px 0 0;
+        box-shadow: #579ae6 3px -3px 0;
+        transform: rotate(45deg);
+      }
+    </style>
+  </template> -->
+
+  <script>
+    (function() {
+
+    const Cls = customElements.get('paper-tab');
+
+    /**
+     * ## PaperBreadcrumbTab
+     *
+     * `<paper-breadcrumb-tab>` describe...
+     *
+     * @memberof Preignition
+     * @customElement
+     * @polymer
+     * @demo
+     **/
+    class PaperBreadcrumbTab extends 
+          Vaadin.ThemableMixin(Cls) {
+
+      static get is() { 
+        return 'paper-breadcrumb-tab'; 
+      }
+
+      static get properties() {
+        return {
+          /*
+           * `noBread` set true to hide breadcrumb
+           */
+           noBread: {
+             type: Boolean,
+             value: false,
+             reflectToAttribute: true
+             }
+        };
+      }
+    }
+
+    customElements.define(PaperBreadcrumbTab.is, PaperBreadcrumbTab);
+
+    if (!window.Preignition) {
+      window.Preignition = {};
+    }
+   
+   /* 
+    * @namespace Preignition
+    */
+    window.Preignition.PaperBreadcrumbTab = PaperBreadcrumbTab;
+
+    })();
+  </script>
+</dom-module>

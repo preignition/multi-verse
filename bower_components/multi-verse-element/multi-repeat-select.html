@@ -1,0 +1,113 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-menu-behavior/iron-menubar-behavior.html">
+<dom-module id="multi-repeat-select">
+  <template>
+    <style>
+      
+      ::slotted(*.iron-selected) {
+        background-color: var(--multi-repeat-select-background-color, var(--primary-color));
+        color: var(--multi-repeat-select-color, var(--primary-background-color));
+      }
+
+/*      ::slotted(*[type='primary']) {
+        background-color: var(--multi-repeat-select-light-background-color, var(--light-primary-color));
+        color: var(--multi-repeat-select-color, var(--primary-background-color));
+      }
+      ::slotted(*[type='secondary']) {
+        background-color: var(--multi-repeat-select-light-background-color, var(--light-secondary-color));
+        color: var(--multi-repeat-select-color, var(--primary-background-color));
+      }
+*/      
+    </style>
+    <slot></slot>
+  </template>
+  <script>
+  (function() {
+
+    /**
+     * ## MultiRepeatSelect
+     *
+     * `<multi-repeat-select>` a wrapper arount `multi-select` to handle selection
+     *
+     * @memberof MultiChart
+     * @customElement
+     * @polymer
+     * @demo
+     **/
+    class MultiRepeatSelect extends
+    Polymer.mixinBehaviors([Polymer.IronMenubarBehavior], Polymer.Element) {
+
+      static get is() { return 'multi-repeat-select'; }
+
+      static get properties() {
+        return {
+          /**
+           * Overriden from Polymer.IronSelectableBehavior
+           */
+          attrForSelected: {
+            type: String,
+            value: 'name'
+          },
+
+          /**
+           * Overriden from Polymer.IronSelectableBehavior
+           */
+          selectedAttribute: {
+            type: String,
+            value: 'active'
+          },
+
+          /**
+           * Overriden from Polymer.IronSelectableBehavior
+           */
+          selectable: {
+            type: String,
+            value: 'paper-button'
+          }
+
+        };
+      }
+      select(value) {
+        var newItem = this._valueToItem(value);
+        if (newItem && newItem.hasAttribute('disabled')) {
+          return;
+        }
+        super.select(value);
+         this.dispatchEvent(new CustomEvent('multi-select', {detail: {
+          isRange: false,
+          selection: this.selectedValues.slice()
+         }, bubbles: true, composed: true})); 
+        
+      }
+
+      _activateFocusedItem() {
+        this._itemActivate(this._valueForItem(this.focusedItem), this.focusedItem);
+      }
+
+      _onUpKey(event) {
+        this._focusPrevious();
+        event.preventDefault();
+        this._activateFocusedItem();
+      }
+
+      _onDownKey(event) {
+        this._focusNext();
+        event.preventDefault();
+        this._activateFocusedItem();
+      }
+    }
+
+    customElements.define(MultiRepeatSelect.is, MultiRepeatSelect);
+
+    if (!window.MultiChart) {
+      window.MultiChart = {};
+    }
+
+    /* 
+     * @namespace MultiChart
+     */
+    window.MultiChart.MultiRepeatSelect = MultiRepeatSelect;
+
+  })();
+  </script>
+</dom-module>

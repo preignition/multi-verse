@@ -1,0 +1,26 @@
+{
+  "name": "shared-widget",
+  "description": "preignitions shared widget",
+  "main": "shared-widget.html",
+  "dependencies": {
+    "polymer": "Polymer/polymer#^2.0.0"
+  },
+  "devDependencies": {
+    "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^2.0.0",
+    "web-component-tester": "Polymer/web-component-tester#^6.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^1.0.0"
+  },
+  "resolutions": {
+    "polymer": "^2.0.0"
+  },
+  "homepage": "https://github.com/PolymerEl/shared-widget",
+  "_release": "0985aed63b",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "0985aed63bf196150cb883ddb13e4e8810d49309"
+  },
+  "_source": "git@github.com:PolymerEl/shared-widget.git",
+  "_target": "master",
+  "_originalSource": "git@github.com:PolymerEl/shared-widget.git"
+}

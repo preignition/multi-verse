@@ -1,0 +1,40 @@
+{
+  "name": "@vaadin/vaadin-list-mixin",
+  "version": "2.3.1",
+  "description": "vaadin-list-mixin",
+  "main": "vaadin-list-mixin.html",
+  "repository": "vaadin/vaadin-list-mixin",
+  "keywords": [
+    "Vaadin",
+    "vaadin-list-mixin",
+    "web-components",
+    "web-component",
+    "polymer"
+  ],
+  "author": "Vaadin Ltd",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/vaadin/vaadin-list-mixin/issues"
+  },
+  "homepage": "https://vaadin.com/elements",
+  "files": [
+    "vaadin-*.js"
+  ],
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint"
+    }
+  },
+  "scripts": {
+    "start": "polymer serve --port 3000",
+    "test": "wct",
+    "lint": "npm-run-all --parallel lint:*",
+    "lint:css": "stylelint *.html demo/*.html test/*html",
+    "lint:html": "eslint *.html demo test --ext .html",
+    "lint:js": "eslint *.js test",
+    "lint:polymer": "polymer lint --rules polymer-2 --input *.html"
+  },
+  "devDependencies": {
+    "@vaadin/vaadin-component-dev-dependencies": "^3.0.0"
+  }
+}

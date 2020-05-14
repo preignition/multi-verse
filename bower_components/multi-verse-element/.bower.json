@@ -1,0 +1,13 @@
+{
+  "name": "multi-verse-element",
+  "homepage": "https://github.com/preignition/multi-verse-dependency",
+  "_release": "43c47ea94c",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "43c47ea94ccaf2c5975969959691f01bf8402258"
+  },
+  "_source": "git@github.com:preignition/multi-verse-dependency.git",
+  "_target": "master",
+  "_originalSource": "git@github.com:preignition/multi-verse-dependency.git"
+}

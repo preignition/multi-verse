@@ -1,0 +1,75 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../vaadin-grid/theme/material/vaadin-grid-selection-column.html">
+<dom-module id="multi-grid-selection-column">
+  <script>
+  (function() {
+
+    /**
+     * ## MultiGridSelectionColumn
+     *
+     * `<multi-grid-selection-column>` helper element to enable selection culumn 
+     * in a vaadin-grid along with multi-data provide 
+     *
+     * @memberof MultiVerse
+     * @customElement
+     * @polymer
+     * @demo
+     **/
+    class MultiGridSelectionColumn extends Vaadin.GridSelectionColumnElement {
+
+      static get is() { return 'multi-grid-selection-column'; }
+
+      static get properties() {
+        return {
+
+        };
+      }
+
+      _onSelectAllChanged(selectAll) {
+        if (selectAll === undefined || !this._grid || !this._grid.dataProvider) {
+          return;
+        }
+
+        
+        if (this._selectAllChangeLock) {
+          return;
+        }
+
+        if (selectAll === false) {
+          this._grid.selectedItems = [];
+          return;
+        }
+        if (selectAll) {
+
+        	// Note(cg): we simply get all items from universe.
+          const params = {
+            page: 0,
+            pageSize: Infinity,
+            sortOrders: this._grid._mapSorters(),
+            filters: this._grid._mapFilters(),
+            parentItem: null
+          };
+
+          this._grid.dataProvider(params, (items, size) => {
+            this._grid.selectedItems = items;
+          });
+        }
+      }
+
+
+    }
+
+    customElements.define(MultiGridSelectionColumn.is, MultiGridSelectionColumn);
+
+    if (!window.MultiVerse) {
+      window.MultiVerse = {};
+    }
+
+    /* 
+     * @namespace MultiChart
+     */
+    window.MultiVerse.MultiGridSelectionColumn = MultiGridSelectionColumn;
+
+  })();
+  </script>
+</dom-module>

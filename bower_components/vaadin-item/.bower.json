@@ -1,0 +1,52 @@
+{
+  "name": "vaadin-item",
+  "homepage": "https://vaadin.com/components",
+  "authors": [
+    "Vaadin Ltd"
+  ],
+  "description": "vaadin-item",
+  "main": [
+    "vaadin-item.html",
+    "src/vaadin-item-mixin.html",
+    "theme/material/vaadin-item.html"
+  ],
+  "keywords": [
+    "Vaadin",
+    "vaadin-item",
+    "web-components",
+    "web-component",
+    "polymer"
+  ],
+  "license": "Apache-2.0",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "package-lock.json",
+    "wct.conf.js"
+  ],
+  "dependencies": {
+    "polymer": "^2.0.0",
+    "vaadin-themable-mixin": "vaadin/vaadin-themable-mixin#^1.2.1",
+    "vaadin-lumo-styles": "vaadin/vaadin-lumo-styles#^1.1.0",
+    "vaadin-material-styles": "vaadin/vaadin-material-styles#^1.1.0"
+  },
+  "devDependencies": {
+    "iron-test-helpers": "^2.0.0",
+    "iron-component-page": "^3.0.0",
+    "iron-demo-helpers": "^2.0.0",
+    "webcomponentsjs": "^1.0.0",
+    "web-component-tester": "^6.1.5",
+    "vaadin-demo-helpers": "vaadin/vaadin-demo-helpers#^3.0.0"
+  },
+  "version": "2.1.1",
+  "_release": "2.1.1",
+  "_resolution": {
+    "type": "version",
+    "tag": "v2.1.1",
+    "commit": "6b97dc57fe9110b539153e952d7ea9d1a0587ced"
+  },
+  "_source": "https://github.com/vaadin/vaadin-item.git",
+  "_target": "^2.1.0",
+  "_originalSource": "vaadin/vaadin-item"
+}

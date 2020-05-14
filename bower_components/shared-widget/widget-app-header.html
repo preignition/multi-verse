@@ -1,0 +1,72 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../app-layout/app-header/app-header.html">
+<link rel="import" href="../vaadin-themable-mixin/vaadin-themable-mixin.html">
+
+<!-- <dom-module id="widget-app-header-style" theme-for="widget-app-header">
+  <template>
+    <style>
+			:host{
+				/*transform: none;*/
+/*				position:absolute;
+				top:0;
+				bottom:0;*/
+				/*pointer-events: none;*/
+			}
+			
+
+    </style>
+  </template>
+</dom-module> -->
+
+<dom-module id="widget-app-header">
+	<script>
+		(function() {
+
+			const Cls = customElements.get('app-header');
+
+		/**
+		 * ## WidgetAppHeader
+		 *
+		 * `<widget-app-header>` override of app-layout/app-header that can be used in analytics. 
+		 * Difference with original:
+		 * - does not use 3d transorm
+		 *
+		 * @memberof Preignition
+		 * @customElement
+     * @polymer
+     * @demo
+		 **/
+		class WidgetAppHeader extends 
+			Vaadin.ThemableMixin(Cls) {
+
+			static get is() { return 'widget-app-header'; }
+
+			static get properties() {
+				return {
+
+				};
+			}
+
+			/**
+       * Transforms the header.
+       *
+       * @param {number} y
+       */
+      _transformHeader(y) {
+      }
+		}
+
+		customElements.define(WidgetAppHeader.is, WidgetAppHeader);
+
+		if (!window.Preignition) {
+		  window.Preignition = {};
+		}
+   
+   /* 
+    * @namespace MultiChart
+    */
+    window.Preignition.WidgetAppHeader = WidgetAppHeader;
+
+		})();
+	</script>
+</dom-module>
