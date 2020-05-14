@@ -1,4 +1,92 @@
-import { r as rgbBasis, h as cubehelixLong, j as cubehelix$1, k as rgb } from './common/index-841dc6c2.js';
+import { R as Rgb, r as rgbConvert, d as define, e as extend, C as Color, b as brighter, f as darker, n as nogamma, h as hue, g as rgbBasis, j as rgb } from './common/rgb-e876f481.js';
+
+var deg2rad = Math.PI / 180;
+var rad2deg = 180 / Math.PI;
+
+var A = -0.14861,
+    B = +1.78277,
+    C = -0.29227,
+    D = -0.90649,
+    E = +1.97294,
+    ED = E * D,
+    EB = E * B,
+    BC_DA = B * C - D * A;
+
+function cubehelixConvert(o) {
+  if (o instanceof Cubehelix) return new Cubehelix(o.h, o.s, o.l, o.opacity);
+  if (!(o instanceof Rgb)) o = rgbConvert(o);
+  var r = o.r / 255,
+      g = o.g / 255,
+      b = o.b / 255,
+      l = (BC_DA * b + ED * r - EB * g) / (BC_DA + ED - EB),
+      bl = b - l,
+      k = (E * (g - l) - C * bl) / D,
+      s = Math.sqrt(k * k + bl * bl) / (E * l * (1 - l)), // NaN if l=0 or l=1
+      h = s ? Math.atan2(k, bl) * rad2deg - 120 : NaN;
+  return new Cubehelix(h < 0 ? h + 360 : h, s, l, o.opacity);
+}
+
+function cubehelix(h, s, l, opacity) {
+  return arguments.length === 1 ? cubehelixConvert(h) : new Cubehelix(h, s, l, opacity == null ? 1 : opacity);
+}
+
+function Cubehelix(h, s, l, opacity) {
+  this.h = +h;
+  this.s = +s;
+  this.l = +l;
+  this.opacity = +opacity;
+}
+
+define(Cubehelix, cubehelix, extend(Color, {
+  brighter: function(k) {
+    k = k == null ? brighter : Math.pow(brighter, k);
+    return new Cubehelix(this.h, this.s, this.l * k, this.opacity);
+  },
+  darker: function(k) {
+    k = k == null ? darker : Math.pow(darker, k);
+    return new Cubehelix(this.h, this.s, this.l * k, this.opacity);
+  },
+  rgb: function() {
+    var h = isNaN(this.h) ? 0 : (this.h + 120) * deg2rad,
+        l = +this.l,
+        a = isNaN(this.s) ? 0 : this.s * l * (1 - l),
+        cosh = Math.cos(h),
+        sinh = Math.sin(h);
+    return new Rgb(
+      255 * (l + a * (A * cosh + B * sinh)),
+      255 * (l + a * (C * cosh + D * sinh)),
+      255 * (l + a * (E * cosh)),
+      this.opacity
+    );
+  }
+}));
+
+function cubehelix$1(hue) {
+  return (function cubehelixGamma(y) {
+    y = +y;
+
+    function cubehelix$1(start, end) {
+      var h = hue((start = cubehelix(start)).h, (end = cubehelix(end)).h),
+          s = nogamma(start.s, end.s),
+          l = nogamma(start.l, end.l),
+          opacity = nogamma(start.opacity, end.opacity);
+      return function(t) {
+        start.h = h(t);
+        start.s = s(t);
+        start.l = l(Math.pow(t, y));
+        start.opacity = opacity(t);
+        return start + "";
+      };
+    }
+
+    cubehelix$1.gamma = cubehelixGamma;
+
+    return cubehelix$1;
+  })(1);
+}
+
+cubehelix$1(hue);
+var cubehelixLong = cubehelix$1(nogamma);
 
 function colors(specifier) {
   var n = specifier.length / 6 | 0, colors = new Array(n), i = 0;
@@ -381,13 +469,13 @@ function cividis(t) {
       + ")";
 }
 
-var cubehelix = cubehelixLong(cubehelix$1(300, 0.5, 0.0), cubehelix$1(-240, 0.5, 1.0));
+var cubehelix$2 = cubehelixLong(cubehelix(300, 0.5, 0.0), cubehelix(-240, 0.5, 1.0));
 
-var warm = cubehelixLong(cubehelix$1(-100, 0.75, 0.35), cubehelix$1(80, 1.50, 0.8));
+var warm = cubehelixLong(cubehelix(-100, 0.75, 0.35), cubehelix(80, 1.50, 0.8));
 
-var cool = cubehelixLong(cubehelix$1(260, 0.75, 0.35), cubehelix$1(80, 1.50, 0.8));
+var cool = cubehelixLong(cubehelix(260, 0.75, 0.35), cubehelix(80, 1.50, 0.8));
 
-var c = cubehelix$1();
+var c = cubehelix();
 
 function rainbow(t) {
   if (t < 0 || t > 1) t -= Math.floor(t);
@@ -435,4 +523,4 @@ var inferno = ramp$1(colors("00000401000501010601010802010a02020c02020e030210040
 
 var plasma = ramp$1(colors("0d088710078813078916078a19068c1b068d1d068e20068f2206902406912605912805922a05932c05942e05952f059631059733059735049837049938049a3a049a3c049b3e049c3f049c41049d43039e44039e46039f48039f4903a04b03a14c02a14e02a25002a25102a35302a35502a45601a45801a45901a55b01a55c01a65e01a66001a66100a76300a76400a76600a76700a86900a86a00a86c00a86e00a86f00a87100a87201a87401a87501a87701a87801a87a02a87b02a87d03a87e03a88004a88104a78305a78405a78606a68707a68808a68a09a58b0aa58d0ba58e0ca48f0da4910ea3920fa39410a29511a19613a19814a099159f9a169f9c179e9d189d9e199da01a9ca11b9ba21d9aa31e9aa51f99a62098a72197a82296aa2395ab2494ac2694ad2793ae2892b02991b12a90b22b8fb32c8eb42e8db52f8cb6308bb7318ab83289ba3388bb3488bc3587bd3786be3885bf3984c03a83c13b82c23c81c33d80c43e7fc5407ec6417dc7427cc8437bc9447aca457acb4679cc4778cc4977cd4a76ce4b75cf4c74d04d73d14e72d24f71d35171d45270d5536fd5546ed6556dd7566cd8576bd9586ada5a6ada5b69db5c68dc5d67dd5e66de5f65de6164df6263e06363e16462e26561e26660e3685fe4695ee56a5de56b5de66c5ce76e5be76f5ae87059e97158e97257ea7457eb7556eb7655ec7754ed7953ed7a52ee7b51ef7c51ef7e50f07f4ff0804ef1814df1834cf2844bf3854bf3874af48849f48948f58b47f58c46f68d45f68f44f79044f79143f79342f89441f89540f9973ff9983ef99a3efa9b3dfa9c3cfa9e3bfb9f3afba139fba238fca338fca537fca636fca835fca934fdab33fdac33fdae32fdaf31fdb130fdb22ffdb42ffdb52efeb72dfeb82cfeba2cfebb2bfebd2afebe2afec029fdc229fdc328fdc527fdc627fdc827fdca26fdcb26fccd25fcce25fcd025fcd225fbd324fbd524fbd724fad824fada24f9dc24f9dd25f8df25f8e125f7e225f7e425f6e626f6e826f5e926f5eb27f4ed27f3ee27f3f027f2f227f1f426f1f525f0f724f0f921"));
 
-export { Blues as interpolateBlues, BrBG as interpolateBrBG, BuGn as interpolateBuGn, BuPu as interpolateBuPu, cividis as interpolateCividis, cool as interpolateCool, cubehelix as interpolateCubehelixDefault, GnBu as interpolateGnBu, Greens as interpolateGreens, Greys as interpolateGreys, inferno as interpolateInferno, magma as interpolateMagma, OrRd as interpolateOrRd, Oranges as interpolateOranges, PRGn as interpolatePRGn, PiYG as interpolatePiYG, plasma as interpolatePlasma, PuBu as interpolatePuBu, PuBuGn as interpolatePuBuGn, PuOr as interpolatePuOr, PuRd as interpolatePuRd, Purples as interpolatePurples, rainbow as interpolateRainbow, RdBu as interpolateRdBu, RdGy as interpolateRdGy, RdPu as interpolateRdPu, RdYlBu as interpolateRdYlBu, RdYlGn as interpolateRdYlGn, Reds as interpolateReds, sinebow as interpolateSinebow, Spectral as interpolateSpectral, turbo as interpolateTurbo, viridis as interpolateViridis, warm as interpolateWarm, YlGn as interpolateYlGn, YlGnBu as interpolateYlGnBu, YlOrBr as interpolateYlOrBr, YlOrRd as interpolateYlOrRd, Accent as schemeAccent, scheme$l as schemeBlues, scheme as schemeBrBG, scheme$9 as schemeBuGn, scheme$a as schemeBuPu, category10 as schemeCategory10, Dark2 as schemeDark2, scheme$b as schemeGnBu, scheme$m as schemeGreens, scheme$n as schemeGreys, scheme$c as schemeOrRd, scheme$q as schemeOranges, scheme$1 as schemePRGn, Paired as schemePaired, Pastel1 as schemePastel1, Pastel2 as schemePastel2, scheme$2 as schemePiYG, scheme$e as schemePuBu, scheme$d as schemePuBuGn, scheme$3 as schemePuOr, scheme$f as schemePuRd, scheme$o as schemePurples, scheme$4 as schemeRdBu, scheme$5 as schemeRdGy, scheme$g as schemeRdPu, scheme$6 as schemeRdYlBu, scheme$7 as schemeRdYlGn, scheme$p as schemeReds, Set1 as schemeSet1, Set2 as schemeSet2, Set3 as schemeSet3, scheme$8 as schemeSpectral, Tableau10 as schemeTableau10, scheme$i as schemeYlGn, scheme$h as schemeYlGnBu, scheme$j as schemeYlOrBr, scheme$k as schemeYlOrRd };
+export { Blues as interpolateBlues, BrBG as interpolateBrBG, BuGn as interpolateBuGn, BuPu as interpolateBuPu, cividis as interpolateCividis, cool as interpolateCool, cubehelix$2 as interpolateCubehelixDefault, GnBu as interpolateGnBu, Greens as interpolateGreens, Greys as interpolateGreys, inferno as interpolateInferno, magma as interpolateMagma, OrRd as interpolateOrRd, Oranges as interpolateOranges, PRGn as interpolatePRGn, PiYG as interpolatePiYG, plasma as interpolatePlasma, PuBu as interpolatePuBu, PuBuGn as interpolatePuBuGn, PuOr as interpolatePuOr, PuRd as interpolatePuRd, Purples as interpolatePurples, rainbow as interpolateRainbow, RdBu as interpolateRdBu, RdGy as interpolateRdGy, RdPu as interpolateRdPu, RdYlBu as interpolateRdYlBu, RdYlGn as interpolateRdYlGn, Reds as interpolateReds, sinebow as interpolateSinebow, Spectral as interpolateSpectral, turbo as interpolateTurbo, viridis as interpolateViridis, warm as interpolateWarm, YlGn as interpolateYlGn, YlGnBu as interpolateYlGnBu, YlOrBr as interpolateYlOrBr, YlOrRd as interpolateYlOrRd, Accent as schemeAccent, scheme$l as schemeBlues, scheme as schemeBrBG, scheme$9 as schemeBuGn, scheme$a as schemeBuPu, category10 as schemeCategory10, Dark2 as schemeDark2, scheme$b as schemeGnBu, scheme$m as schemeGreens, scheme$n as schemeGreys, scheme$c as schemeOrRd, scheme$q as schemeOranges, scheme$1 as schemePRGn, Paired as schemePaired, Pastel1 as schemePastel1, Pastel2 as schemePastel2, scheme$2 as schemePiYG, scheme$e as schemePuBu, scheme$d as schemePuBuGn, scheme$3 as schemePuOr, scheme$f as schemePuRd, scheme$o as schemePurples, scheme$4 as schemeRdBu, scheme$5 as schemeRdGy, scheme$g as schemeRdPu, scheme$6 as schemeRdYlBu, scheme$7 as schemeRdYlGn, scheme$p as schemeReds, Set1 as schemeSet1, Set2 as schemeSet2, Set3 as schemeSet3, scheme$8 as schemeSpectral, Tableau10 as schemeTableau10, scheme$i as schemeYlGn, scheme$h as schemeYlGnBu, scheme$j as schemeYlOrBr, scheme$k as schemeYlOrRd };

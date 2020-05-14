@@ -258,7 +258,7 @@ function vaadinRouterGlobalClickHandler(event) {
  * Only regular clicks on in-app links are translated (primary mouse button, no
  * modifier keys, the target href is within the app's URL space).
  *
- * @memberOf Router.Triggers
+ * @memberOf Router.NavigationTrigger
  * @type {NavigationTrigger}
  */
 const CLICK = {
@@ -298,7 +298,7 @@ function vaadinRouterGlobalPopstateHandler(event) {
  * A navigation trigger for Vaadin Router that translates popstate events into
  * Vaadin Router navigation events.
  *
- * @memberOf Router.Triggers
+ * @memberOf Router.NavigationTrigger
  * @type {NavigationTrigger}
  */
 const POPSTATE = {
@@ -929,19 +929,23 @@ function generateErrorMessage(currentContext) {
   return errorMessage;
 }
 
-function addRouteToChain(context, match) {
+function updateChainForRoute(context, match) {
   const {route, path} = match;
-  function shouldDiscardOldChain(oldChain, route) {
-    return !route.parent || !oldChain || !oldChain.length || oldChain[oldChain.length - 1].route !== route.parent;
-  }
 
   if (route && !route.__synthetic) {
     const item = {path, route};
-    if (shouldDiscardOldChain(context.chain, route)) {
-      context.chain = [item];
+    if (!context.chain) {
+      context.chain = [];
     } else {
-      context.chain.push(item);
+      // Discard old items
+      if (route.parent) {
+        let i = context.chain.length;
+        while (i-- && context.chain[i].route && context.chain[i].route !== route.parent) {
+          context.chain.pop();
+        }
+      }
     }
+    context.chain.push(item);
   }
 }
 
@@ -1055,8 +1059,14 @@ class Resolver {
         return Promise.reject(getNotFoundError(context));
       }
 
-      addRouteToChain(context, matches.value);
-      currentContext = Object.assign({}, context, matches.value);
+      currentContext = Object.assign(
+        currentContext
+          ? {chain: (currentContext.chain ? currentContext.chain.slice(0) : [])}
+          : {},
+        context,
+        matches.value
+      );
+      updateChainForRoute(currentContext, matches.value);
 
       return Promise.resolve(resolve(currentContext)).then(resolution => {
         if (resolution !== null && resolution !== undefined && resolution !== notFoundResult) {
@@ -1458,7 +1468,7 @@ class Router extends Resolver {
    * router.setOutlet(outlet);
    * ```
    * @param {?Node=} outlet
-   * @param {?Router.Options=} options
+   * @param {?RouterOptions=} options
    */
   constructor(outlet, options) {
     const baseElement = document.head.querySelector('base');
@@ -1490,7 +1500,7 @@ class Router extends Resolver {
      * with the last render cycle result.
      *
      * @public
-     * @type {!Promise<!Router.Location>}
+     * @type {!Promise<!RouterLocation>}
      */
     this.ready;
     this.ready = Promise.resolve(outlet);
@@ -1498,11 +1508,11 @@ class Router extends Resolver {
     /**
      * Contains read-only information about the current router location:
      * pathname, active routes, parameters. See the
-     * [Location type declaration](#/classes/Router.Location)
+     * [Location type declaration](#/classes/RouterLocation)
      * for more details.
      *
      * @public
-     * @type {!Router.Location}
+     * @type {!RouterLocation}
      */
     this.location;
     this.location = createLocation({resolver: this});
@@ -1690,7 +1700,7 @@ class Router extends Resolver {
    * with current context. Note: the component created by this function is reused if visiting the same path twice in row.
    *
    *
-   * @param {!Array<!Router.Route>|!Router.Route} routes a single route or an array of those
+   * @param {!Array<!Route>|!Route} routes a single route or an array of those
    * @param {?boolean} skipRender configure the router but skip rendering the
    *     route corresponding to the current `window.location` values
    *
@@ -1833,21 +1843,44 @@ class Router extends Resolver {
         const redirectsHappened = contextAfterRedirects !== contextBeforeRedirects;
         const topOfTheChainContextAfterRedirects =
           redirectsHappened ? contextAfterRedirects : topOfTheChainContextBeforeRedirects;
-        return contextAfterRedirects.next()
-          .then(nextChildContext => {
-            if (nextChildContext === null || nextChildContext === notFoundResult) {
-              const matchedPath = getPathnameForRouter(
-                getMatchedPath(contextAfterRedirects.chain),
-                contextAfterRedirects.resolver
-              );
-              if (matchedPath !== contextAfterRedirects.pathname) {
-                throw getNotFoundError(topOfTheChainContextAfterRedirects);
+
+        const matchedPath = getPathnameForRouter(
+          getMatchedPath(contextAfterRedirects.chain),
+          contextAfterRedirects.resolver
+        );
+        const isFound = (matchedPath === contextAfterRedirects.pathname);
+
+        // Recursive method to try matching more child and sibling routes
+        const findNextContextIfAny = (context, parent = context.route, prevResult) => {
+          return context.next(undefined, parent, prevResult).then(nextContext => {
+            if (nextContext === null || nextContext === notFoundResult) {
+              // Next context is not found in children, ...
+              if (isFound) {
+                // ...but original context is already fully matching - use it
+                return context;
+              } else if (parent.parent !== null) {
+                // ...and there is no full match yet - step up to check siblings
+                return findNextContextIfAny(context, parent.parent, nextContext);
+              } else {
+                return nextContext;
               }
             }
-            return nextChildContext && nextChildContext !== notFoundResult
-              ? this.__fullyResolveChain(topOfTheChainContextAfterRedirects, nextChildContext)
-              : this.__amendWithOnBeforeCallbacks(contextAfterRedirects);
+
+            return nextContext;
           });
+        };
+
+        return findNextContextIfAny(contextAfterRedirects).then(nextContext => {
+          if (nextContext === null || nextContext === notFoundResult) {
+            throw getNotFoundError(topOfTheChainContextAfterRedirects);
+          }
+
+          return nextContext
+          && nextContext !== notFoundResult
+          && nextContext !== contextAfterRedirects
+            ? this.__fullyResolveChain(topOfTheChainContextAfterRedirects, nextContext)
+            : this.__amendWithOnBeforeCallbacks(contextAfterRedirects);
+        });
       });
   }
 
@@ -1912,15 +1945,11 @@ class Router extends Resolver {
       if (newContext.__skipAttach) {
         // execute onBeforeLeave for changed segment element when skipping attach
         for (let i = newChain.length - 1; i >= 0; i--) {
-          if (previousChain[i].path !== newChain[i].path || newContext.search !== previousContext.search) {
-            callbacks = this.__runOnBeforeLeaveCallbacks(callbacks, newContext, {prevent}, previousChain[i]);
-          }
+          callbacks = this.__runOnBeforeLeaveCallbacks(callbacks, newContext, {prevent}, previousChain[i]);
         }
         // execute onBeforeEnter for changed segment element when skipping attach
         for (let i = 0; i < newChain.length; i++) {
-          if (previousChain[i].path !== newChain[i].path || newContext.search !== previousContext.search) {
-            callbacks = this.__runOnBeforeEnterCallbacks(callbacks, newContext, {prevent, redirect}, newChain[i]);
-          }
+          callbacks = this.__runOnBeforeEnterCallbacks(callbacks, newContext, {prevent, redirect}, newChain[i]);
           previousChain[i].element.location = createLocation(newContext, previousChain[i].route);
         }
 
@@ -1932,8 +1961,19 @@ class Router extends Resolver {
       }
     }
     // execute onBeforeEnter when NOT skipping attach
-    for (let i = newContext.__divergedChainIndex; !newContext.__skipAttach && i < newChain.length; i++) {
-      callbacks = this.__runOnBeforeEnterCallbacks(callbacks, newContext, {prevent, redirect}, newChain[i]);
+    if (!newContext.__skipAttach) {
+      for (let i = 0; i < newChain.length; i++) {
+        if (i < newContext.__divergedChainIndex) {
+          if (i < previousChain.length && previousChain[i].element) {
+            previousChain[i].element.location = createLocation(newContext, previousChain[i].route);
+          }
+        } else {
+          callbacks = this.__runOnBeforeEnterCallbacks(callbacks, newContext, {prevent, redirect}, newChain[i]);
+          if (newChain[i].element) {
+            newChain[i].element.location = createLocation(newContext, newChain[i].route);
+          }
+        }
+      }
     }
     return callbacks.then(amendmentResult => {
       if (amendmentResult) {
@@ -2202,7 +2242,7 @@ class Router extends Resolver {
    *
    * See also **Navigation Triggers** section in [Live Examples](#/classes/Router/demos/demo/index.html).
    *
-   * @param {...Router.NavigationTrigger} triggers
+   * @param {...NavigationTrigger} triggers
    */
   static setTriggers(...triggers) {
     setNavigationTriggers(triggers);
@@ -2221,7 +2261,7 @@ class Router extends Resolver {
    *
    * @function urlForName
    * @param {!string} name the route name or the route’s `component` name.
-   * @param {Router.Params=} params Optional object with route path parameters.
+   * @param {Params=} params Optional object with route path parameters.
    * Named parameters are passed by name (`params[name] = value`), unnamed
    * parameters are passed by index (`params[index] = value`).
    *
@@ -2242,7 +2282,7 @@ class Router extends Resolver {
    * substitution of parameters.
    *
    * @param {!string} path string route path declared in [express.js syntax](https://expressjs.com/en/guide/routing.html#route-paths").
-   * @param {Router.Params=} params Optional object with route path parameters.
+   * @param {Params=} params Optional object with route path parameters.
    * Named parameters are passed by name (`params[name] = value`), unnamed
    * parameters are passed by index (`params[index] = value`).
    *
@@ -2532,6 +2572,10 @@ var StatisticsGatherer = function () {
     value: function getUsedVaadinElements(elements) {
       var version = getPolymerVersion();
       var elementClasses = void 0;
+      // NOTE: In case you edit the code here, YOU MUST UPDATE any statistics reporting code in Flow.
+      // Check all locations calling the method getEntries() in
+      // https://github.com/vaadin/flow/blob/master/flow-server/src/main/java/com/vaadin/flow/internal/UsageStatistics.java#L106
+      // Currently it is only used by BootstrapHandler.
       if (version && version.indexOf('2') === 0) {
         // Polymer 2: components classes are stored in window.Vaadin
         elementClasses = Object.keys(window.Vaadin).map(function (c) {
@@ -2763,7 +2807,7 @@ var UsageStatistics = function () {
   }, {
     key: 'lottery',
     value: function lottery() {
-      return Math.random() <= 0.05;
+      return true;
     }
   }, {
     key: 'currentMonth',
@@ -2821,7 +2865,7 @@ var UsageStatistics = function () {
   }], [{
     key: 'version',
     get: function get$1() {
-      return '2.0.10';
+      return '2.1.0';
     }
   }, {
     key: 'firstUseKey',
@@ -2866,7 +2910,7 @@ window.Vaadin.registrations = window.Vaadin.registrations || [];
 
 window.Vaadin.registrations.push({
   is: '@vaadin/router',
-  version: '1.6.0',
+  version: '1.7.2',
 });
 
 usageStatistics();

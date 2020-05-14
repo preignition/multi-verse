@@ -1,39 +1,90 @@
-import { d as directive } from './common/directive-9885f5ff.js';
-import { h as html$2, c as nothing, N as NodePart } from './common/lit-html-a0bff75d.js';
-import { customElement, LitElement, css, property } from './lit-element.js';
-import { unsafeHTML } from './lit-html/directives/unsafe-html.js';
+import { d as directive } from './common/directive-5915da03.js';
+import { h as html$2, j as nothing, N as NodePart } from './common/lit-html-75774733.js';
+import { property, customElement, LitElement, css } from './lit-element.js';
 import { until } from './lit-html/directives/until.js';
+import { unsafeHTML } from './lit-html/directives/unsafe-html.js';
 import { __decorate, __assign } from './tslib.js';
 import { cache } from './lit-html/directives/cache.js';
 
-const getSlotTitle = (name) => {
-    return name === '' ? 'Default' : name[0].toUpperCase() + name.slice(1);
+const templates = [];
+const setTemplates = (id, tpl) => {
+    templates[id] = tpl;
 };
-let templates = [];
-const queryTemplates = (node) => {
-    templates = Array.from(node.querySelectorAll('template'));
+const TemplateTypes = Object.freeze({
+    HOST: 'host',
+    KNOB: 'knob',
+    SLOT: 'slot',
+    PREFIX: 'prefix',
+    SUFFIX: 'suffix',
+    WRAPPER: 'wrapper'
+});
+const isTemplate = (node) => node instanceof HTMLTemplateElement;
+const matchTemplate = (name, type) => (tpl) => {
+    const { element, target } = tpl.dataset;
+    return element === name && target === type;
 };
-const isTemplate = (tpl, name) => {
-    return tpl.dataset.element === name;
-};
-const isHostTemplate = (tpl) => {
-    return tpl.dataset.target === 'host';
-};
-const getSlotTemplate = (name) => {
-    return templates.find(t => isTemplate(t, name) && !isHostTemplate(t));
-};
-const hasSlotTemplate = (name) => {
-    return templates.some(t => isTemplate(t, name) && !isHostTemplate(t));
-};
-const getHostTemplateNode = (name) => {
-    const tpl = templates.find(t => isTemplate(t, name) && isHostTemplate(t));
-    return tpl && tpl.content.firstElementChild;
-};
-const hasHostTemplate = (name) => {
-    return templates.some(tpl => isTemplate(tpl, name) && isHostTemplate(tpl));
-};
-const isEmptyArray = (array) => array.length === 0;
+const getTemplateNode = (node) => isTemplate(node) && node.content.firstElementChild;
+const getTemplate = (id, name, type) => templates[id].find(matchTemplate(name, type));
+const getTemplates = (id, name, type) => templates[id].filter(matchTemplate(name, type));
+const hasTemplate = (id, name, type) => templates[id].some(matchTemplate(name, type));
+const isPropMatch = (name) => (prop) => prop.attribute === name || prop.name === name;
 const normalizeType = (type = '') => type.replace(' | undefined', '').replace(' | null', '');
+const unquote = (value) => typeof value === 'string' && value.startsWith('"') && value.endsWith('"')
+    ? value.slice(1, value.length - 1)
+    : value;
+
+async function fetchJson(src) {
+    let result = [];
+    try {
+        const file = await fetch(src);
+        const json = (await file.json());
+        if (Array.isArray(json.tags) && json.tags.length) {
+            result = json.tags;
+        }
+        else {
+            console.error(`No element definitions found at ${src}`);
+        }
+    }
+    catch (e) {
+        console.error(e);
+    }
+    return result;
+}
+const emptyDataWarning = html$2 `
+  <div part="warning">
+    No custom elements found in the JSON file.
+  </div>
+`;
+const ApiViewerMixin = (base) => {
+    class ApiViewer extends base {
+        constructor() {
+            super(...arguments);
+            this.jsonFetched = Promise.resolve([]);
+        }
+        update(props) {
+            const { src } = this;
+            if (Array.isArray(this.elements)) {
+                this.lastSrc = undefined;
+                this.jsonFetched = Promise.resolve(this.elements);
+            }
+            else if (src && this.lastSrc !== src) {
+                this.lastSrc = src;
+                this.jsonFetched = fetchJson(src);
+            }
+            super.update(props);
+        }
+    }
+    __decorate([
+        property()
+    ], ApiViewer.prototype, "src", void 0);
+    __decorate([
+        property({ attribute: false })
+    ], ApiViewer.prototype, "elements", void 0);
+    __decorate([
+        property()
+    ], ApiViewer.prototype, "selected", void 0);
+    return ApiViewer;
+};
 
 const EMPTY_ELEMENT = {
     name: '',
@@ -48,7 +99,7 @@ const EMPTY_ELEMENT = {
 
 /**
  * marked - a markdown parser
- * Copyright (c) 2011-2019, Christopher Jeffrey. (MIT Licensed)
+ * Copyright (c) 2011-2020, Christopher Jeffrey. (MIT Licensed)
  * https://github.com/markedjs/marked
  */
 
@@ -353,7 +404,7 @@ const {
 const block = {
   newline: /^\n+/,
   code: /^( {4}[^\n]+\n*)+/,
-  fences: /^ {0,3}(`{3,}|~{3,})([^`~\n]*)\n(?:|([\s\S]*?)\n)(?: {0,3}\1[~`]* *(?:\n+|$)|$)/,
+  fences: /^ {0,3}(`{3,}(?=[^`\n]*\n)|~{3,})([^\n]*)\n(?:|([\s\S]*?)\n)(?: {0,3}\1[~`]* *(?:\n+|$)|$)/,
   hr: /^ {0,3}((?:- *){3,}|(?:_ *){3,}|(?:\* *){3,})(?:\n+|$)/,
   heading: /^ {0,3}(#{1,6}) +([^\n]*?)(?: +#+)? *(?:\n+|$)/,
   blockquote: /^( {0,3}> ?(paragraph|[^\n]*)(?:\n|$))+/,
@@ -412,10 +463,10 @@ block.html = edit$1(block.html, 'i')
 
 block.paragraph = edit$1(block._paragraph)
   .replace('hr', block.hr)
-  .replace('heading', ' {0,3}#{1,6} +')
+  .replace('heading', ' {0,3}#{1,6} ')
   .replace('|lheading', '') // setex headings don't interrupt commonmark paragraphs
   .replace('blockquote', ' {0,3}>')
-  .replace('fences', ' {0,3}(?:`{3,}|~{3,})[^`\\n]*\\n')
+  .replace('fences', ' {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n')
   .replace('list', ' {0,3}(?:[*+-]|1[.)]) ') // only lists starting from 1 can interrupt
   .replace('html', '</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|!--)')
   .replace('tag', block._tag) // pars can be interrupted by type (6) html blocks
@@ -436,9 +487,35 @@ block.normal = merge$1({}, block);
  */
 
 block.gfm = merge$1({}, block.normal, {
-  nptable: /^ *([^|\n ].*\|.*)\n *([-:]+ *\|[-| :]*)(?:\n((?:.*[^>\n ].*(?:\n|$))*)\n*|$)/,
-  table: /^ *\|(.+)\n *\|?( *[-:]+[-| :]*)(?:\n((?: *[^>\n ].*(?:\n|$))*)\n*|$)/
+  nptable: '^ *([^|\\n ].*\\|.*)\\n' // Header
+    + ' *([-:]+ *\\|[-| :]*)' // Align
+    + '(?:\\n((?:(?!\\n|hr|heading|blockquote|code|fences|list|html).*(?:\\n|$))*)\\n*|$)', // Cells
+  table: '^ *\\|(.+)\\n' // Header
+    + ' *\\|?( *[-:]+[-| :]*)' // Align
+    + '(?:\\n *((?:(?!\\n|hr|heading|blockquote|code|fences|list|html).*(?:\\n|$))*)\\n*|$)' // Cells
 });
+
+block.gfm.nptable = edit$1(block.gfm.nptable)
+  .replace('hr', block.hr)
+  .replace('heading', ' {0,3}#{1,6} ')
+  .replace('blockquote', ' {0,3}>')
+  .replace('code', ' {4}[^\\n]')
+  .replace('fences', ' {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n')
+  .replace('list', ' {0,3}(?:[*+-]|1[.)]) ') // only lists starting from 1 can interrupt
+  .replace('html', '</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|!--)')
+  .replace('tag', block._tag) // tables can be interrupted by type (6) html blocks
+  .getRegex();
+
+block.gfm.table = edit$1(block.gfm.table)
+  .replace('hr', block.hr)
+  .replace('heading', ' {0,3}#{1,6} ')
+  .replace('blockquote', ' {0,3}>')
+  .replace('code', ' {4}[^\\n]')
+  .replace('fences', ' {0,3}(?:`{3,}(?=[^`\\n]*\\n)|~{3,})[^\\n]*\\n')
+  .replace('list', ' {0,3}(?:[*+-]|1[.)]) ') // only lists starting from 1 can interrupt
+  .replace('html', '</?(?:tag)(?: +|\\n|/?>)|<(?:script|pre|style|!--)')
+  .replace('tag', block._tag) // tables can be interrupted by type (6) html blocks
+  .getRegex();
 
 /**
  * Pedantic grammar (original John Gruber's loose markdown specification)
@@ -1165,6 +1242,9 @@ var Slugger_1 = class Slugger {
     let slug = value
       .toLowerCase()
       .trim()
+      // remove html tags
+      .replace(/<[!\/a-z].*?>/ig, '')
+      // remove unwanted chars
       .replace(/[\u2000-\u206F\u2E00-\u2E7F\\'!"#$%&()*+,./:;<=>?@[\]^`{|}~]/g, '')
       .replace(/\s/g, '-');
 
@@ -1264,11 +1344,11 @@ var InlineLexer_1 = class InlineLexer {
         }
 
         src = src.substring(cap[0].length);
-        out += this.options.sanitize
-          ? this.options.sanitizer
+        out += this.renderer.html(this.options.sanitize
+          ? (this.options.sanitizer
             ? this.options.sanitizer(cap[0])
-            : escape$3(cap[0])
-          : cap[0];
+            : escape$3(cap[0]))
+          : cap[0]);
         continue;
       }
 
@@ -1493,6 +1573,10 @@ var TextRenderer_1 = class TextRenderer {
   }
 
   del(text) {
+    return text;
+  }
+
+  html(text) {
     return text;
   }
 
@@ -1861,18 +1945,20 @@ marked.parse = marked;
 
 var marked_1 = marked;
 
-function _toConsumableArray$1(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+/*! @license DOMPurify | (c) Cure53 and other contributors | Released under the Apache license 2.0 and Mozilla Public License 2.0 | github.com/cure53/DOMPurify/blob/2.0.8/LICENSE */
 
-var hasOwnProperty = Object.hasOwnProperty;
-var setPrototypeOf = Object.setPrototypeOf;
-var isFrozen = Object.isFrozen;
-var objectKeys = Object.keys;
-var freeze = Object.freeze;
-var seal = Object.seal; // eslint-disable-line import/no-mutable-exports
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
-var _ref = typeof Reflect !== 'undefined' && Reflect;
-var apply = _ref.apply;
-var construct = _ref.construct;
+var hasOwnProperty = Object.hasOwnProperty,
+    setPrototypeOf = Object.setPrototypeOf,
+    isFrozen = Object.isFrozen,
+    objectKeys = Object.keys;
+var freeze = Object.freeze,
+    seal = Object.seal; // eslint-disable-line import/no-mutable-exports
+
+var _ref = typeof Reflect !== 'undefined' && Reflect,
+    apply = _ref.apply,
+    construct = _ref.construct;
 
 if (!apply) {
   apply = function apply(fun, thisValue, args) {
@@ -1894,7 +1980,7 @@ if (!seal) {
 
 if (!construct) {
   construct = function construct(Func, args) {
-    return new (Function.prototype.bind.apply(Func, [null].concat(_toConsumableArray$1(args))))();
+    return new (Function.prototype.bind.apply(Func, [null].concat(_toConsumableArray(args))))();
   };
 }
 
@@ -1991,14 +2077,15 @@ var mathMl = freeze(['math', 'menclose', 'merror', 'mfenced', 'mfrac', 'mglyph',
 
 var text = freeze(['#text']);
 
-var html$1 = freeze(['accept', 'action', 'align', 'alt', 'autocomplete', 'background', 'bgcolor', 'border', 'cellpadding', 'cellspacing', 'checked', 'cite', 'class', 'clear', 'color', 'cols', 'colspan', 'controls', 'coords', 'crossorigin', 'datetime', 'default', 'dir', 'disabled', 'download', 'enctype', 'face', 'for', 'headers', 'height', 'hidden', 'high', 'href', 'hreflang', 'id', 'integrity', 'ismap', 'label', 'lang', 'list', 'loop', 'low', 'max', 'maxlength', 'media', 'method', 'min', 'minlength', 'multiple', 'name', 'noshade', 'novalidate', 'nowrap', 'open', 'optimum', 'pattern', 'placeholder', 'poster', 'preload', 'pubdate', 'radiogroup', 'readonly', 'rel', 'required', 'rev', 'reversed', 'role', 'rows', 'rowspan', 'spellcheck', 'scope', 'selected', 'shape', 'size', 'sizes', 'span', 'srclang', 'start', 'src', 'srcset', 'step', 'style', 'summary', 'tabindex', 'title', 'type', 'usemap', 'valign', 'value', 'width', 'xmlns']);
+var html$1 = freeze(['accept', 'action', 'align', 'alt', 'autocapitalize', 'autocomplete', 'autopictureinpicture', 'autoplay', 'background', 'bgcolor', 'border', 'capture', 'cellpadding', 'cellspacing', 'checked', 'cite', 'class', 'clear', 'color', 'cols', 'colspan', 'controls', 'controlslist', 'coords', 'crossorigin', 'datetime', 'decoding', 'default', 'dir', 'disabled', 'disablepictureinpicture', 'disableremoteplayback', 'download', 'draggable', 'enctype', 'enterkeyhint', 'face', 'for', 'headers', 'height', 'hidden', 'high', 'href', 'hreflang', 'id', 'inputmode', 'integrity', 'ismap', 'kind', 'label', 'lang', 'list', 'loading', 'loop', 'low', 'max', 'maxlength', 'media', 'method', 'min', 'minlength', 'multiple', 'muted', 'name', 'noshade', 'novalidate', 'nowrap', 'open', 'optimum', 'pattern', 'placeholder', 'playsinline', 'poster', 'preload', 'pubdate', 'radiogroup', 'readonly', 'rel', 'required', 'rev', 'reversed', 'role', 'rows', 'rowspan', 'spellcheck', 'scope', 'selected', 'shape', 'size', 'sizes', 'span', 'srclang', 'start', 'src', 'srcset', 'step', 'style', 'summary', 'tabindex', 'title', 'translate', 'type', 'usemap', 'valign', 'value', 'width', 'xmlns']);
 
-var svg$1 = freeze(['accent-height', 'accumulate', 'additive', 'alignment-baseline', 'ascent', 'attributename', 'attributetype', 'azimuth', 'basefrequency', 'baseline-shift', 'begin', 'bias', 'by', 'class', 'clip', 'clip-path', 'clip-rule', 'color', 'color-interpolation', 'color-interpolation-filters', 'color-profile', 'color-rendering', 'cx', 'cy', 'd', 'dx', 'dy', 'diffuseconstant', 'direction', 'display', 'divisor', 'dur', 'edgemode', 'elevation', 'end', 'fill', 'fill-opacity', 'fill-rule', 'filter', 'filterunits', 'flood-color', 'flood-opacity', 'font-family', 'font-size', 'font-size-adjust', 'font-stretch', 'font-style', 'font-variant', 'font-weight', 'fx', 'fy', 'g1', 'g2', 'glyph-name', 'glyphref', 'gradientunits', 'gradienttransform', 'height', 'href', 'id', 'image-rendering', 'in', 'in2', 'k', 'k1', 'k2', 'k3', 'k4', 'kerning', 'keypoints', 'keysplines', 'keytimes', 'lang', 'lengthadjust', 'letter-spacing', 'kernelmatrix', 'kernelunitlength', 'lighting-color', 'local', 'marker-end', 'marker-mid', 'marker-start', 'markerheight', 'markerunits', 'markerwidth', 'maskcontentunits', 'maskunits', 'max', 'mask', 'media', 'method', 'mode', 'min', 'name', 'numoctaves', 'offset', 'operator', 'opacity', 'order', 'orient', 'orientation', 'origin', 'overflow', 'paint-order', 'path', 'pathlength', 'patterncontentunits', 'patterntransform', 'patternunits', 'points', 'preservealpha', 'preserveaspectratio', 'primitiveunits', 'r', 'rx', 'ry', 'radius', 'refx', 'refy', 'repeatcount', 'repeatdur', 'restart', 'result', 'rotate', 'scale', 'seed', 'shape-rendering', 'specularconstant', 'specularexponent', 'spreadmethod', 'stddeviation', 'stitchtiles', 'stop-color', 'stop-opacity', 'stroke-dasharray', 'stroke-dashoffset', 'stroke-linecap', 'stroke-linejoin', 'stroke-miterlimit', 'stroke-opacity', 'stroke', 'stroke-width', 'style', 'surfacescale', 'tabindex', 'targetx', 'targety', 'transform', 'text-anchor', 'text-decoration', 'text-rendering', 'textlength', 'type', 'u1', 'u2', 'unicode', 'values', 'viewbox', 'visibility', 'version', 'vert-adv-y', 'vert-origin-x', 'vert-origin-y', 'width', 'word-spacing', 'wrap', 'writing-mode', 'xchannelselector', 'ychannelselector', 'x', 'x1', 'x2', 'xmlns', 'y', 'y1', 'y2', 'z', 'zoomandpan']);
+var svg$1 = freeze(['accent-height', 'accumulate', 'additive', 'alignment-baseline', 'ascent', 'attributename', 'attributetype', 'azimuth', 'basefrequency', 'baseline-shift', 'begin', 'bias', 'by', 'class', 'clip', 'clip-path', 'clip-rule', 'color', 'color-interpolation', 'color-interpolation-filters', 'color-profile', 'color-rendering', 'cx', 'cy', 'd', 'dx', 'dy', 'diffuseconstant', 'direction', 'display', 'divisor', 'dur', 'edgemode', 'elevation', 'end', 'fill', 'fill-opacity', 'fill-rule', 'filter', 'filterunits', 'flood-color', 'flood-opacity', 'font-family', 'font-size', 'font-size-adjust', 'font-stretch', 'font-style', 'font-variant', 'font-weight', 'fx', 'fy', 'g1', 'g2', 'glyph-name', 'glyphref', 'gradientunits', 'gradienttransform', 'height', 'href', 'id', 'image-rendering', 'in', 'in2', 'k', 'k1', 'k2', 'k3', 'k4', 'kerning', 'keypoints', 'keysplines', 'keytimes', 'lang', 'lengthadjust', 'letter-spacing', 'kernelmatrix', 'kernelunitlength', 'lighting-color', 'local', 'marker-end', 'marker-mid', 'marker-start', 'markerheight', 'markerunits', 'markerwidth', 'maskcontentunits', 'maskunits', 'max', 'mask', 'media', 'method', 'mode', 'min', 'name', 'numoctaves', 'offset', 'operator', 'opacity', 'order', 'orient', 'orientation', 'origin', 'overflow', 'paint-order', 'path', 'pathlength', 'patterncontentunits', 'patterntransform', 'patternunits', 'points', 'preservealpha', 'preserveaspectratio', 'primitiveunits', 'r', 'rx', 'ry', 'radius', 'refx', 'refy', 'repeatcount', 'repeatdur', 'restart', 'result', 'rotate', 'scale', 'seed', 'shape-rendering', 'specularconstant', 'specularexponent', 'spreadmethod', 'startoffset', 'stddeviation', 'stitchtiles', 'stop-color', 'stop-opacity', 'stroke-dasharray', 'stroke-dashoffset', 'stroke-linecap', 'stroke-linejoin', 'stroke-miterlimit', 'stroke-opacity', 'stroke', 'stroke-width', 'style', 'surfacescale', 'tabindex', 'targetx', 'targety', 'transform', 'text-anchor', 'text-decoration', 'text-rendering', 'textlength', 'type', 'u1', 'u2', 'unicode', 'values', 'viewbox', 'visibility', 'version', 'vert-adv-y', 'vert-origin-x', 'vert-origin-y', 'width', 'word-spacing', 'wrap', 'writing-mode', 'xchannelselector', 'ychannelselector', 'x', 'x1', 'x2', 'xmlns', 'y', 'y1', 'y2', 'z', 'zoomandpan']);
 
 var mathMl$1 = freeze(['accent', 'accentunder', 'align', 'bevelled', 'close', 'columnsalign', 'columnlines', 'columnspan', 'denomalign', 'depth', 'dir', 'display', 'displaystyle', 'encoding', 'fence', 'frame', 'height', 'href', 'id', 'largeop', 'length', 'linethickness', 'lspace', 'lquote', 'mathbackground', 'mathcolor', 'mathsize', 'mathvariant', 'maxsize', 'minsize', 'movablelimits', 'notation', 'numalign', 'open', 'rowalign', 'rowlines', 'rowspacing', 'rowspan', 'rspace', 'rquote', 'scriptlevel', 'scriptminsize', 'scriptsizemultiplier', 'selection', 'separator', 'separators', 'stretchy', 'subscriptshift', 'supscriptshift', 'symmetric', 'voffset', 'width', 'xmlns']);
 
 var xml = freeze(['xlink:href', 'xml:id', 'xlink:title', 'xml:space', 'xmlns:xlink']);
 
+// eslint-disable-next-line unicorn/better-regex
 var MUSTACHE_EXPR = seal(/\{\{[\s\S]*|[\s\S]*\}\}/gm); // Specify template detection regex for SAFE_FOR_TEMPLATES mode
 var ERB_EXPR = seal(/<%[\s\S]*|[\s\S]*%>/gm);
 var DATA_ATTR = seal(/^data-[\-\w.\u00B7-\uFFFF]/); // eslint-disable-line no-useless-escape
@@ -2011,7 +2098,7 @@ var ATTR_WHITESPACE = seal(/[\u0000-\u0020\u00A0\u1680\u180E\u2000-\u2029\u205f\
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+function _toConsumableArray$1(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 var getGlobal = function getGlobal() {
   return typeof window === 'undefined' ? null : window;
@@ -2047,7 +2134,7 @@ var _createTrustedTypesPolicy = function _createTrustedTypesPolicy(trustedTypes,
         return html$$1;
       }
     });
-  } catch (error) {
+  } catch (_) {
     // Policy creation failed (most likely another DOMPurify script has
     // already run). Skip creating the policy, as this will only cause errors
     // if TT are enforced.
@@ -2067,7 +2154,7 @@ function createDOMPurify() {
    * Version label, exposed for easier checks
    * if DOMPurify is up to date or not
    */
-  DOMPurify.version = '2.0.8';
+  DOMPurify.version = '2.0.11';
 
   /**
    * Array of elements that DOMPurify removed during sanitation.
@@ -2084,7 +2171,6 @@ function createDOMPurify() {
   }
 
   var originalDocument = window.document;
-  var useDOMParser = false;
   var removeTitle = false;
 
   var document = window.document;
@@ -2147,11 +2233,11 @@ function createDOMPurify() {
   /* allowed element names */
 
   var ALLOWED_TAGS = null;
-  var DEFAULT_ALLOWED_TAGS = addToSet({}, [].concat(_toConsumableArray(html), _toConsumableArray(svg), _toConsumableArray(svgFilters), _toConsumableArray(mathMl), _toConsumableArray(text)));
+  var DEFAULT_ALLOWED_TAGS = addToSet({}, [].concat(_toConsumableArray$1(html), _toConsumableArray$1(svg), _toConsumableArray$1(svgFilters), _toConsumableArray$1(mathMl), _toConsumableArray$1(text)));
 
   /* Allowed attribute names */
   var ALLOWED_ATTR = null;
-  var DEFAULT_ALLOWED_ATTR = addToSet({}, [].concat(_toConsumableArray(html$1), _toConsumableArray(svg$1), _toConsumableArray(mathMl$1), _toConsumableArray(xml)));
+  var DEFAULT_ALLOWED_ATTR = addToSet({}, [].concat(_toConsumableArray$1(html$1), _toConsumableArray$1(svg$1), _toConsumableArray$1(mathMl$1), _toConsumableArray$1(xml)));
 
   /* Explicitly forbidden tags (overrides ALLOWED_TAGS/ADD_TAGS) */
   var FORBID_TAGS = null;
@@ -2223,7 +2309,8 @@ function createDOMPurify() {
   var FORBID_CONTENTS = addToSet({}, ['annotation-xml', 'audio', 'colgroup', 'desc', 'foreignobject', 'head', 'iframe', 'math', 'mi', 'mn', 'mo', 'ms', 'mtext', 'noembed', 'noframes', 'plaintext', 'script', 'style', 'svg', 'template', 'thead', 'title', 'video', 'xmp']);
 
   /* Tags that are safe for data: URIs */
-  var DATA_URI_TAGS = addToSet({}, ['audio', 'video', 'img', 'source', 'image']);
+  var DATA_URI_TAGS = null;
+  var DEFAULT_DATA_URI_TAGS = addToSet({}, ['audio', 'video', 'img', 'source', 'image', 'track']);
 
   /* Attributes safe for values like "javascript:" */
   var URI_SAFE_ATTRIBUTES = null;
@@ -2257,6 +2344,7 @@ function createDOMPurify() {
     ALLOWED_TAGS = 'ALLOWED_TAGS' in cfg ? addToSet({}, cfg.ALLOWED_TAGS) : DEFAULT_ALLOWED_TAGS;
     ALLOWED_ATTR = 'ALLOWED_ATTR' in cfg ? addToSet({}, cfg.ALLOWED_ATTR) : DEFAULT_ALLOWED_ATTR;
     URI_SAFE_ATTRIBUTES = 'ADD_URI_SAFE_ATTR' in cfg ? addToSet(clone(DEFAULT_URI_SAFE_ATTRIBUTES), cfg.ADD_URI_SAFE_ATTR) : DEFAULT_URI_SAFE_ATTRIBUTES;
+    DATA_URI_TAGS = 'ADD_DATA_URI_TAGS' in cfg ? addToSet(clone(DEFAULT_DATA_URI_TAGS), cfg.ADD_DATA_URI_TAGS) : DEFAULT_DATA_URI_TAGS;
     FORBID_TAGS = 'FORBID_TAGS' in cfg ? addToSet({}, cfg.FORBID_TAGS) : {};
     FORBID_ATTR = 'FORBID_ATTR' in cfg ? addToSet({}, cfg.FORBID_ATTR) : {};
     USE_PROFILES = 'USE_PROFILES' in cfg ? cfg.USE_PROFILES : false;
@@ -2285,7 +2373,7 @@ function createDOMPurify() {
 
     /* Parse profile info */
     if (USE_PROFILES) {
-      ALLOWED_TAGS = addToSet({}, [].concat(_toConsumableArray(text)));
+      ALLOWED_TAGS = addToSet({}, [].concat(_toConsumableArray$1(text)));
       ALLOWED_ATTR = [];
       if (USE_PROFILES.html === true) {
         addToSet(ALLOWED_TAGS, html);
@@ -2365,8 +2453,9 @@ function createDOMPurify() {
   var _forceRemove = function _forceRemove(node) {
     arrayPush(DOMPurify.removed, { element: node });
     try {
+      // eslint-disable-next-line unicorn/prefer-node-remove
       node.parentNode.removeChild(node);
-    } catch (error) {
+    } catch (_) {
       node.outerHTML = emptyHTML;
     }
   };
@@ -2383,7 +2472,7 @@ function createDOMPurify() {
         attribute: node.getAttributeNode(name),
         from: node
       });
-    } catch (error) {
+    } catch (_) {
       arrayPush(DOMPurify.removed, {
         attribute: null,
         from: node
@@ -2408,25 +2497,22 @@ function createDOMPurify() {
       dirty = '<remove></remove>' + dirty;
     } else {
       /* If FORCE_BODY isn't used, leading whitespace needs to be preserved manually */
-      var matches = stringMatch(dirty, /^[\s]+/);
+      var matches = stringMatch(dirty, /^[\r\n\t ]+/);
       leadingWhitespace = matches && matches[0];
     }
 
     var dirtyPayload = trustedTypesPolicy ? trustedTypesPolicy.createHTML(dirty) : dirty;
-    /* Use DOMParser to workaround Firefox bug (see comment below) */
-    if (useDOMParser) {
-      try {
-        doc = new DOMParser().parseFromString(dirtyPayload, 'text/html');
-      } catch (error) {}
-    }
+    /* Use the DOMParser API by default, fallback later if needs be */
+    try {
+      doc = new DOMParser().parseFromString(dirtyPayload, 'text/html');
+    } catch (_) {}
 
     /* Remove title to fix a mXSS bug in older MS Edge */
     if (removeTitle) {
       addToSet(FORBID_TAGS, ['title']);
     }
 
-    /* Otherwise use createHTMLDocument, because DOMParser is unsafe in
-    Safari (see comment below) */
+    /* Use createHTMLDocument in case DOMParser is not available */
     if (!doc || !doc.documentElement) {
       doc = implementation.createHTMLDocument('');
       var _doc = doc,
@@ -2444,32 +2530,15 @@ function createDOMPurify() {
     return getElementsByTagName.call(doc, WHOLE_DOCUMENT ? 'html' : 'body')[0];
   };
 
-  // Firefox uses a different parser for innerHTML rather than
-  // DOMParser (see https://bugzilla.mozilla.org/show_bug.cgi?id=1205631)
-  // which means that you *must* use DOMParser, otherwise the output may
-  // not be safe if used in a document.write context later.
-  //
-  // So we feature detect the Firefox bug and use the DOMParser if necessary.
-  //
-  // Chrome 77 and other versions ship an mXSS bug that caused a bypass to
-  // happen. We now check for the mXSS trigger and react accordingly.
+  /* Here we test for a broken feature in Edge that might cause mXSS */
   if (DOMPurify.isSupported) {
-    (function () {
-      try {
-        var doc = _initDocument('<svg><p><textarea><img src="</textarea><img src=x abc=1//">');
-        if (doc.querySelector('svg img')) {
-          useDOMParser = true;
-        }
-      } catch (error) {}
-    })();
-
     (function () {
       try {
         var doc = _initDocument('<x/><title>&lt;/title&gt;&lt;img&gt;');
         if (regExpTest(/<\/title/, doc.querySelector('title').innerHTML)) {
           removeTitle = true;
         }
-      } catch (error) {}
+      } catch (_) {}
     })();
   }
 
@@ -2509,8 +2578,8 @@ function createDOMPurify() {
    * @param  {Node} obj object to check whether it's a DOM node
    * @return {Boolean} true is object is a DOM node
    */
-  var _isNode = function _isNode(obj) {
-    return (typeof Node === 'undefined' ? 'undefined' : _typeof(Node)) === 'object' ? obj instanceof Node : obj && (typeof obj === 'undefined' ? 'undefined' : _typeof(obj)) === 'object' && typeof obj.nodeType === 'number' && typeof obj.nodeName === 'string';
+  var _isNode = function _isNode(object) {
+    return (typeof Node === 'undefined' ? 'undefined' : _typeof(Node)) === 'object' ? object instanceof Node : object && (typeof object === 'undefined' ? 'undefined' : _typeof(object)) === 'object' && typeof object.nodeType === 'number' && typeof object.nodeName === 'string';
   };
 
   /**
@@ -2576,7 +2645,7 @@ function createDOMPurify() {
         try {
           var htmlToInsert = currentNode.innerHTML;
           currentNode.insertAdjacentHTML('AfterEnd', trustedTypesPolicy ? trustedTypesPolicy.createHTML(htmlToInsert) : htmlToInsert);
-        } catch (error) {}
+        } catch (_) {}
       }
 
       _forceRemove(currentNode);
@@ -2777,7 +2846,7 @@ function createDOMPurify() {
         }
 
         arrayPop(DOMPurify.removed);
-      } catch (error) {}
+      } catch (_) {}
     }
 
     /* Execute a hook if present */
@@ -2896,7 +2965,9 @@ function createDOMPurify() {
       }
     } else {
       /* Exit directly if we have nothing to do */
-      if (!RETURN_DOM && !SAFE_FOR_TEMPLATES && !WHOLE_DOCUMENT && RETURN_TRUSTED_TYPE && dirty.indexOf('<') === -1) {
+      if (!RETURN_DOM && !SAFE_FOR_TEMPLATES && !WHOLE_DOCUMENT && RETURN_TRUSTED_TYPE &&
+      // eslint-disable-next-line unicorn/prefer-includes
+      dirty.indexOf('<') === -1) {
         return trustedTypesPolicy ? trustedTypesPolicy.createHTML(dirty) : dirty;
       }
 
@@ -2961,11 +3032,13 @@ function createDOMPurify() {
       }
 
       if (RETURN_DOM_IMPORT) {
-        /* AdoptNode() is not used because internal state is not reset
-               (e.g. the past names map of a HTMLFormElement), this is safe
-               in theory but we would rather not risk another attack vector.
-               The state that is cloned by importNode() is explicitly defined
-               by the specs. */
+        /*
+          AdoptNode() is not used because internal state is not reset
+          (e.g. the past names map of a HTMLFormElement), this is safe
+          in theory but we would rather not risk another attack vector.
+          The state that is cloned by importNode() is explicitly defined
+          by the specs.
+        */
         returnNode = importNode.call(originalDocument, returnNode, true);
       }
 
@@ -3080,14 +3153,12 @@ function createDOMPurify() {
 
 var purify = createDOMPurify();
 
+marked_1.setOptions({ headerIds: false });
 const parse = (markdown) => {
-    if (!markdown) {
-        return html$2 `
-      ${nothing}
-    `;
-    }
     return html$2 `
-    ${unsafeHTML(purify.sanitize(marked_1(markdown)))}
+    ${!markdown
+        ? nothing
+        : unsafeHTML(purify.sanitize(marked_1(markdown)).replace(/<(h[1-6]|a|p|ul|ol|li|pre|code|strong|em|blockquote|del)(\s+href="[^"]+")*>/g, '<$1 part="md-$1"$2>'))}
   `;
 };
 
@@ -3099,6 +3170,7 @@ let ApiViewerPanel = class ApiViewerPanel extends LitElement {
         display: block;
         box-sizing: border-box;
         width: 100%;
+        overflow: hidden;
       }
 
       :host([hidden]) {
@@ -3107,9 +3179,7 @@ let ApiViewerPanel = class ApiViewerPanel extends LitElement {
     `;
     }
     render() {
-        return html$2 `
-      <slot></slot>
-    `;
+        return html$2 `<slot></slot>`;
     }
     firstUpdated() {
         this.setAttribute('role', 'tabpanel');
@@ -3219,9 +3289,7 @@ let ApiViewerTab = class ApiViewerTab extends LitElement {
     `;
     }
     render() {
-        return html$2 `
-      ${this.heading}
-    `;
+        return html$2 `${this.heading}`;
     }
     firstUpdated() {
         this.setAttribute('role', 'tab');
@@ -3260,7 +3328,7 @@ __decorate([
     property({ type: Boolean, reflect: true })
 ], ApiViewerTab.prototype, "selected", void 0);
 __decorate([
-    property({ type: String })
+    property()
 ], ApiViewerTab.prototype, "heading", void 0);
 __decorate([
     property({ type: Boolean })
@@ -3324,7 +3392,7 @@ let ApiViewerTabs = class ApiViewerTabs extends LitElement {
             tabSlot.addEventListener('slotchange', this._boundSlotChange);
             panelSlot.addEventListener('slotchange', this._boundSlotChange);
         }
-        Promise.all([...this._allTabs(), ...this._allPanels()].map(el => el.updateComplete)).then(() => {
+        Promise.all([...this._allTabs(), ...this._allPanels()].map((el) => el.updateComplete)).then(() => {
             this._linkPanels();
         });
     }
@@ -3333,12 +3401,12 @@ let ApiViewerTabs = class ApiViewerTabs extends LitElement {
     }
     _linkPanels() {
         const tabs = this._allTabs();
-        tabs.forEach(tab => {
+        tabs.forEach((tab) => {
             const panel = tab.nextElementSibling;
             tab.setAttribute('aria-controls', panel.id);
             panel.setAttribute('aria-labelledby', tab.id);
         });
-        const selectedTab = tabs.find(tab => tab.selected) || tabs[0];
+        const selectedTab = tabs.find((tab) => tab.selected) || tabs[0];
         this._selectTab(selectedTab);
     }
     _allPanels() {
@@ -3370,7 +3438,7 @@ let ApiViewerTabs = class ApiViewerTabs extends LitElement {
     }
     _prevTab() {
         const tabs = this._allTabs();
-        const newIdx = this._getAvailableIndex(tabs.findIndex(tab => tab.selected) - 1, -1);
+        const newIdx = this._getAvailableIndex(tabs.findIndex((tab) => tab.selected) - 1, -1);
         return tabs[(newIdx + tabs.length) % tabs.length];
     }
     _firstTab() {
@@ -3383,7 +3451,7 @@ let ApiViewerTabs = class ApiViewerTabs extends LitElement {
     }
     _nextTab() {
         const tabs = this._allTabs();
-        const newIdx = this._getAvailableIndex(tabs.findIndex(tab => tab.selected) + 1, 1);
+        const newIdx = this._getAvailableIndex(tabs.findIndex((tab) => tab.selected) + 1, 1);
         return tabs[newIdx % tabs.length];
     }
     /**
@@ -3392,10 +3460,10 @@ let ApiViewerTabs = class ApiViewerTabs extends LitElement {
     reset() {
         const tabs = this._allTabs();
         const panels = this._allPanels();
-        tabs.forEach(tab => {
+        tabs.forEach((tab) => {
             tab.selected = false;
         });
-        panels.forEach(panel => {
+        panels.forEach((panel) => {
             panel.hidden = true;
         });
     }
@@ -3459,15 +3527,11 @@ ApiViewerTabs = __decorate([
     customElement('api-viewer-tabs')
 ], ApiViewerTabs);
 
-/* eslint-enable import/no-duplicates */
-const processAttrs = (attrs, props) => {
-    return attrs.filter(({ name }) => !props.some(prop => prop.attribute === name || prop.name === name));
-};
-const renderItem = (name, description, valueType, attribute, value) => {
+const renderItem = (prefix, name, description, valueType, value, attribute) => {
     return html$2 `
     <div part="docs-item">
       <div part="docs-row">
-        <div part="docs-column">
+        <div part="docs-column" class="column-name-${prefix}">
           <div part="docs-label">Name</div>
           <div part="docs-value" class="accent">${name}</div>
         </div>
@@ -3479,18 +3543,17 @@ const renderItem = (name, description, valueType, attribute, value) => {
                 <div part="docs-value">${attribute}</div>
               </div>
             `}
-        ${valueType === undefined
+        ${valueType === undefined && value === undefined
         ? nothing
         : html$2 `
               <div part="docs-column" class="column-type">
                 <div part="docs-label">Type</div>
                 <div part="docs-value">
-                  ${valueType}
+                  ${valueType ||
+            (Number.isNaN(Number(value)) ? typeof value : 'number')}
                   ${value === undefined
             ? nothing
-            : html$2 `
-                        = <span class="accent">${value}</span>
-                      `}
+            : html$2 ` = <span class="accent">${value}</span> `}
                 </div>
               </div>
             `}
@@ -3502,8 +3565,8 @@ const renderItem = (name, description, valueType, attribute, value) => {
     </div>
   `;
 };
-const renderTab = (heading, count, content) => {
-    const hidden = count === 0;
+const renderTab = (heading, array, content) => {
+    const hidden = array.length === 0;
     return html$2 `
     <api-viewer-tab
       heading="${heading}"
@@ -3533,7 +3596,7 @@ let ApiViewerDocs = class ApiViewerDocs extends LitElement {
     render() {
         const { slots, props, attrs, events, cssParts, cssProps } = this;
         const properties = props || [];
-        const attributes = processAttrs(attrs || [], properties);
+        const attributes = (attrs || []).filter(({ name }) => !properties.some(isPropMatch(name)));
         const emptyDocs = [
             properties,
             attributes,
@@ -3541,7 +3604,7 @@ let ApiViewerDocs = class ApiViewerDocs extends LitElement {
             events,
             cssProps,
             cssParts
-        ].every(isEmptyArray);
+        ].every((arr) => arr.length === 0);
         return emptyDocs
             ? html$2 `
           <div part="warning">
@@ -3551,26 +3614,29 @@ let ApiViewerDocs = class ApiViewerDocs extends LitElement {
         `
             : html$2 `
           <api-viewer-tabs>
-            ${renderTab('Properties', properties.length, html$2 `
-                ${properties.map(prop => {
+            ${renderTab('Properties', properties, html$2 `
+                ${properties.map((prop) => {
                 const { name, description, type, attribute } = prop;
-                return renderItem(name, description, type, attribute, prop.default);
+                return renderItem('prop', name, description, type, prop.default, attribute);
             })}
               `)}
-            ${renderTab('Attributes', attributes.length, html$2 `
-                ${attributes.map(({ name, description, type }) => renderItem(name, description, type))}
+            ${renderTab('Attributes', attributes, html$2 `
+                ${attributes.map(({ name, description, type }) => renderItem('attr', name, description, type))}
               `)}
-            ${renderTab('Slots', slots.length, html$2 `
-                ${slots.map(({ name, description }) => renderItem(name, description))}
+            ${renderTab('Slots', slots, html$2 `
+                ${slots.map(({ name, description }) => renderItem('slot', name, description))}
               `)}
-            ${renderTab('Events', events.length, html$2 `
-                ${events.map(({ name, description }) => renderItem(name, description))}
+            ${renderTab('Events', events, html$2 `
+                ${events.map(({ name, description }) => renderItem('event', name, description))}
               `)}
-            ${renderTab('CSS Custom Properties', cssProps.length, html$2 `
-                ${cssProps.map(({ name, description }) => renderItem(name, description))}
+            ${renderTab('CSS Custom Properties', cssProps, html$2 `
+                ${cssProps.map((prop) => {
+                const { name, description, type } = prop;
+                return renderItem('css', name, description, type, unquote(prop.default));
+            })}
               `)}
-            ${renderTab('CSS Shadow Parts', cssParts.length, html$2 `
-                ${cssParts.map(({ name, description }) => renderItem(name, description))}
+            ${renderTab('CSS Shadow Parts', cssParts, html$2 `
+                ${cssParts.map(({ name, description }) => renderItem('part', name, description))}
               `)}
           </api-viewer-tabs>
         `;
@@ -3578,42 +3644,51 @@ let ApiViewerDocs = class ApiViewerDocs extends LitElement {
     updated(props) {
         if (props.has('name') && props.get('name')) {
             const tabs = this.renderRoot.querySelector('api-viewer-tabs');
-            if (tabs instanceof ApiViewerTabs) {
+            if (tabs) {
                 tabs.selectFirst();
             }
         }
     }
 };
 __decorate([
-    property({ type: String })
+    property()
 ], ApiViewerDocs.prototype, "name", void 0);
 __decorate([
-    property({ attribute: false, hasChanged: () => true })
+    property({ attribute: false })
 ], ApiViewerDocs.prototype, "props", void 0);
 __decorate([
-    property({ attribute: false, hasChanged: () => true })
+    property({ attribute: false })
 ], ApiViewerDocs.prototype, "attrs", void 0);
 __decorate([
-    property({ attribute: false, hasChanged: () => true })
+    property({ attribute: false })
 ], ApiViewerDocs.prototype, "slots", void 0);
 __decorate([
-    property({ attribute: false, hasChanged: () => true })
+    property({ attribute: false })
 ], ApiViewerDocs.prototype, "events", void 0);
 __decorate([
-    property({ attribute: false, hasChanged: () => true })
+    property({ attribute: false })
 ], ApiViewerDocs.prototype, "cssParts", void 0);
 __decorate([
-    property({ attribute: false, hasChanged: () => true })
+    property({ attribute: false })
 ], ApiViewerDocs.prototype, "cssProps", void 0);
 ApiViewerDocs = __decorate([
     customElement('api-viewer-docs')
 ], ApiViewerDocs);
 
+const { HOST, PREFIX, SLOT, SUFFIX, WRAPPER } = TemplateTypes;
 const caches = new WeakMap();
 const applyKnobs = (component, knobs) => {
     Object.keys(knobs).forEach((key) => {
-        const { type, attribute, value } = knobs[key];
-        if (normalizeType(type) === 'boolean') {
+        const { type, attribute, value, custom } = knobs[key];
+        if (custom && attribute) {
+            if (typeof value === 'string' && value) {
+                component.setAttribute(attribute, value);
+            }
+            else {
+                component.removeAttribute(attribute);
+            }
+        }
+        else if (normalizeType(type) === 'boolean') {
             component.toggleAttribute(attribute || key, Boolean(value));
         }
         else {
@@ -3625,21 +3700,25 @@ const applySlots = (component, slots) => {
     while (component.firstChild) {
         component.removeChild(component.firstChild);
     }
-    slots.forEach(slot => {
-        const div = document.createElement('div');
+    slots.forEach((slot) => {
+        let node;
         const { name, content } = slot;
         if (name) {
-            div.setAttribute('slot', name);
+            node = document.createElement('div');
+            node.setAttribute('slot', name);
+            node.textContent = content;
         }
-        div.textContent = content;
-        component.appendChild(div);
+        else {
+            node = document.createTextNode(content);
+        }
+        component.appendChild(node);
     });
 };
 const applyCssProps = (component, cssProps) => {
-    cssProps.forEach(prop => {
+    cssProps.forEach((prop) => {
         const { name, value } = prop;
         if (value) {
-            if (value === prop.defaultValue) {
+            if (value === prop.default) {
                 component.style.removeProperty(name);
             }
             else {
@@ -3670,32 +3749,69 @@ async function elementUpdated(element) {
         hasSpecificAwait = true;
     }
     if (!hasSpecificAwait) {
-        await new Promise(resolve => setTimeout(() => resolve()));
+        await new Promise((resolve) => setTimeout(() => resolve()));
     }
     return el;
 }
-const renderer = directive((tag, knobs, slots, cssProps) => (part) => {
+const makePart = (part) => {
+    const newPart = new NodePart(part.options);
+    newPart.appendIntoPart(part);
+    return newPart;
+};
+const importTemplate = (tpl) => document.importNode(tpl.content, true);
+const renderer = directive((id, tag, knobs, slots, cssProps) => (part) => {
     if (!(part instanceof NodePart)) {
         throw new Error('renderer can only be used in text bindings');
     }
     let component = caches.get(part);
     if (component === undefined || component.tagName.toLowerCase() !== tag) {
-        const node = getHostTemplateNode(tag);
+        const [host, prefix, suffix, slot, wrapper] = [
+            HOST,
+            PREFIX,
+            SUFFIX,
+            SLOT,
+            WRAPPER
+        ].map((type) => getTemplate(id, tag, type));
+        const node = getTemplateNode(host);
         if (node) {
             component = node.cloneNode(true);
         }
         else {
             component = document.createElement(tag);
         }
-        part.setValue(component);
-        part.commit();
-        const template = getSlotTemplate(tag);
-        if (template instanceof HTMLTemplateElement) {
-            const clone = document.importNode(template.content, true);
-            component.appendChild(clone);
+        let targetPart = part;
+        if (isTemplate(prefix)) {
+            const prefixPart = makePart(part);
+            prefixPart.setValue(importTemplate(prefix));
+            prefixPart.commit();
+        }
+        const wrapNode = getTemplateNode(wrapper);
+        if (wrapNode) {
+            const wrapperPart = makePart(part);
+            const clone = wrapNode.cloneNode(true);
+            clone.innerHTML = '';
+            wrapperPart.setValue(clone);
+            wrapperPart.commit();
+            const innerPart = new NodePart(part.options);
+            innerPart.appendInto(clone);
+            targetPart = innerPart;
+        }
+        else if (isTemplate(prefix) || isTemplate(suffix)) {
+            const contentPart = makePart(part);
+            targetPart = contentPart;
+        }
+        targetPart.setValue(component);
+        targetPart.commit();
+        if (isTemplate(suffix)) {
+            const suffixPart = makePart(part);
+            suffixPart.setValue(importTemplate(suffix));
+            suffixPart.commit();
+        }
+        if (isTemplate(slot)) {
+            component.appendChild(importTemplate(slot));
         }
         caches.set(part, component);
-        const instance = part.value;
+        const instance = targetPart.value;
         // wait for rendering
         elementUpdated(instance).then(() => {
             instance.dispatchEvent(new CustomEvent('rendered', {
@@ -3708,7 +3824,7 @@ const renderer = directive((tag, knobs, slots, cssProps) => (part) => {
         });
     }
     applyKnobs(component, knobs);
-    if (!hasSlotTemplate(tag) && slots.length) {
+    if (!hasTemplate(id, tag, SLOT) && slots.length) {
         applySlots(component, slots);
     }
     if (cssProps.length) {
@@ -3716,6 +3832,9 @@ const renderer = directive((tag, knobs, slots, cssProps) => (part) => {
     }
 });
 
+const DEFAULT = 'default';
+const capitalize = (name) => name[0].toUpperCase() + name.slice(1);
+const getSlotDefault = (name, initial) => capitalize(name === '' ? initial : name);
 const getInputType = (type) => {
     switch (normalizeType(type)) {
         case 'boolean':
@@ -3739,18 +3858,13 @@ const cssPropRenderer = (knob, id) => {
   `;
 };
 const propRenderer = (knob, id) => {
-    const { name, type, value } = knob;
-    const inputType = getInputType(type);
+    const { name, type, value, options } = knob;
     let input;
-    if (value === undefined) {
+    if (type === 'select' && Array.isArray(options)) {
         input = html$2 `
-      <input
-        id="${id}"
-        type="${inputType}"
-        data-name="${name}"
-        data-type="${type}"
-        part="input"
-      />
+      <select id="${id}" data-name="${name}" data-type="${type}" part="select">
+        ${options.map((option) => html$2 `<option value="${option}">${option}</option>`)}
+      </select>
     `;
     }
     else if (normalizeType(type) === 'boolean') {
@@ -3769,8 +3883,8 @@ const propRenderer = (knob, id) => {
         input = html$2 `
       <input
         id="${id}"
-        type="${inputType}"
-        .value="${String(value)}"
+        type="${getInputType(type)}"
+        .value="${value == null ? '' : String(value)}"
         data-name="${name}"
         data-type="${type}"
         part="input"
@@ -3792,11 +3906,11 @@ const slotRenderer = (knob, id) => {
     />
   `;
 };
-const renderKnobs = (items, type, renderer) => {
+const renderKnobs = (items, header, type, renderer) => {
     const rows = items.map((item) => {
         const { name } = item;
-        const id = `${type}-${name || 'default'}`;
-        const label = type === 'slot' ? getSlotTitle(name) : name;
+        const id = `${type}-${name || DEFAULT}`;
+        const label = type === 'slot' ? getSlotDefault(name, DEFAULT) : name;
         return html$2 `
       <tr>
         <td>
@@ -3807,6 +3921,7 @@ const renderKnobs = (items, type, renderer) => {
     `;
     });
     return html$2 `
+    <h3 part="knobs-header" ?hidden="${items.length === 0}">${header}</h3>
     <table>
       ${rows}
     </table>
@@ -4530,7 +4645,7 @@ var highlightTheme = css `
     font-family: var(--ave-monospace-font);
     font-size: 0.875rem;
     text-align: left;
-    white-space: pre;
+    white-space: pre-wrap;
     word-spacing: normal;
     word-break: normal;
     word-wrap: normal;
@@ -4587,8 +4702,9 @@ registerLanguages(CSS, XML);
 const highlighter = init(htmlRender, {
     classPrefix: ''
 });
+const { PREFIX: PREFIX$1, SLOT: SLOT$1, SUFFIX: SUFFIX$1, WRAPPER: WRAPPER$1 } = TemplateTypes;
 const INDENT = '  ';
-const unindent = (text) => {
+const unindent = (text, prepend) => {
     if (!text)
         return text;
     const lines = text.replace(/\t/g, INDENT).split('\n');
@@ -4601,44 +4717,78 @@ const unindent = (text) => {
             return lineIndent;
         return lineIndent < prev ? lineIndent : prev;
     }, null);
-    return lines.map(l => INDENT + l.substr(indent)).join('\n');
+    return lines.map((l) => prepend + l.substr(indent)).join('\n');
 };
-const renderSnippet = (tag, values, slots, cssProps) => {
-    let markup = `<${tag}`;
+const getTplContent = (template, prepend) => {
+    const tpl = template.innerHTML.replace(/\s+$/, '').replace(/(="")/g, '');
+    return unindent(tpl, prepend);
+};
+const renderSnippet = (id, tag, values, slots, cssProps) => {
+    let markup = '';
+    const prefix = getTemplate(id, tag, PREFIX$1);
+    if (isTemplate(prefix)) {
+        markup += `${getTplContent(prefix, '').trim()}\n`;
+    }
+    let prepend = '';
+    let wrap = null;
+    const wrapper = getTemplate(id, tag, WRAPPER$1);
+    const wrapNode = getTemplateNode(wrapper);
+    if (wrapNode) {
+        prepend = INDENT;
+        const match = wrapNode.outerHTML.match(/<([a-z]+)[^>]*>/);
+        if (match) {
+            wrap = wrapNode.tagName.toLowerCase();
+            markup += `${match[0]}\n${INDENT}`;
+        }
+    }
+    markup += `<${tag}`;
     Object.keys(values)
         .sort((a, b) => (a > b ? 1 : -1))
         .forEach((key) => {
-        const knob = values[key];
-        const attr = knob.attribute || key;
-        switch (normalizeType(knob.type)) {
+        const { value, type, attribute } = values[key];
+        const attr = attribute || key;
+        switch (normalizeType(type)) {
             case 'boolean':
-                markup += knob.value ? ` ${attr}` : '';
+                markup += value ? ` ${attr}` : '';
+                break;
+            case 'select':
+                markup += value !== '' ? ` ${attr}="${value}"` : '';
                 break;
             default:
-                markup += knob.value != null ? ` ${attr}="${knob.value}"` : '';
+                markup += value != null ? ` ${attr}="${value}"` : '';
                 break;
         }
     });
     markup += `>`;
-    const template = getSlotTemplate(tag);
-    if (template instanceof HTMLTemplateElement) {
-        const tpl = template.innerHTML.replace(/\s+$/, '').replace(/(="")/g, '');
-        markup += unindent(tpl);
-        markup += `\n`;
+    const template = getTemplate(id, tag, SLOT$1);
+    if (isTemplate(template)) {
+        markup += `${getTplContent(template, `${prepend}${INDENT}`)}\n${prepend}`;
     }
     else if (slots.length) {
-        slots.forEach(slot => {
-            const { name, content } = slot;
-            const div = name ? `<div slot="${name}">` : '<div>';
-            markup += `\n${INDENT}${div}${content}</div>`;
-        });
-        markup += `\n`;
+        if (slots.length === 1 && !slots[0].name) {
+            markup += slots[0].content;
+        }
+        else {
+            markup += slots.reduce((result, slot) => {
+                const { name, content } = slot;
+                const line = name ? `<div slot="${name}">${content}</div>` : content;
+                return `${result}\n${prepend}${INDENT}${line}`;
+            }, '');
+            markup += `\n${prepend}`;
+        }
     }
     markup += `</${tag}>`;
-    const cssValues = cssProps.filter(p => p.value !== p.defaultValue);
+    if (wrap) {
+        markup += `\n</${wrap}>`;
+    }
+    const suffix = getTemplate(id, tag, SUFFIX$1);
+    if (isTemplate(suffix)) {
+        markup += `\n${getTplContent(suffix, '').trim()}\n`;
+    }
+    const cssValues = cssProps.filter((p) => p.value !== p.default);
     if (cssValues.length) {
         markup += `\n<style>\n${INDENT}${tag} {\n`;
-        cssValues.forEach(prop => {
+        cssValues.forEach((prop) => {
             if (prop.value) {
                 markup += `${INDENT}${INDENT}${prop.name}: ${prop.value};\n`;
             }
@@ -4646,9 +4796,7 @@ const renderSnippet = (tag, values, slots, cssProps) => {
         markup += `${INDENT}}\n</style>`;
     }
     const { value } = process(highlighter, markup, ['xml', 'css']);
-    return html$2 `
-    <pre><code>${unsafeHTML(value)}</code></pre>
-  `;
+    return html$2 `<pre><code>${unsafeHTML(value)}</code></pre>`;
 };
 let ApiViewerDemoSnippet = class ApiViewerDemoSnippet extends LitElement {
     constructor() {
@@ -4671,7 +4819,7 @@ let ApiViewerDemoSnippet = class ApiViewerDemoSnippet extends LitElement {
     }
     render() {
         return html$2 `
-      ${renderSnippet(this.tag, this.knobs, this.slots, this.cssProps)}
+      ${renderSnippet(this.vid, this.tag, this.knobs, this.slots, this.cssProps)}
     `;
     }
     get source() {
@@ -4679,34 +4827,39 @@ let ApiViewerDemoSnippet = class ApiViewerDemoSnippet extends LitElement {
     }
 };
 __decorate([
-    property({ type: String })
+    property()
 ], ApiViewerDemoSnippet.prototype, "tag", void 0);
 __decorate([
-    property({ attribute: false, hasChanged: () => true })
+    property({ attribute: false })
 ], ApiViewerDemoSnippet.prototype, "knobs", void 0);
 __decorate([
-    property({ attribute: false, hasChanged: () => true })
+    property({ attribute: false })
 ], ApiViewerDemoSnippet.prototype, "slots", void 0);
 __decorate([
-    property({ attribute: false, hasChanged: () => true })
+    property({ attribute: false })
 ], ApiViewerDemoSnippet.prototype, "cssProps", void 0);
+__decorate([
+    property({ type: Number })
+], ApiViewerDemoSnippet.prototype, "vid", void 0);
 ApiViewerDemoSnippet = __decorate([
     customElement('api-viewer-demo-snippet')
 ], ApiViewerDemoSnippet);
 
 const renderDetail = (detail) => {
     const result = detail;
+    const undef = 'undefined';
     if ('value' in detail && detail.value === undefined) {
-        result.value = 'undefined';
+        result.value = undef;
     }
-    return JSON.stringify(detail).replace('"undefined"', 'undefined');
+    return ` detail: ${JSON.stringify(detail).replace(`"${undef}"`, undef)}`;
 };
 const renderEvents = (log) => {
     return html$2 `
-    ${log.map(e => {
+    ${log.map((e) => {
+        const { type, detail } = e;
         return html$2 `
         <p part="event-record">
-          event: "${e.type}". detail: ${renderDetail(e.detail)}
+          event: "${type}".${detail == null ? nothing : renderDetail(detail)}
         </p>
       `;
     })}
@@ -4744,22 +4897,24 @@ let ApiViewerDemoEvents = class ApiViewerDemoEvents extends LitElement {
     }
 };
 __decorate([
-    property({ attribute: false, hasChanged: () => true })
+    property({ attribute: false })
 ], ApiViewerDemoEvents.prototype, "log", void 0);
 ApiViewerDemoEvents = __decorate([
     customElement('api-viewer-demo-events')
 ], ApiViewerDemoEvents);
 
 const getDefault = (prop) => {
-    switch (normalizeType(prop.type)) {
+    const { type, default: value } = prop;
+    switch (normalizeType(type)) {
         case 'boolean':
-            return prop.default !== 'false';
+            return value !== 'false';
         case 'number':
-            return Number(prop.default);
+            return Number(value);
         default:
-            return prop.default;
+            return unquote(value);
     }
 };
+const { HOST: HOST$1, KNOB, SLOT: SLOT$2 } = TemplateTypes;
 // TODO: remove when analyzer outputs "readOnly" to JSON
 const isGetter = (element, prop) => {
     function getDescriptor(obj) {
@@ -4782,23 +4937,32 @@ let ApiViewerDemoLayout = class ApiViewerDemoLayout extends LitElement {
         this.slots = [];
         this.events = [];
         this.cssProps = [];
+        this.exclude = '';
         this.processedSlots = [];
         this.processedCss = [];
         this.eventLog = [];
+        this.customKnobs = [];
         this.knobs = {};
         this.copyBtnText = 'copy';
+        this._savedProps = [];
     }
     createRenderRoot() {
         return this;
     }
     render() {
-        const noEvents = isEmptyArray(this.events);
-        const noCss = isEmptyArray(this.cssProps);
-        const noSlots = isEmptyArray(this.slots);
-        const noKnobs = isEmptyArray(this.props) && noSlots;
+        const [noCss, noEvents, noSlots, noCustomKnobs, noProps] = [
+            this.cssProps,
+            this.events,
+            this.slots,
+            this.customKnobs,
+            this.props
+        ].map((arr) => arr.length === 0);
+        const id = this.vid;
+        const slots = this.processedSlots;
+        const hideSlots = noSlots || hasTemplate(id, this.tag, SLOT$2);
         return html$2 `
       <div part="demo-output" @rendered="${this._onRendered}">
-        ${renderer(this.tag, this.knobs, this.processedSlots, this.processedCss)}
+        ${renderer(id, this.tag, this.knobs, slots, this.processedCss)}
       </div>
       <api-viewer-tabs part="demo-tabs">
         <api-viewer-tab heading="Source" slot="tab" part="tab"></api-viewer-tab>
@@ -4809,29 +4973,29 @@ let ApiViewerDemoLayout = class ApiViewerDemoLayout extends LitElement {
           <api-viewer-demo-snippet
             .tag="${this.tag}"
             .knobs="${this.knobs}"
-            .slots="${this.processedSlots}"
+            .slots="${slots}"
             .cssProps="${this.processedCss}"
+            .vid="${this.vid}"
           ></api-viewer-demo-snippet>
         </api-viewer-panel>
         <api-viewer-tab
           heading="Knobs"
           slot="tab"
           part="tab"
-          ?hidden="${noKnobs}"
+          ?hidden="${noProps && noCustomKnobs && hideSlots}"
         ></api-viewer-tab>
         <api-viewer-panel slot="panel" part="tab-panel">
-          <div part="knobs" ?hidden="${noKnobs}">
+          <div part="knobs">
             <section part="knobs-column" @change="${this._onPropChanged}">
-              <h3 part="knobs-header">Properties</h3>
-              ${renderKnobs(this.props, 'prop', propRenderer)}
+              ${renderKnobs(this.props, 'Properties', 'prop', propRenderer)}
+              ${renderKnobs(this.customKnobs, 'Attributes', 'attr', propRenderer)}
             </section>
             <section
-              ?hidden="${hasSlotTemplate(this.tag) || noSlots}"
+              ?hidden="${hideSlots}"
               part="knobs-column"
               @change="${this._onSlotChanged}"
             >
-              <h3 part="knobs-header">Slots</h3>
-              ${renderKnobs(this.processedSlots, 'slot', slotRenderer)}
+              ${renderKnobs(slots, 'Slots', 'slot', slotRenderer)}
             </section>
           </div>
         </api-viewer-panel>
@@ -4844,8 +5008,7 @@ let ApiViewerDemoLayout = class ApiViewerDemoLayout extends LitElement {
         <api-viewer-panel slot="panel" part="tab-panel">
           <div part="knobs" ?hidden="${noCss}">
             <section part="knobs-column" @change="${this._onCssChanged}">
-              <h3 part="knobs-header">Custom CSS Properties</h3>
-              ${renderKnobs(this.cssProps, 'css-prop', cssPropRenderer)}
+              ${renderKnobs(this.cssProps, 'Custom CSS Properties', 'css-prop', cssPropRenderer)}
             </section>
           </div>
         </api-viewer-panel>
@@ -4868,23 +5031,20 @@ let ApiViewerDemoLayout = class ApiViewerDemoLayout extends LitElement {
     `;
     }
     firstUpdated(props) {
+        // When a selected tag name is changed by the user,
+        // the whole api-viewer-demo component is re-rendered,
+        // so this callback is invoked again for new element.
         if (props.has('props')) {
             const element = document.createElement(this.tag);
-            // Apply default property values from analyzer
-            // Do not include getters to prevent exception
-            this.props = this.props
-                .filter(({ name }) => !isGetter(element, name))
-                .map((prop) => {
-                return typeof prop.default === 'string'
-                    ? {
-                        ...prop,
-                        value: getDefault(prop)
-                    }
-                    : prop;
-            });
+            // Store properties without getters
+            this._savedProps = this.props.filter(({ name }) => !isGetter(element, name));
         }
+        this.customKnobs = this._getCustomKnobs();
     }
     updated(props) {
+        if (props.has('exclude')) {
+            this.props = this._filterProps();
+        }
         if (props.has('slots') && this.slots) {
             this.processedSlots = this.slots
                 .sort((a, b) => {
@@ -4899,13 +5059,67 @@ let ApiViewerDemoLayout = class ApiViewerDemoLayout extends LitElement {
                 .map((slot) => {
                 return {
                     ...slot,
-                    content: getSlotTitle(slot.name)
+                    content: getSlotDefault(slot.name, 'content')
                 };
             });
         }
     }
+    _getCustomKnobs() {
+        return getTemplates(this.vid, this.tag, KNOB)
+            .map((template) => {
+            const { attr, type } = template.dataset;
+            let result = null;
+            if (attr) {
+                if (type === 'select') {
+                    const node = getTemplateNode(template);
+                    const options = node
+                        ? Array.from(node.children)
+                            .filter((c) => c instanceof HTMLOptionElement)
+                            .map((option) => option.value)
+                        : [];
+                    if (node instanceof HTMLSelectElement && options.length > 1) {
+                        result = {
+                            name: attr,
+                            attribute: attr,
+                            type,
+                            options
+                        };
+                    }
+                }
+                if (type === 'string' || type === 'boolean') {
+                    result = {
+                        name: attr,
+                        attribute: attr,
+                        type
+                    };
+                }
+            }
+            return result;
+        })
+            .filter(Boolean);
+    }
+    _filterProps() {
+        const exclude = this.exclude.split(',');
+        return this._savedProps
+            .filter(({ name }) => !exclude.includes(name))
+            .map((prop) => {
+            return typeof prop.default === 'string'
+                ? {
+                    ...prop,
+                    value: getDefault(prop)
+                }
+                : prop;
+        });
+    }
     _getProp(name) {
-        return this.props.find(p => p.attribute === name || p.name === name);
+        const isMatch = isPropMatch(name);
+        const prop = this.props.find(isMatch);
+        return prop
+            ? { prop }
+            : {
+                prop: this.customKnobs.find(isMatch),
+                custom: true
+            };
     }
     _onLogClear() {
         this.eventLog = [];
@@ -4942,7 +5156,7 @@ let ApiViewerDemoLayout = class ApiViewerDemoLayout extends LitElement {
         const target = e.composedPath()[0];
         const { value, dataset } = target;
         const { name } = dataset;
-        this.processedCss = this.processedCss.map(prop => {
+        this.processedCss = this.processedCss.map((prop) => {
             return prop.name === name
                 ? {
                     ...prop,
@@ -4965,16 +5179,20 @@ let ApiViewerDemoLayout = class ApiViewerDemoLayout extends LitElement {
             default:
                 value = target.value;
         }
-        const { attribute } = this._getProp(name);
-        this.knobs = Object.assign(this.knobs, {
-            [name]: { type, value, attribute }
-        });
+        const { prop, custom } = this._getProp(name);
+        if (prop) {
+            const { attribute } = prop;
+            this.knobs = {
+                ...this.knobs,
+                [name]: { type, value, attribute, custom }
+            };
+        }
     }
     _onSlotChanged(e) {
         const target = e.composedPath()[0];
         const name = target.dataset.slot;
         const content = target.value;
-        this.processedSlots = this.processedSlots.map(slot => {
+        this.processedSlots = this.processedSlots.map((slot) => {
             return slot.name === name
                 ? {
                     ...slot,
@@ -4985,30 +5203,32 @@ let ApiViewerDemoLayout = class ApiViewerDemoLayout extends LitElement {
     }
     _onRendered(e) {
         const { component } = e.detail;
-        if (hasHostTemplate(this.tag)) {
+        if (hasTemplate(this.vid, this.tag, HOST$1)) {
             // Apply property values from template
             this.props
-                .filter(prop => {
+                .filter((prop) => {
                 const { name, type } = prop;
                 const defaultValue = getDefault(prop);
                 return (component[name] !== defaultValue ||
                     (normalizeType(type) === 'boolean' && defaultValue));
             })
-                .forEach(prop => {
+                .forEach((prop) => {
                 this._syncKnob(component, prop);
             });
         }
-        this.events.forEach(event => {
+        this.events.forEach((event) => {
             this._listen(component, event.name);
         });
         if (this.cssProps.length) {
             const style = getComputedStyle(component);
-            this.processedCss = this.cssProps.map(cssProp => {
-                let value = style.getPropertyValue(cssProp.name);
+            this.processedCss = this.cssProps.map((cssProp) => {
+                let value = cssProp.default
+                    ? unquote(cssProp.default)
+                    : style.getPropertyValue(cssProp.name);
                 const result = cssProp;
                 if (value) {
                     value = value.trim();
-                    result.defaultValue = value;
+                    result.default = value;
                     result.value = value;
                 }
                 return result;
@@ -5019,22 +5239,23 @@ let ApiViewerDemoLayout = class ApiViewerDemoLayout extends LitElement {
         component.addEventListener(event, ((e) => {
             const s = '-changed';
             if (event.endsWith(s)) {
-                const prop = this._getProp(event.replace(s, ''));
+                const { prop } = this._getProp(event.replace(s, ''));
                 if (prop) {
                     this._syncKnob(component, prop);
                 }
             }
-            this.eventLog.push(e);
+            this.eventLog = [...this.eventLog, e];
         }));
     }
     _syncKnob(component, changed) {
         const { name, type, attribute } = changed;
         const value = component[name];
         // update knobs to avoid duplicate event
-        this.knobs = Object.assign(this.knobs, {
+        this.knobs = {
+            ...this.knobs,
             [name]: { type, value, attribute }
-        });
-        this.props = this.props.map(prop => {
+        };
+        this.props = this.props.map((prop) => {
             return prop.name === name
                 ? {
                     ...prop,
@@ -5045,34 +5266,43 @@ let ApiViewerDemoLayout = class ApiViewerDemoLayout extends LitElement {
     }
 };
 __decorate([
-    property({ type: String })
+    property()
 ], ApiViewerDemoLayout.prototype, "tag", void 0);
 __decorate([
-    property({ attribute: false, hasChanged: () => true })
+    property({ attribute: false })
 ], ApiViewerDemoLayout.prototype, "props", void 0);
 __decorate([
-    property({ attribute: false, hasChanged: () => true })
+    property({ attribute: false })
 ], ApiViewerDemoLayout.prototype, "slots", void 0);
 __decorate([
-    property({ attribute: false, hasChanged: () => true })
+    property({ attribute: false })
 ], ApiViewerDemoLayout.prototype, "events", void 0);
 __decorate([
-    property({ attribute: false, hasChanged: () => true })
+    property({ attribute: false })
 ], ApiViewerDemoLayout.prototype, "cssProps", void 0);
 __decorate([
-    property({ attribute: false, hasChanged: () => true })
+    property()
+], ApiViewerDemoLayout.prototype, "exclude", void 0);
+__decorate([
+    property({ type: Number })
+], ApiViewerDemoLayout.prototype, "vid", void 0);
+__decorate([
+    property({ attribute: false })
 ], ApiViewerDemoLayout.prototype, "processedSlots", void 0);
 __decorate([
-    property({ attribute: false, hasChanged: () => true })
+    property({ attribute: false })
 ], ApiViewerDemoLayout.prototype, "processedCss", void 0);
 __decorate([
-    property({ attribute: false, hasChanged: () => true })
+    property({ attribute: false })
 ], ApiViewerDemoLayout.prototype, "eventLog", void 0);
 __decorate([
-    property({ attribute: false, hasChanged: () => true })
+    property({ attribute: false })
+], ApiViewerDemoLayout.prototype, "customKnobs", void 0);
+__decorate([
+    property({ attribute: false })
 ], ApiViewerDemoLayout.prototype, "knobs", void 0);
 __decorate([
-    property({ type: String })
+    property()
 ], ApiViewerDemoLayout.prototype, "copyBtnText", void 0);
 ApiViewerDemoLayout = __decorate([
     customElement('api-viewer-demo-layout')
@@ -5086,6 +5316,7 @@ let ApiViewerDemo = class ApiViewerDemo extends LitElement {
         this.slots = [];
         this.events = [];
         this.cssProps = [];
+        this.exclude = '';
         this.whenDefined = Promise.resolve();
     }
     async renderDemoLayout(whenDefined) {
@@ -5097,6 +5328,8 @@ let ApiViewerDemo = class ApiViewerDemo extends LitElement {
         .slots="${this.slots}"
         .events="${this.events}"
         .cssProps="${this.cssProps}"
+        .exclude="${this.exclude}"
+        .vid="${this.vid}"
       ></api-viewer-demo-layout>
     `;
     }
@@ -5119,49 +5352,54 @@ let ApiViewerDemo = class ApiViewerDemo extends LitElement {
     }
 };
 __decorate([
-    property({ type: String })
+    property()
 ], ApiViewerDemo.prototype, "name", void 0);
 __decorate([
-    property({ attribute: false, hasChanged: () => true })
+    property({ attribute: false })
 ], ApiViewerDemo.prototype, "props", void 0);
 __decorate([
-    property({ attribute: false, hasChanged: () => true })
+    property({ attribute: false })
 ], ApiViewerDemo.prototype, "slots", void 0);
 __decorate([
-    property({ attribute: false, hasChanged: () => true })
+    property({ attribute: false })
 ], ApiViewerDemo.prototype, "events", void 0);
 __decorate([
-    property({ attribute: false, hasChanged: () => true })
+    property({ attribute: false })
 ], ApiViewerDemo.prototype, "cssProps", void 0);
+__decorate([
+    property()
+], ApiViewerDemo.prototype, "exclude", void 0);
+__decorate([
+    property({ type: Number })
+], ApiViewerDemo.prototype, "vid", void 0);
 ApiViewerDemo = __decorate([
     customElement('api-viewer-demo')
 ], ApiViewerDemo);
 
-let radioId = 0;
 let ApiViewerContent = class ApiViewerContent extends LitElement {
     constructor() {
-        super();
+        super(...arguments);
         this.elements = [];
         this.selected = 0;
         this.section = 'docs';
-        this._id = ++radioId;
+        this.exclude = '';
     }
     createRenderRoot() {
         return this;
     }
     render() {
-        const { elements, selected, section } = this;
+        const { elements, selected, section, exclude, vid } = this;
         const { name, description, properties, attributes, slots, events, cssParts, cssProperties } = { ...EMPTY_ELEMENT, ...(elements[selected] || {}) };
         // TODO: analyzer should sort CSS custom properties
         const cssProps = (cssProperties || []).sort((a, b) => a.name > b.name ? 1 : -1);
         return html$2 `
       <header part="header">
-        <div class="tag-name">&lt;${name}&gt;</div>
+        <div part="header-title">&lt;${name}&gt;</div>
         <nav>
           <input
             id="docs"
             type="radio"
-            name="section-${this._id}"
+            name="section-${this.vid}"
             value="docs"
             ?checked="${section === 'docs'}"
             @change="${this._onToggle}"
@@ -5171,7 +5409,7 @@ let ApiViewerContent = class ApiViewerContent extends LitElement {
           <input
             id="demo"
             type="radio"
-            name="section-${this._id}"
+            name="section-${this.vid}"
             value="demo"
             ?checked="${section === 'demo'}"
             @change="${this._onToggle}"
@@ -5185,11 +5423,7 @@ let ApiViewerContent = class ApiViewerContent extends LitElement {
               ?hidden="${elements.length === 1}"
               part="select"
             >
-              ${elements.map((tag, idx) => {
-            return html$2 `
-                  <option value="${idx}">${tag.name}</option>
-                `;
-        })}
+              ${elements.map((tag, idx) => html$2 `<option value="${idx}">${tag.name}</option>`)}
             </select>
           </label>
         </nav>
@@ -5216,6 +5450,8 @@ let ApiViewerContent = class ApiViewerContent extends LitElement {
                 .slots="${slots}"
                 .events="${events}"
                 .cssProps="${cssProps}"
+                .exclude="${exclude}"
+                .vid="${vid}"
               ></api-viewer-demo>
             `)}
     `;
@@ -5234,77 +5470,60 @@ __decorate([
     property({ type: Number })
 ], ApiViewerContent.prototype, "selected", void 0);
 __decorate([
-    property({ type: String })
+    property()
 ], ApiViewerContent.prototype, "section", void 0);
+__decorate([
+    property()
+], ApiViewerContent.prototype, "exclude", void 0);
+__decorate([
+    property({ type: Number })
+], ApiViewerContent.prototype, "vid", void 0);
 ApiViewerContent = __decorate([
     customElement('api-viewer-content')
 ], ApiViewerContent);
 
-async function fetchJson(src) {
-    let result = [];
-    try {
-        const file = await fetch(src);
-        const json = (await file.json());
-        if (Array.isArray(json.tags) && json.tags.length) {
-            result = json.tags;
-        }
-        else {
-            console.error(`No element definitions found at ${src}`);
-        }
-    }
-    catch (e) {
-        console.error(e);
-    }
-    return result;
-}
-async function renderDocs(jsonFetched, section, selected) {
+async function renderDocs(jsonFetched, section, selected, id, exclude = '') {
     const elements = await jsonFetched;
-    const index = elements.findIndex(el => el.name === selected);
+    const index = elements.findIndex((el) => el.name === selected);
     return elements.length
         ? html$2 `
         <api-viewer-content
           .elements="${elements}"
           .section="${section}"
           .selected="${index >= 0 ? index : 0}"
+          .exclude="${exclude}"
+          .vid="${id}"
         ></api-viewer-content>
       `
-        : html$2 `
-        <div part="warning">
-          No custom elements found in the JSON file.
-        </div>
-      `;
+        : emptyDataWarning;
 }
-class ApiViewerBase extends LitElement {
+let id = 0;
+class ApiViewerBase extends ApiViewerMixin(LitElement) {
     constructor() {
-        super(...arguments);
+        super();
         this.section = 'docs';
-        this.jsonFetched = Promise.resolve([]);
+        this._id = id++;
     }
     render() {
-        const { src } = this;
-        if (src && this.lastSrc !== src) {
-            this.lastSrc = src;
-            this.jsonFetched = fetchJson(src);
-        }
         return html$2 `
-      ${until(renderDocs(this.jsonFetched, this.section, this.selected))}
+      ${until(renderDocs(this.jsonFetched, this.section, this.selected, this._id, this.excludeKnobs))}
     `;
     }
     firstUpdated() {
-        queryTemplates(this);
+        this.setTemplates();
+    }
+    setTemplates(templates) {
+        setTemplates(this._id, templates || Array.from(this.querySelectorAll('template')));
     }
 }
 __decorate([
-    property({ type: String })
-], ApiViewerBase.prototype, "src", void 0);
-__decorate([
-    property({ type: String })
+    property()
 ], ApiViewerBase.prototype, "section", void 0);
 __decorate([
-    property({ type: String })
-], ApiViewerBase.prototype, "selected", void 0);
+    property({ type: String, attribute: 'exclude-knobs' })
+], ApiViewerBase.prototype, "excludeKnobs", void 0);
 
-var styles = css `
+var sharedStyles = css `
   :host {
     display: block;
     text-align: left;
@@ -5332,52 +5551,9 @@ var styles = css `
       'Courier New', monospace;
   }
 
+  :host([hidden]),
   [hidden] {
     display: none !important;
-  }
-
-  p,
-  ul,
-  ol {
-    margin: 1rem 0;
-    font-size: 0.9375rem;
-    line-height: 1.5;
-  }
-
-  pre {
-    white-space: pre-wrap;
-  }
-
-  a {
-    color: var(--ave-link-color);
-  }
-
-  a:hover {
-    color: var(--ave-link-hover-color);
-  }
-
-  button {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    text-transform: uppercase;
-    border: none;
-    border-radius: 0.25em;
-    cursor: pointer;
-    background: var(--ave-button-background, rgba(0, 0, 0, 0.3));
-    color: var(--ave-button-color, #fff);
-  }
-
-  button:focus,
-  button:hover {
-    background: var(--ave-button-active-background, rgba(0, 0, 0, 0.6));
-  }
-
-  api-viewer-content,
-  api-viewer-docs,
-  api-viewer-demo,
-  api-viewer-demo-layout {
-    display: block;
   }
 
   header {
@@ -5390,34 +5566,64 @@ var styles = css `
     border-top-right-radius: var(--ave-border-radius);
   }
 
-  .tag-name {
+  nav {
+    display: flex;
+    align-items: center;
+  }
+
+  [part='header-title'] {
     color: var(--ave-header-color);
     font-family: var(--ave-monospace-font);
     font-size: 0.875rem;
     line-height: 1.5rem;
   }
 
-  nav {
-    display: flex;
-    align-items: center;
+  [part='select-label'] {
+    margin-left: 0.5rem;
   }
 
   [part='warning'] {
     padding: 1rem;
   }
 
-  [part='radio-label'] {
-    margin: 0 0.75rem 0 0.25rem;
-    color: var(--ave-header-color);
-    font-size: 0.875rem;
+  @media (max-width: 480px) {
+    header {
+      flex-direction: column;
+    }
+
+    nav {
+      margin-top: 0.5rem;
+    }
+  }
+`;
+
+var docsStyles = css `
+  p,
+  ul,
+  ol {
+    margin: 1rem 0;
+    font-size: 0.9375rem;
+    line-height: 1.5;
   }
 
-  [part='select-label'] {
-    margin-left: 0.5rem;
+  a {
+    color: var(--ave-link-color);
   }
 
-  /* Docs styles */
+  a:hover {
+    color: var(--ave-link-hover-color);
+  }
+
+  pre {
+    white-space: pre-wrap;
+  }
+
+  api-viewer-docs {
+    display: block;
+  }
+
   [part='tab'][heading^='CSS'] {
+    min-width: 120px;
     font-size: 0.8125rem;
   }
 
@@ -5425,6 +5631,10 @@ var styles = css `
     display: block;
     padding: 0.5rem;
     color: var(--ave-item-color);
+  }
+
+  [part='docs-item']:not(:first-of-type) {
+    border-top: solid 1px var(--ave-border-color);
   }
 
   [part='docs-description'] {
@@ -5449,6 +5659,7 @@ var styles = css `
     flex-basis: 100%;
   }
 
+  .column-name-css,
   .column-type {
     flex-basis: 50%;
   }
@@ -5476,8 +5687,45 @@ var styles = css `
     color: var(--ave-accent-color);
   }
 
-  /* Demo styles */
-  [part='docs-item']:not(:first-of-type),
+  @media (max-width: 480px) {
+    .column-type {
+      margin-top: 1rem;
+    }
+
+    .column-name-css,
+    .column-type {
+      flex-basis: 100%;
+    }
+
+    [part='tab'][heading^='CSS'] {
+      max-width: 125px;
+    }
+  }
+`;
+
+var demoStyles = css `
+  button {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    text-transform: uppercase;
+    border: none;
+    border-radius: 0.25em;
+    cursor: pointer;
+    background: var(--ave-button-background, rgba(0, 0, 0, 0.3));
+    color: var(--ave-button-color, #fff);
+  }
+
+  button:focus,
+  button:hover {
+    background: var(--ave-button-active-background, rgba(0, 0, 0, 0.6));
+  }
+
+  api-viewer-demo,
+  api-viewer-demo-layout {
+    display: block;
+  }
+
   [part='demo-tabs'],
   [part='demo-output'] {
     border-top: solid 1px var(--ave-border-color);
@@ -5502,17 +5750,21 @@ var styles = css `
 
   [part='knobs'] {
     display: flex;
-    padding: 1rem;
+    padding: 0 1rem 1rem;
   }
 
   [part='knobs-column'] {
-    width: 50%;
+    flex-shrink: 1;
+  }
+
+  [part='knobs-column']:not(:only-child) {
+    flex-basis: 50%;
   }
 
   [part='knobs-header'] {
     font-size: 1rem;
     font-weight: bold;
-    margin: 0 0 0.25rem;
+    margin: 1rem 0 0.25rem;
   }
 
   td {
@@ -5544,32 +5796,45 @@ var styles = css `
   }
 
   @media (max-width: 480px) {
-    header {
-      flex-direction: column;
-    }
-
-    nav {
-      margin-top: 0.5rem;
-    }
-
-    .api-col-type {
-      flex-basis: 100%;
-      margin-top: 1rem;
-    }
-
-    .columns {
+    [part='knobs'] {
       flex-direction: column;
     }
 
     [part='knobs-column']:not(:last-child) {
       margin-bottom: 1rem;
     }
+
+    [part='input'] {
+      max-width: 8rem;
+    }
+  }
+`;
+
+var styles = css `
+  ${sharedStyles}
+  ${docsStyles}
+  ${demoStyles}
+
+  api-viewer-content {
+    display: block;
+  }
+
+  [part='radio-label'] {
+    margin: 0 0.75rem 0 0.25rem;
+    color: var(--ave-header-color);
+    font-size: 0.875rem;
   }
 `;
 
 let ApiViewer = class ApiViewer extends ApiViewerBase {
     static get styles() {
         return styles;
+    }
+    firstUpdated() {
+        this.setTemplates();
+    }
+    setTemplates(templates) {
+        setTemplates(this._id, templates || Array.from(this.querySelectorAll('template')));
     }
 };
 ApiViewer = __decorate([

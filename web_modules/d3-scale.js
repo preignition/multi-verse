@@ -1,8 +1,98 @@
-import { f as interpolate, i as interpolateNumber, g as interpolateRound, p as piecewise } from './common/index-841dc6c2.js';
-import { range as sequence, bisect, tickStep, ticks, tickIncrement, ascending, quantile as quantile$1, bisector } from './d3-array.js';
-import { formatSpecifier, precisionFixed, precisionRound, precisionPrefix, formatPrefix, format } from './d3-format.js';
-import { timeMillisecond as utcMillisecond, timeSecond as utcSecond, timeMinute, timeHour, timeDay, timeWeek as sunday, timeMonth, timeYear, utcMinute, utcHour, utcDay, utcWeek as utcSunday, utcMonth, utcYear } from './d3-time.js';
-import { timeFormat, utcFormat } from './d3-time-format.js';
+import { a as constant$1, c as color, i as interpolateRgb } from './common/rgb-e876f481.js';
+import { i as interpolateNumber, a as interpolateString } from './common/string-793e1444.js';
+import { s as sequence, b as bisectRight, t as tickStep, h as ticks, i as tickIncrement, a as ascending, q as quantile$1, d as bisector } from './common/quantile-a7047d6c.js';
+import { c as formatSpecifier, p as precisionFixed, g as precisionRound, e as precisionPrefix, a as formatPrefix, f as format } from './common/precisionRound-0953ea20.js';
+import { d as day, s as sunday, y as year, u as utcDay, a as utcSunday, b as utcYear } from './common/utcYear-07e3c0ef.js';
+import { m as millisecond, s as second, a as minute, h as hour, b as month, u as utcMinute, c as utcHour, d as utcMonth } from './common/utcMonth-ba113139.js';
+import { t as timeFormat, u as utcFormat } from './common/defaultLocale-723337ea.js';
+
+function numberArray(a, b) {
+  if (!b) b = [];
+  var n = a ? Math.min(b.length, a.length) : 0,
+      c = b.slice(),
+      i;
+  return function(t) {
+    for (i = 0; i < n; ++i) c[i] = a[i] * (1 - t) + b[i] * t;
+    return c;
+  };
+}
+
+function isNumberArray(x) {
+  return ArrayBuffer.isView(x) && !(x instanceof DataView);
+}
+
+function genericArray(a, b) {
+  var nb = b ? b.length : 0,
+      na = a ? Math.min(nb, a.length) : 0,
+      x = new Array(na),
+      c = new Array(nb),
+      i;
+
+  for (i = 0; i < na; ++i) x[i] = interpolate(a[i], b[i]);
+  for (; i < nb; ++i) c[i] = b[i];
+
+  return function(t) {
+    for (i = 0; i < na; ++i) c[i] = x[i](t);
+    return c;
+  };
+}
+
+function date(a, b) {
+  var d = new Date;
+  return a = +a, b = +b, function(t) {
+    return d.setTime(a * (1 - t) + b * t), d;
+  };
+}
+
+function object(a, b) {
+  var i = {},
+      c = {},
+      k;
+
+  if (a === null || typeof a !== "object") a = {};
+  if (b === null || typeof b !== "object") b = {};
+
+  for (k in b) {
+    if (k in a) {
+      i[k] = interpolate(a[k], b[k]);
+    } else {
+      c[k] = b[k];
+    }
+  }
+
+  return function(t) {
+    for (k in i) c[k] = i[k](t);
+    return c;
+  };
+}
+
+function interpolate(a, b) {
+  var t = typeof b, c;
+  return b == null || t === "boolean" ? constant$1(b)
+      : (t === "number" ? interpolateNumber
+      : t === "string" ? ((c = color(b)) ? (b = c, interpolateRgb) : interpolateString)
+      : b instanceof color ? interpolateRgb
+      : b instanceof Date ? date
+      : isNumberArray(b) ? numberArray
+      : Array.isArray(b) ? genericArray
+      : typeof b.valueOf !== "function" && typeof b.toString !== "function" || isNaN(b) ? object
+      : interpolateNumber)(a, b);
+}
+
+function interpolateRound(a, b) {
+  return a = +a, b = +b, function(t) {
+    return Math.round(a * (1 - t) + b * t);
+  };
+}
+
+function piecewise(interpolate, values) {
+  var i = 0, n = values.length - 1, v = values[0], I = new Array(n < 0 ? 0 : n);
+  while (i < n) I[i] = interpolate(v, v = values[++i]);
+  return function(t) {
+    var i = Math.max(0, Math.min(n - 1, Math.floor(t *= n)));
+    return I[i](t - i);
+  };
+}
 
 function initRange(domain, range) {
   switch (arguments.length) {
@@ -229,7 +319,7 @@ function polymap(domain, range, interpolate) {
   }
 
   return function(x) {
-    var i = bisect(domain, x, 1, j) - 1;
+    var i = bisectRight(domain, x, 1, j) - 1;
     return r[i](d[i](x));
   };
 }
@@ -738,7 +828,7 @@ function quantile() {
   }
 
   function scale(x) {
-    return isNaN(x = +x) ? unknown : range[bisect(thresholds, x)];
+    return isNaN(x = +x) ? unknown : range[bisectRight(thresholds, x)];
   }
 
   scale.invertExtent = function(y) {
@@ -788,7 +878,7 @@ function quantize() {
       unknown;
 
   function scale(x) {
-    return x <= x ? range[bisect(domain, x, 0, n)] : unknown;
+    return x <= x ? range[bisectRight(domain, x, 0, n)] : unknown;
   }
 
   function rescale() {
@@ -839,7 +929,7 @@ function threshold() {
       n = 1;
 
   function scale(x) {
-    return x <= x ? range[bisect(domain, x, 0, n)] : unknown;
+    return x <= x ? range[bisectRight(domain, x, 0, n)] : unknown;
   }
 
   scale.domain = function(_) {
@@ -877,7 +967,7 @@ var durationSecond = 1000,
     durationMonth = durationDay * 30,
     durationYear = durationDay * 365;
 
-function date(t) {
+function date$1(t) {
   return new Date(t);
 }
 
@@ -962,7 +1052,7 @@ function calendar(year, month, week, day, hour, minute, second, millisecond, for
   };
 
   scale.domain = function(_) {
-    return arguments.length ? domain(Array.from(_, number$1)) : domain().map(date);
+    return arguments.length ? domain(Array.from(_, number$1)) : domain().map(date$1);
   };
 
   scale.ticks = function(interval) {
@@ -996,11 +1086,11 @@ function calendar(year, month, week, day, hour, minute, second, millisecond, for
 }
 
 function time() {
-  return initRange.apply(calendar(timeYear, timeMonth, sunday, timeDay, timeHour, timeMinute, utcSecond, utcMillisecond, timeFormat).domain([new Date(2000, 0, 1), new Date(2000, 0, 2)]), arguments);
+  return initRange.apply(calendar(year, month, sunday, day, hour, minute, second, millisecond, timeFormat).domain([new Date(2000, 0, 1), new Date(2000, 0, 2)]), arguments);
 }
 
 function utcTime() {
-  return initRange.apply(calendar(utcYear, utcMonth, utcSunday, utcDay, utcHour, utcMinute, utcSecond, utcMillisecond, utcFormat).domain([Date.UTC(2000, 0, 1), Date.UTC(2000, 0, 2)]), arguments);
+  return initRange.apply(calendar(utcYear, utcMonth, utcSunday, utcDay, utcHour, utcMinute, second, millisecond, utcFormat).domain([Date.UTC(2000, 0, 1), Date.UTC(2000, 0, 2)]), arguments);
 }
 
 function transformer$1() {
@@ -1108,7 +1198,7 @@ function sequentialQuantile() {
       interpolator = identity;
 
   function scale(x) {
-    if (!isNaN(x = +x)) return interpolator((bisect(domain, x, 1) - 1) / (domain.length - 1));
+    if (!isNaN(x = +x)) return interpolator((bisectRight(domain, x, 1) - 1) / (domain.length - 1));
   }
 
   scale.domain = function(_) {

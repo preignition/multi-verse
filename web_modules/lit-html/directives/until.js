@@ -1,5 +1,5 @@
-import { d as directive } from '../../common/directive-9885f5ff.js';
-import { g as isPrimitive } from '../../common/lit-html-a0bff75d.js';
+import { d as directive } from '../../common/directive-5915da03.js';
+import { o as isPrimitive } from '../../common/lit-html-75774733.js';
 
 /**
  * @license
@@ -60,7 +60,7 @@ const until = directive((...args) => (part) => {
             part.setValue(value);
             state.lastRenderedIndex = i;
             // Since a lower-priority value will never overwrite a higher-priority
-            // synchronous value, we can stop processsing now.
+            // synchronous value, we can stop processing now.
             break;
         }
         // If this is a Promise we've already handled, skip it.
