@@ -36,17 +36,17 @@
   "dependencies": {
     "@morbidick/lit-element-notify": "^1.1.1",
     "@polymer/polymer": "^3.4.1",
-    "@preignition/multi-chart": "",
-    "@preignition/multi-geo": "^4",
-    "@preignition/preignition-mixin": "^4",
+    "@preignition/multi-chart": "file:../multi-chart",
+    "@preignition/multi-geo": "file:../multi-geo",
+    "@preignition/preignition-mixin": "file:../preignition-mixin",
     "crossfilter2": "^1.5.2",
     "d3-format": "^1.4.4",
     "d3-selection-multi": "^1.0.1",
     "d3-time": "^1.1.0",
     "lit-element": "^2.3.1",
     "lit-html": "^1.2.1",
-    "reductio": "^1",
-    "universe": "^0.8"
+    "reductio": "file:../reductio",
+    "universe": "file:../universe"
   },
   "devDependencies": {
     "@material/form-field": "^6.0.0",

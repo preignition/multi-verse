@@ -1,5 +1,4 @@
-import { i as isDirective } from './directive-9885f5ff.js';
-export { d as a, i } from './directive-9885f5ff.js';
+import { i as isDirective } from './directive-5915da03.js';
 
 /**
  * @license
@@ -17,7 +16,8 @@ export { d as a, i } from './directive-9885f5ff.js';
 /**
  * True if the custom elements polyfill is in use.
  */
-const isCEPolyfill = window.customElements !== undefined &&
+const isCEPolyfill = typeof window !== 'undefined' &&
+    window.customElements != null &&
     window.customElements.polyfillWrapFlushCallback !==
         undefined;
 /**
@@ -43,29 +43,6 @@ const removeNodes = (container, start, end = null) => {
         start = n;
     }
 };
-
-/**
- * @license
- * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-/**
- * A sentinel value that signals that a value was handled by a directive and
- * should not be written to the DOM.
- */
-const noChange = {};
-/**
- * A sentinel value that signals a NodePart to fully clear its content.
- */
-const nothing = {};
 
 /**
  * @license
@@ -96,7 +73,7 @@ const markerRegex = new RegExp(`${marker}|${nodeMarker}`);
  */
 const boundAttributeSuffix = '$lit$';
 /**
- * An updateable Template that tracks the location of dynamic parts.
+ * An updatable Template that tracks the location of dynamic parts.
  */
 class Template {
     constructor(result, element) {
@@ -278,7 +255,32 @@ const createMarker = () => document.createComment('');
  *    * (") then any non-("), or
  *    * (') then any non-(')
  */
-const lastAttributeNameRegex = /([ \x09\x0a\x0c\x0d])([^\0-\x1F\x7F-\x9F "'>=/]+)([ \x09\x0a\x0c\x0d]*=[ \x09\x0a\x0c\x0d]*(?:[^ \x09\x0a\x0c\x0d"'`<>=]*|"[^"]*|'[^']*))$/;
+const lastAttributeNameRegex = 
+// eslint-disable-next-line no-control-regex
+/([ \x09\x0a\x0c\x0d])([^\0-\x1F\x7F-\x9F "'>=/]+)([ \x09\x0a\x0c\x0d]*=[ \x09\x0a\x0c\x0d]*(?:[^ \x09\x0a\x0c\x0d"'`<>=]*|"[^"]*|'[^']*))$/;
+
+/**
+ * @license
+ * Copyright (c) 2018 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
+ * Code distributed by Google as part of the polymer project is also
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
+ */
+/**
+ * A sentinel value that signals that a value was handled by a directive and
+ * should not be written to the DOM.
+ */
+const noChange = {};
+/**
+ * A sentinel value that signals a NodePart to fully clear its content.
+ */
+const nothing = {};
 
 /**
  * @license
@@ -339,7 +341,7 @@ class TemplateInstance {
         // Given these constraints, with full custom elements support we would
         // prefer the order: Clone, Process, Adopt, Upgrade, Update, Connect
         //
-        // But Safari dooes not implement CustomElementRegistry#upgrade, so we
+        // But Safari does not implement CustomElementRegistry#upgrade, so we
         // can not implement that order and still have upgrade-before-update and
         // upgrade disconnected fragments. So we instead sacrifice the
         // process-before-upgrade constraint, since in Custom Elements v1 elements
@@ -449,7 +451,7 @@ class TemplateResult {
             // For each binding we want to determine the kind of marker to insert
             // into the template source before it's parsed by the browser's HTML
             // parser. The marker type is based on whether the expression is in an
-            // attribute, text, or comment poisition.
+            // attribute, text, or comment position.
             //   * For node-position bindings we insert a comment with the marker
             //     sentinel as its text content, like <!--{{lit-guid}}-->.
             //   * For attribute bindings we insert just the marker sentinel for the
@@ -469,13 +471,13 @@ class TemplateResult {
             // be false positives.
             isCommentBinding = (commentOpen > -1 || isCommentBinding) &&
                 s.indexOf('-->', commentOpen + 1) === -1;
-            // Check to see if we have an attribute-like sequence preceeding the
+            // Check to see if we have an attribute-like sequence preceding the
             // expression. This can match "name=value" like structures in text,
             // comments, and attribute values, so there can be false-positives.
             const attributeMatch = lastAttributeNameRegex.exec(s);
             if (attributeMatch === null) {
                 // We're only in this branch if we don't have a attribute-like
-                // preceeding sequence. For comments, this guards against unusual
+                // preceding sequence. For comments, this guards against unusual
                 // attribute values like <div foo="<!--${'bar'}">. Cases like
                 // <!-- foo=${'bar'}--> are handled correctly in the attribute branch
                 // below.
@@ -539,12 +541,12 @@ const isPrimitive = (value) => {
 };
 const isIterable = (value) => {
     return Array.isArray(value) ||
-        // tslint:disable-next-line:no-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         !!(value && value[Symbol.iterator]);
 };
 /**
  * Writes attribute values to the DOM for a group of AttributeParts bound to a
- * single attibute. The value is only set once even if there are multiple parts
+ * single attribute. The value is only set once even if there are multiple parts
  * for an attribute.
  */
 class AttributeCommitter {
@@ -681,6 +683,9 @@ class NodePart {
         this.__pendingValue = value;
     }
     commit() {
+        if (this.startNode.parentNode === null) {
+            return;
+        }
         while (isDirective(this.__pendingValue)) {
             const directive = this.__pendingValue;
             this.__pendingValue = noChange;
@@ -877,7 +882,7 @@ class PropertyCommitter extends AttributeCommitter {
     commit() {
         if (this.dirty) {
             this.dirty = false;
-            // tslint:disable-next-line:no-any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             this.element[this.name] = this._getValue();
         }
     }
@@ -885,24 +890,29 @@ class PropertyCommitter extends AttributeCommitter {
 class PropertyPart extends AttributePart {
 }
 // Detect event listener options support. If the `capture` property is read
-// from the options object, then options are supported. If not, then the thrid
+// from the options object, then options are supported. If not, then the third
 // argument to add/removeEventListener is interpreted as the boolean capture
 // value so we should only pass the `capture` property.
 let eventOptionsSupported = false;
-try {
-    const options = {
-        get capture() {
-            eventOptionsSupported = true;
-            return false;
-        }
-    };
-    // tslint:disable-next-line:no-any
-    window.addEventListener('test', options, options);
-    // tslint:disable-next-line:no-any
-    window.removeEventListener('test', options, options);
-}
-catch (_e) {
-}
+// Wrap into an IIFE because MS Edge <= v41 does not support having try/catch
+// blocks right into the body of a module
+(() => {
+    try {
+        const options = {
+            get capture() {
+                eventOptionsSupported = true;
+                return false;
+            }
+        };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        window.addEventListener('test', options, options);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        window.removeEventListener('test', options, options);
+    }
+    catch (_e) {
+        // event options not supported
+    }
+})();
 class EventPart {
     constructor(element, eventName, eventContext) {
         this.value = undefined;
@@ -958,57 +968,6 @@ const getOptions = (o) => o &&
     (eventOptionsSupported ?
         { capture: o.capture, passive: o.passive, once: o.once } :
         o.capture);
-
-/**
- * @license
- * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at
- * http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at
- * http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at
- * http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at
- * http://polymer.github.io/PATENTS.txt
- */
-/**
- * Creates Parts when a template is instantiated.
- */
-class DefaultTemplateProcessor {
-    /**
-     * Create parts for an attribute-position binding, given the event, attribute
-     * name, and string literals.
-     *
-     * @param element The element containing the binding
-     * @param name  The attribute name
-     * @param strings The string literals. There are always at least two strings,
-     *   event for fully-controlled bindings with a single expression.
-     */
-    handleAttributeExpressions(element, name, strings, options) {
-        const prefix = name[0];
-        if (prefix === '.') {
-            const committer = new PropertyCommitter(element, name.slice(1), strings);
-            return committer.parts;
-        }
-        if (prefix === '@') {
-            return [new EventPart(element, name.slice(1), options.eventContext)];
-        }
-        if (prefix === '?') {
-            return [new BooleanAttributePart(element, name.slice(1), strings)];
-        }
-        const committer = new AttributeCommitter(element, name, strings);
-        return committer.parts;
-    }
-    /**
-     * Create parts for a text-position binding.
-     * @param templateFactory
-     */
-    handleTextExpression(options) {
-        return new NodePart(options);
-    }
-}
-const defaultTemplateProcessor = new DefaultTemplateProcessor();
 
 /**
  * @license
@@ -1110,10 +1069,63 @@ const render = (result, container, options) => {
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
+/**
+ * Creates Parts when a template is instantiated.
+ */
+class DefaultTemplateProcessor {
+    /**
+     * Create parts for an attribute-position binding, given the event, attribute
+     * name, and string literals.
+     *
+     * @param element The element containing the binding
+     * @param name  The attribute name
+     * @param strings The string literals. There are always at least two strings,
+     *   event for fully-controlled bindings with a single expression.
+     */
+    handleAttributeExpressions(element, name, strings, options) {
+        const prefix = name[0];
+        if (prefix === '.') {
+            const committer = new PropertyCommitter(element, name.slice(1), strings);
+            return committer.parts;
+        }
+        if (prefix === '@') {
+            return [new EventPart(element, name.slice(1), options.eventContext)];
+        }
+        if (prefix === '?') {
+            return [new BooleanAttributePart(element, name.slice(1), strings)];
+        }
+        const committer = new AttributeCommitter(element, name, strings);
+        return committer.parts;
+    }
+    /**
+     * Create parts for a text-position binding.
+     * @param templateFactory
+     */
+    handleTextExpression(options) {
+        return new NodePart(options);
+    }
+}
+const defaultTemplateProcessor = new DefaultTemplateProcessor();
+
+/**
+ * @license
+ * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at
+ * http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at
+ * http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at
+ * http://polymer.github.io/CONTRIBUTORS.txt
+ * Code distributed by Google as part of the polymer project is also
+ * subject to an additional IP rights grant found at
+ * http://polymer.github.io/PATENTS.txt
+ */
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
 // TODO(justinfagnani): inject version number at build time
-(window['litHtmlVersions'] || (window['litHtmlVersions'] = [])).push('1.1.2');
+if (typeof window !== 'undefined') {
+    (window['litHtmlVersions'] || (window['litHtmlVersions'] = [])).push('1.2.1');
+}
 /**
  * Interprets a template literal as an HTML template that can efficiently
  * render to and update a container.
@@ -1125,4 +1137,4 @@ const html = (strings, ...values) => new TemplateResult(strings, values, 'html',
  */
 const svg = (strings, ...values) => new SVGTemplateResult(strings, values, 'svg', defaultTemplateProcessor);
 
-export { AttributeCommitter as A, BooleanAttributePart as B, DefaultTemplateProcessor as D, EventPart as E, NodePart as N, PropertyCommitter as P, SVGTemplateResult as S, TemplateInstance as T, reparentNodes as b, nothing as c, defaultTemplateProcessor as d, AttributePart as e, isIterable as f, isPrimitive as g, html as h, PropertyPart as j, render as k, templateFactory as l, TemplateResult as m, noChange as n, createMarker as o, parts as p, isTemplatePartActive as q, removeNodes as r, svg as s, templateCaches as t, Template as u, marker as v };
+export { AttributePart as A, BooleanAttributePart as B, DefaultTemplateProcessor as D, EventPart as E, NodePart as N, PropertyPart as P, SVGTemplateResult as S, Template as T, TemplateInstance as a, removeNodes as b, TemplateResult as c, isPrimitive as d, reparentNodes as e, noChange as f, templateFactory as g, html as h, isTemplatePartActive as i, defaultTemplateProcessor as j, AttributeCommitter as k, isIterable as l, marker as m, nothing as n, PropertyCommitter as o, parts as p, createMarker as q, render as r, svg as s, templateCaches as t };
