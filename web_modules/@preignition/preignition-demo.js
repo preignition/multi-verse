@@ -1,6 +1,6 @@
 import '../common/directive-5915da03.js';
 import '../common/index-281dba67.js';
-import { h as html$2, j as nothing } from '../common/lit-html-75774733.js';
+import { h as html$2, n as nothing } from '../common/lit-html-b7332d35.js';
 import { css, LitElement, property, query, customElement } from '../lit-element.js';
 import '../common/index-5180defa.js';
 import '../common/rgb-e876f481.js';

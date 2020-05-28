@@ -1,6 +1,6 @@
 import { d as directive } from '../common/directive-5915da03.js';
 import '../common/index-281dba67.js';
-import { h as html$3, j as nothing, k as AttributePart, q as PropertyPart, n as noChange, N as NodePart, u as templateFactory, E as EventPart, B as BooleanAttributePart } from '../common/lit-html-75774733.js';
+import { h as html$3, n as nothing, A as AttributePart, P as PropertyPart, f as noChange, N as NodePart, g as templateFactory, E as EventPart, B as BooleanAttributePart } from '../common/lit-html-b7332d35.js';
 import { LitElement, css, query, property, customElement, eventOptions, internalProperty, queryAsync, UpdatingElement } from '../lit-element.js';
 import '../common/index-5180defa.js';
 import '../common/rgb-e876f481.js';
@@ -9035,7 +9035,7 @@ class PwiMdEditor extends LitElement {
       padding-left: 16px;
     }
 
-    :host([has-focus]) .toolbar {
+    :host([hasfocus]) .toolbar {
       opacity: 1;
     }
 

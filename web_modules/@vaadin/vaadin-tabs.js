@@ -12874,94 +12874,6 @@ class EventApi {
   }
 }
 
-/**
- * @function
- * @param {boolean=} deep
- * @return {!Node}
- */
-DomApiNative.prototype.cloneNode;
-/**
- * @function
- * @param {!Node} node
- * @return {!Node}
- */
-DomApiNative.prototype.appendChild;
-/**
- * @function
- * @param {!Node} newChild
- * @param {Node} refChild
- * @return {!Node}
- */
-DomApiNative.prototype.insertBefore;
-/**
- * @function
- * @param {!Node} node
- * @return {!Node}
- */
-DomApiNative.prototype.removeChild;
-/**
- * @function
- * @param {!Node} oldChild
- * @param {!Node} newChild
- * @return {!Node}
- */
-DomApiNative.prototype.replaceChild;
-/**
- * @function
- * @param {string} name
- * @param {string} value
- * @return {void}
- */
-DomApiNative.prototype.setAttribute;
-/**
- * @function
- * @param {string} name
- * @return {void}
- */
-DomApiNative.prototype.removeAttribute;
-/**
- * @function
- * @param {string} selector
- * @return {?Element}
- */
-DomApiNative.prototype.querySelector;
-/**
- * @function
- * @param {string} selector
- * @return {!NodeList<!Element>}
- */
-DomApiNative.prototype.querySelectorAll;
-
-/** @type {?Node} */
-DomApiNative.prototype.parentNode;
-/** @type {?Node} */
-DomApiNative.prototype.firstChild;
-/** @type {?Node} */
-DomApiNative.prototype.lastChild;
-/** @type {?Node} */
-DomApiNative.prototype.nextSibling;
-/** @type {?Node} */
-DomApiNative.prototype.previousSibling;
-/** @type {?HTMLElement} */
-DomApiNative.prototype.firstElementChild;
-/** @type {?HTMLElement} */
-DomApiNative.prototype.lastElementChild;
-/** @type {?HTMLElement} */
-DomApiNative.prototype.nextElementSibling;
-/** @type {?HTMLElement} */
-DomApiNative.prototype.previousElementSibling;
-/** @type {!Array<!Node>} */
-DomApiNative.prototype.childNodes;
-/** @type {!Array<!HTMLElement>} */
-DomApiNative.prototype.children;
-/** @type {?DOMTokenList} */
-DomApiNative.prototype.classList;
-
-/** @type {string} */
-DomApiNative.prototype.textContent;
-/** @type {string} */
-DomApiNative.prototype.innerHTML;
-
 let DomApiImpl = DomApiNative;
 
 if (window['ShadyDOM'] && window['ShadyDOM']['inUse'] && window['ShadyDOM']['noPatch'] && window['ShadyDOM']['Wrapper']) {
@@ -15460,17 +15372,6 @@ class TemplateInstanceBase extends templateInstanceBase {
      return true;
   }
 }
-
-/** @type {!DataTemplate} */
-TemplateInstanceBase.prototype.__dataHost;
-/** @type {!TemplatizeOptions} */
-TemplateInstanceBase.prototype.__templatizeOptions;
-/** @type {!Polymer_PropertyEffects} */
-TemplateInstanceBase.prototype._methodHost;
-/** @type {!Object} */
-TemplateInstanceBase.prototype.__templatizeOwner;
-/** @type {!Object} */
-TemplateInstanceBase.prototype.__hostProps;
 
 /**
  * @constructor
