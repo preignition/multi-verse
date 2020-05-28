@@ -1,5 +1,7 @@
 import '../common/directive-5915da03.js';
-import { o as MultiDrawable, O as shapeProperties, p as MultiContainer } from '../common/multi-drawable-pie-04a72de6.js';
+import '../common/boot-c9e09360.js';
+import { dedupingMixin } from '../@polymer/polymer/lib/utils/mixin.js';
+import { o as MultiDrawable, O as shapeProperties, p as MultiContainer } from '../common/multi-drawable-pie-4d3f0537.js';
 import '../common/index-281dba67.js';
 import { s as select } from '../common/select-590e1e63.js';
 import '../common/touch-a2188ab8.js';
@@ -577,85 +579,6 @@ const multiSelection = selection => {
 const multiTransition = transition => {
   transition.prototype.attrs = transition_attrs;
 };
-
-/**
-@license
-Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
-*/
-
-/* eslint-disable no-unused-vars */
-/**
- * When using Closure Compiler, JSCompiler_renameProperty(property, object) is replaced by the munged name for object[property]
- * We cannot alias this function, so we have to use a small shim that has the same behavior when not compiling.
- *
- * @param {string} prop Property name
- * @param {?Object} obj Reference object
- * @return {string} Potentially renamed property name
- */
-window.JSCompiler_renameProperty = function(prop, obj) {
-  return prop;
-};
-
-/**
-@license
-Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
-*/
-
-// unique global id for deduping mixins.
-let dedupeId = 0;
-
-/* eslint-disable valid-jsdoc */
-/**
- * Wraps an ES6 class expression mixin such that the mixin is only applied
- * if it has not already been applied its base argument. Also memoizes mixin
- * applications.
- *
- * @template T
- * @param {T} mixin ES6 class expression mixin to wrap
- * @return {T}
- * @suppress {invalidCasts}
- */
-const dedupingMixin = function(mixin) {
-  let mixinApplications = /** @type {!MixinFunction} */(mixin).__mixinApplications;
-  if (!mixinApplications) {
-    mixinApplications = new WeakMap();
-    /** @type {!MixinFunction} */(mixin).__mixinApplications = mixinApplications;
-  }
-  // maintain a unique id for each mixin
-  let mixinDedupeId = dedupeId++;
-  function dedupingMixin(base) {
-    let baseSet = /** @type {!MixinFunction} */(base).__mixinSet;
-    if (baseSet && baseSet[mixinDedupeId]) {
-      return base;
-    }
-    let map = mixinApplications;
-    let extended = map.get(base);
-    if (!extended) {
-      extended = /** @type {!Function} */(mixin)(base);
-      map.set(base, extended);
-    }
-    // copy inherited mixin set from the extended class, or the base class
-    // NOTE: we avoid use of Set here because some browser (IE11)
-    // cannot extend a base Set via the constructor.
-    let mixinSet = Object.create(/** @type {!MixinFunction} */(extended).__mixinSet || baseSet || null);
-    mixinSet[mixinDedupeId] = true;
-    /** @type {!MixinFunction} */(extended).__mixinSet = mixinSet;
-    return extended;
-  }
-
-  return dedupingMixin;
-};
-/* eslint-enable valid-jsdoc */
 
 /**
  * ##  MultiGeoDrawable

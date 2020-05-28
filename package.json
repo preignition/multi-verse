@@ -34,7 +34,6 @@
   "main": "index.js",
   "module": "index.js",
   "dependencies": {
-    "@morbidick/lit-element-notify": "^1.1.1",
     "@polymer/polymer": "^3.4.1",
     "@preignition/multi-chart": "file:../multi-chart",
     "@preignition/multi-geo": "file:../multi-geo",
@@ -77,11 +76,12 @@
     "eslint-plugin-lit": "^1.2.0",
     "marked": "^1.0.0",
     "pwa-helpers": "~0.9.1",
-    "snowpack": "1",
+    "snowpack": "^2.0.2",
     "tslib": "^2.0.0"
   },
   "snowpack": {
-    "webDependencies": [
+    
+    "install": [
       "@morbidick/lit-element-notify",
       "@polymer/polymer/lib/utils/mixin.js",
       "@polymer/polymer/lib/utils/case-map.js",
@@ -115,18 +115,24 @@
       "lit-html/directives/style-map.js",
       "lit-html"
     ],
-    "dedupe": [
-      "lit-html",
-      "lit-element",
-      "tslib",
-      "api-viewer-element",
-      "@preignition/multi-geo",
-      "@preignition/multi-chart",
-      "reductio",
-      "universe",
-      "d3-selection",
-      "d3-transition"
-    ]
+    "exclude": ["**/node_modules/**/*", "**/bower_components/**/*", "**/test/*", "**/*.@(spec|test).@(js|mjs)"],
+    "installOptions": {
+      "rollup": {
+        "dedupe": [
+          "lit-html",
+          "lit-element",
+          "tslib",
+          "api-viewer-element",
+          "@preignition/multi-geo",
+          "@preignition/multi-chart",
+          "reductio",
+          "universe",
+          "d3-selection",
+          "d3-transition",
+          "@polymer/polymer/lib/utils/mixin.js"
+        ]
+      }
+    }
   },
   "scripts": {
     "snowpack": "pnpx snowpack -i",
