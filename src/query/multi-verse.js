@@ -122,6 +122,14 @@ RegisterMixin(
     return 'multi-verse-added';
   }
 
+
+  /*
+   * @override Register
+   */
+  // get unregisterEventListen() {
+  //   return 'multi-verse-removed';
+  // }
+  
   updated(props) {
     super.updated(props);
     if (props.has('preProcess') || props.has('data')) {
@@ -140,7 +148,8 @@ RegisterMixin(
     if (this.preProcess) {
       this.data.forEach(this.preProcess, this);
     }
-
+    this.dispatchEvent(new CustomEvent('filtered-count-changed', {detail: {value: this.data.length}}));
+    
     universe(this.data, {
         generatedColumns: this.generatedColumns
       }).then(uni => {
@@ -150,7 +159,11 @@ RegisterMixin(
             this._debounceMultiFilter, // initially undefined
             microTask,
             () => {
-              this.log && console.log('dataChanged', this.data);
+              const allFiltered = uni.allFiltered();
+              this.log && console.log('dataChanged', allFiltered, this.data);
+              this.dispatchEvent(new CustomEvent('filtered-count-changed', {detail: {value: allFiltered.length}}));
+              // Note(cg): this will only affect registered elements with dataFilteredChanged method.
+              this.callRegistered('dataFilteredChanged', allFiltered);
               this.callRegistered('dataChanged');
             });
 

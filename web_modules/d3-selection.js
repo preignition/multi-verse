@@ -1,9 +1,7 @@
 import { f as creator } from './common/index-281dba67.js';
 export { f as creator, c as customEvent, e as event, m as matcher, n as namespace, g as namespaces, s as selection, a as selector, b as selectorAll, d as style, h as window } from './common/index-281dba67.js';
-import { s as select } from './common/select-590e1e63.js';
-export { s as select } from './common/select-590e1e63.js';
-import { a as sourceEvent, p as point } from './common/touch-a2188ab8.js';
-export { p as clientPoint, m as mouse, s as selectAll, t as touch } from './common/touch-a2188ab8.js';
+import { s as select, b as sourceEvent, p as point } from './common/touch-752e74e0.js';
+export { p as clientPoint, m as mouse, s as select, a as selectAll, t as touch } from './common/touch-752e74e0.js';
 
 function create(name) {
   return select(creator(name).call(document.documentElement));

@@ -1,5 +1,9 @@
 import { r as reductio } from './common/reductio-b63c4ab8.js';
 
+function deep(t,e,i,n,r){for(r in n=(i=i.split(".")).splice(-1,1),i)e=e[i[r]]=e[i[r]]||{};return t(e,n)}
+
+const reg = /\[([\w\d]+)\]/g;
+
 var _ = {
   find: find,
   remove: remove,
@@ -33,7 +37,7 @@ function find(a, b) {
 }
 
 function remove(a, b) {
-  return a.filter(function (o, i) {
+  return a.filter(function(o, i) {
     var r = b(o);
     if (r) {
       a.splice(i, 1);
@@ -67,36 +71,36 @@ function isFunction(a) {
   return typeof a === 'function'
 }
 
-function get(a, b) {
-  if (isArray(b)) {
-    b = b.join('.');
+/**
+ * get value of object at a deep path.
+ *
+ * @param  {Object} obj  the object (e.g. { 'a': [{ 'b': { 'c1': 3, 'c2': 4} }], 'd': {e:1} }; )
+ * @param  {String} path deep path (e.g. `d.e`` or `a[0].b.c1`. Dot notation (a.0.b)is also supported)
+ * @return {Any}      the resolved value
+ */
+function get(obj, path) {
+  if (isArray(path)) {
+    path = path.join('.');
   }
-  return b
-    .replace('[', '.').replace(']', '')
-    .split('.')
-    .reduce(
-      function (obj, property) {
-        return obj[property]
-      }, a
-    )
+  return deep(_get, obj, path.replace(reg, '.$1'))
 }
+const _get = (obj, prop) => obj[prop];
 
-function set(obj, prop, value) {
-  if (typeof prop === 'string') {
-    prop = prop
-      .replace('[', '.').replace(']', '')
-      .split('.');
+/**
+ * set value of object at a deep path.
+ *
+ * @param  {Object} obj  the object (e.g. { 'a': [{ 'b': { 'c1': 3, 'c2': 4} }], 'd': {e:1} }; )
+ * @param  {String} path deep path (e.g. `d.e`` or `a[0].b.c1`. Dot notation (a.0.b)is also supported)
+ * @param {Any} value to set
+ * @return {Any}      the resolved value
+ */
+function set(obj, path, value) {
+  if (isArray(path)) {
+    path = path.join('.');
   }
-  if (prop.length > 1) {
-    var e = prop.shift();
-    Object.assign(obj[e] =
-      Object.prototype.toString.call(obj[e]) === '[object Object]' ? obj[e] : {},
-    prop,
-    value);
-  } else {
-    obj[prop[0]] = value;
-  }
+  return deep(_set(value), obj, path.replace(reg, '.$1'))
 }
+const _set = n => (obj, prop) => (obj[prop] = n);
 
 function map(a, b) {
   var m;
@@ -122,7 +126,7 @@ function map(a, b) {
     }
     return m
   }
-  return a.map(function (aa) {
+  return a.map(function(aa) {
     return aa[b]
   })
 }
@@ -133,7 +137,7 @@ function keys(obj) {
 
 function sortBy(a, b) {
   if (isFunction(b)) {
-    return a.sort(function (aa, bb) {
+    return a.sort(function(aa, bb) {
       if (b(aa) > b(bb)) {
         return 1
       }
@@ -166,7 +170,7 @@ function isUndefined(a) {
 
 function pick(a, b) {
   var c = {};
-  forEach(b, function (bb) {
+  forEach(b, function(bb) {
     if (typeof a[bb] !== 'undefined') {
       c[bb] = a[bb];
     }
@@ -176,12 +180,12 @@ function pick(a, b) {
 
 function xor(a, b) {
   var unique = [];
-  forEach(a, function (aa) {
+  forEach(a, function(aa) {
     if (b.indexOf(aa) === -1) {
       return unique.push(aa)
     }
   });
-  forEach(b, function (bb) {
+  forEach(b, function(bb) {
     if (a.indexOf(bb) === -1) {
       return unique.push(bb)
     }
@@ -228,7 +232,7 @@ function replaceArray(a, b) {
   } else if (al < bl) {
     a.push.apply(a, new Array(bl - al));
   }
-  forEach(a, function (val, key) {
+  forEach(a, function(val, key) {
     a[key] = b[key];
   });
   return a
@@ -236,7 +240,7 @@ function replaceArray(a, b) {
 
 function uniq(a) {
   var seen = new Set();
-  return a.filter(function (item) {
+  return a.filter(function(item) {
     var allow = false;
     if (!seen.has(item)) {
       seen.add(item);
@@ -263,7 +267,7 @@ function sort(arr) {
     var j = i;
     while (arr[j - 1] > tmp) {
       arr[j] = arr[j - 1];
-      --j;
+        --j;
     }
     arr[j] = tmp;
   }
@@ -284,6 +288,7 @@ function values(a) {
 function recurseObject(obj, cb) {
   _recurseObject(obj, []);
   return obj
+
   function _recurseObject(obj, path) {
     for (var k in obj) { //  eslint-disable-line guard-for-in
       var newPath = clone(path);
@@ -588,8 +593,7 @@ function convertAggregatorString(keyString) {
               hasComma,
               function(/* p2 , pr2 */) {
                 return '","'
-              }
-            ) +
+              }) +
             '"]'
           )
         }
@@ -663,7 +667,7 @@ function $map(children, n) {
   })
 }
 
-function _filters (service) {
+function _filters(service) {
   return {
     filter: filter,
     filterAll: filterAll,
@@ -674,8 +678,8 @@ function _filters (service) {
 
   function filter(column, fil, isRange, replace) {
     return getColumn(column)
-      .then(function (column) {
-      // Clone a copy of the new filters
+      .then(function(column) {
+        // Clone a copy of the new filters
         var newFilters = Object.assign({}, service.filters);
         // Here we use the registered column key despite the filter key passed, just in case the filter key's ordering is ordered differently :)
         var filterKey = column.key;
@@ -695,14 +699,14 @@ function _filters (service) {
   function getColumn(column) {
     var exists = service.column.find(column);
     // If the filters dimension doesn't exist yet, try and create it
-    return new Promise(function (resolve, reject) {
+    return new Promise(function(resolve, reject) {
       try {
         if (!exists) {
           return resolve(service.column({
-            key: column,
-            temporary: true,
-          })
-            .then(function () {
+              key: column,
+              temporary: true,
+            })
+            .then(function() {
               // It was able to be created, so retrieve and return it
               return service.column.find(column)
             })
@@ -720,7 +724,7 @@ function _filters (service) {
   function filterAll(fils) {
     // If empty, remove all filters
     if (!fils) {
-      service.columns.forEach(function (col) {
+      service.columns.forEach(function(col) {
         col.dimension.filterAll();
       });
       return applyFilters({})
@@ -729,9 +733,9 @@ function _filters (service) {
     // Clone a copy for the new filters
     var newFilters = Object.assign({}, service.filters);
 
-    var ds = _.map(fils, function (fil) {
+    var ds = _.map(fils, function(fil) {
       return getColumn(fil.column)
-        .then(function (column) {
+        .then(function(column) {
           // Here we use the registered column key despite the filter key passed, just in case the filter key's ordering is ordered differently :)
           var filterKey = column.complex ? JSON.stringify(column.key) : column.key;
           // Build the filter object
@@ -740,7 +744,7 @@ function _filters (service) {
     });
 
     return Promise.all(ds)
-      .then(function () {
+      .then(function() {
         return applyFilters(newFilters)
       })
   }
@@ -780,7 +784,7 @@ function _filters (service) {
   }
 
   function applyFilters(newFilters) {
-    var ds = _.map(newFilters, function (fil, i) {
+    var ds = _.map(newFilters, function(fil, i) {
       var existing = service.filters[i];
       // Filters are the same, so no change is needed on this column
       if (fil === existing) {
@@ -811,7 +815,7 @@ function _filters (service) {
         return Promise.resolve(column.dimension.filterRange(fil.value))
       }
       if (fil.type === 'inclusive') {
-        return Promise.resolve(column.dimension.filterFunction(function (d) {
+        return Promise.resolve(column.dimension.filterFunction(function(d) {
           return fil.value.indexOf(d) > -1
         }))
       }
@@ -823,13 +827,13 @@ function _filters (service) {
     });
 
     return Promise.all(ds)
-      .then(function () {
+      .then(function() {
         // Save the new filters satate
         service.filters = newFilters;
 
         // Pluck and remove falsey filters from the mix
         var tryRemoval = [];
-        _.forEach(service.filters, function (val, key) {
+        _.forEach(service.filters, function(val, key) {
           if (!val) {
             tryRemoval.push({
               key: key,
@@ -840,20 +844,20 @@ function _filters (service) {
         });
 
         // If any of those filters are the last dependency for the column, then remove the column
-        return Promise.all(_.map(tryRemoval, function (v) {
+        return Promise.all(_.map(tryRemoval, function(v) {
           var column = service.column.find((v.key.charAt(0) === '[') ? JSON.parse(v.key) : v.key);
           if (column.temporary && !column.dynamicReference) {
             return service.clear(column.key)
           }
         }))
       })
-      .then(function () {
+      .then(function() {
         // Call the filterListeners and wait for their return
-        return Promise.all(_.map(service.filterListeners, function (listener) {
+        return Promise.all(_.map(service.filterListeners, function(listener) {
           return listener()
         }))
       })
-      .then(function () {
+      .then(function() {
         return service
       })
   }
@@ -898,7 +902,7 @@ function _filters (service) {
     return columns
 
     function walk(obj) {
-      _.forEach(obj, function (val, key) {
+      _.forEach(obj, function(val, key) {
         // find the data references, if any
         var ref = findDataReferences(val, key);
         if (ref) {
@@ -943,18 +947,18 @@ function _filters (service) {
       var dataRef = findDataReferences(null, obj);
       if (dataRef) {
         var data = service.cf.all();
-        return function () {
+        return function() {
           return data
         }
       }
     }
 
     if (_.isString(obj) || _.isNumber(obj) || _.isBoolean(obj)) {
-      return function (d) {
+      return function(d) {
         if (typeof d === 'undefined') {
           return obj
         }
-        return expressions.$eq(d, function () {
+        return expressions.$eq(d, function() {
           return obj
         })
       }
@@ -962,11 +966,11 @@ function _filters (service) {
 
     // If an array, recurse into each item and return as a map
     if (_.isArray(obj)) {
-      subGetters = _.map(obj, function (o) {
+      subGetters = _.map(obj, function(o) {
         return makeFunction(o, isAggregation)
       });
-      return function (d) {
-        return subGetters.map(function (s) {
+      return function(d) {
+        return subGetters.map(function(s) {
           return s(d)
         })
       }
@@ -974,7 +978,7 @@ function _filters (service) {
 
     // If object, return a recursion function that itself, returns the results of all of the object keys
     if (_.isObject(obj)) {
-      subGetters = _.map(obj, function (val, key) {
+      subGetters = _.map(obj, function(val, key) {
         // Get the child
         var getSub = makeFunction(val, isAggregation);
 
@@ -983,14 +987,14 @@ function _filters (service) {
         if (dataRef) {
           var column = service.column.find(dataRef);
           var data = column.values;
-          return function () {
+          return function() {
             return data
           }
         }
 
         // If expression, pass the parentValue and the subGetter
         if (expressions[key]) {
-          return function (d) {
+          return function(d) {
             return expressions[key](d, getSub)
           }
         }
@@ -1004,13 +1008,13 @@ function _filters (service) {
           // an aggregatino chain has started and to stop using $AND
           getSub = makeFunction(val, isAggregation);
           // If it's an aggregation object, be sure to pass in the children, and then any additional params passed into the aggregation string
-          return function () {
+          return function() {
             return aggregatorObj.aggregator.apply(null, [getSub()].concat(aggregatorObj.params))
           }
         }
 
         // It must be a string then. Pluck that string key from parent, and pass it as the new value to the subGetter
-        return function (d) {
+        return function(d) {
           d = d[key];
           return getSub(d, getSub)
         }
@@ -1020,19 +1024,19 @@ function _filters (service) {
       // Return AND with a map of the subGetters
       if (isAggregation) {
         if (subGetters.length === 1) {
-          return function (d) {
+          return function(d) {
             return subGetters[0](d)
           }
         }
-        return function (d) {
-          return _.map(subGetters, function (getSub) {
+        return function(d) {
+          return _.map(subGetters, function(getSub) {
             return getSub(d)
           })
         }
       }
-      return function (d) {
-        return expressions.$and(d, function (d) {
-          return _.map(subGetters, function (getSub) {
+      return function(d) {
+        return expressions.$and(d, function(d) {
+          return _.map(subGetters, function(getSub) {
             return getSub(d)
           })
         })
@@ -1432,8 +1436,6 @@ var xfilterReduce = {
   reduceSubtract
 };
 
-function deep(t,e,i,n,r){for(r in n=(i=i.split(".")).splice(-1,1),i)e=e[i[r]]=e[i[r]]||{};return t(e,n)}
-
 // Note(cg): result was previsouly using lodash.result, not ESM compatible.
  
 const get$1 = (obj, prop) => {
@@ -1451,9 +1453,9 @@ const get$1 = (obj, prop) => {
  * @param  {String} path deep path (e.g. `d.e`` or `a[0].b.c1`. Dot notation (a.0.b)is also supported)
  * @return {Any}      the resolved value
  */
-const reg = /\[([\w\d]+)\]/g;
+const reg$1 = /\[([\w\d]+)\]/g;
 var result = (obj, path) => {
-  return deep(get$1, obj, path.replace(reg, '.$1'))
+  return deep(get$1, obj, path.replace(reg$1, '.$1'))
 };
 
 // constants
@@ -2941,12 +2943,24 @@ function capacity(w) {
       : 0x100000000;
 }
 
-function _crossfilter (service) {
+function _crossfilter(service) {
   return {
     build: build,
     generateColumns: generateColumns,
     add: add,
     remove: remove,
+    all: () => {
+      return service.cf.all()
+    },
+    allFiltered: () => {
+      return service.cf.allFiltered()
+    },
+    size: () => {
+      return service.cf.size()
+    },
+    isElementFiltered: () => {
+      return service.cf.isElementFiltered(...arguments)
+    },
   }
 
   function build(c) {
@@ -2964,8 +2978,8 @@ function _crossfilter (service) {
     if (!service.options.generatedColumns) {
       return data
     }
-    return _.map(data, function (d/* , i */) {
-      _.forEach(service.options.generatedColumns, function (val, key) {
+    return _.map(data, function(d /* , i */ ) {
+      _.forEach(service.options.generatedColumns, function(val, key) {
         d[key] = val(d);
       });
       return d
@@ -2974,16 +2988,16 @@ function _crossfilter (service) {
 
   function add(data) {
     data = generateColumns(data);
-    return new Promise(function (resolve, reject) {
-      try {
-        resolve(service.cf.add(data));
-      } catch (err) {
-        reject(err);
-      }
-    })
-      .then(function () {
-        return _.map(service.dataListeners, function (listener) {
-          return function () {
+    return new Promise(function(resolve, reject) {
+        try {
+          resolve(service.cf.add(data));
+        } catch (err) {
+          reject(err);
+        }
+      })
+      .then(function() {
+        return _.map(service.dataListeners, function(listener) {
+          return function() {
             return listener({
               added: data,
             })
@@ -2994,80 +3008,88 @@ function _crossfilter (service) {
       })
 
       .then(function() {
-        return Promise.all(_.map(service.filterListeners, function (listener) {
+        return Promise.all(_.map(service.filterListeners, function(listener) {
           return listener()
-        }))      
+        }))
       })
 
-      .then(function () {
+      .then(function() {
         return service
       })
   }
 
   function remove(predicate) {
-    return new Promise(function (resolve, reject) {
-      try {
-        resolve(service.cf.remove(predicate));
-      } catch (err) {
-        reject(err);
-      }
-    })
-    
-      .then(function() {
-        return Promise.all(_.map(service.filterListeners, function (listener) {
-          return listener()
-        }))      
+    return new Promise(function(resolve, reject) {
+        try {
+          resolve(service.cf.remove(predicate));
+        } catch (err) {
+          reject(err);
+        }
       })
-    
-      .then(function () {
+
+      .then(function() {
+        return Promise.all(_.map(service.filterListeners, function(listener) {
+          return listener()
+        }))
+      })
+
+      .then(function() {
         return service
       })
   }
 }
 
-function _dimension (service) {
+// TODO(cg): add dimension dispose to get rid of unused dimension 
+// and free up space
+
+function _dimension(service) {
   return {
     make: make,
     makeAccessor: makeAccessor,
+    dispose: dispose,
   }
 
-  function make(key, type, complex) {
-    var accessor = makeAccessor(key, complex);
+  function make(key, type, complex, missingValue = '__missing__') {
+    var accessor = makeAccessor(key, complex, missingValue);
     // Promise.resolve will handle promises or non promises, so
     // this crossfilter async is supported if present
     return Promise.resolve(service.cf.dimension(accessor, type === 'array'))
   }
 
-  function makeAccessor(key, complex) {
+  function makeAccessor(key, complex, missingValue) {
     var accessorFunction;
 
     if (complex === 'string') {
-      accessorFunction = function (d) {
-        return _.get(d, key)
+      accessorFunction = function(d) {
+        const value = _.get(d, key);
+        return value === undefined ? missingValue : value
       };
     } else if (complex === 'function') {
       accessorFunction = key;
     } else if (complex === 'array') {
-      var arrayString = _.map(key, function (k) {
+      var arrayString = _.map(key, function(k) {
         return 'd[\'' + k + '\']'
       });
-      accessorFunction = new Function('d', String('return ' + JSON.stringify(arrayString).replace(/"/g, '')));  // eslint-disable-line  no-new-func
+      accessorFunction = new Function('d', String('return ' + JSON.stringify(arrayString).replace(/"/g, ''))); // eslint-disable-line  no-new-func
     } else {
       accessorFunction =
         // Index Dimension
-        key === true ? function accessor(d, i) {
-          return i
-        } :
-          // Value Accessor Dimension
-          function (d) {
-            return d[key]
-          };
+        key === true ? (d, i) => i :
+        // Value Accessor Dimension
+        (d) => {
+          const value = d[key];
+          return value === undefined ? missingValue : value
+        };
     }
     return accessorFunction
   }
+
+  function dispose(key) {
+    console.warn('universe dispose not yet implemented');
+  }
 }
 
-function column (service) {
+function column(service) {
   var dimension = _dimension(service);
 
   var columnFunc = column;
@@ -3088,13 +3110,13 @@ function column (service) {
 
     // Mapp all column creation, wait for all to settle, then return the instance
     return Promise.all(_.map(def, makeColumn))
-      .then(function () {
+      .then(function() {
         return service
       })
   }
 
   function findColumn(d) {
-    return _.find(service.columns, function (c) {
+    return _.find(service.columns, function(c) {
       if (_.isArray(d)) {
         return !_.xor(c.key, d).length
       }
@@ -3131,7 +3153,7 @@ function column (service) {
         existing.dynamicReference = false;
       }
       return existing.promise
-        .then(function () {
+        .then(function() {
           return service
         })
     }
@@ -3140,14 +3162,14 @@ function column (service) {
     column.queries = [];
     service.columns.push(column);
 
-    column.promise = new Promise(function (resolve, reject) {
-      try {
-        resolve(service.cf.all());
-      } catch (err) {
-        reject(err);
-      }
-    })
-      .then(function (all) {
+    column.promise = new Promise(function(resolve, reject) {
+        try {
+          resolve(service.cf.all());
+        } catch (err) {
+          reject(err);
+        }
+      })
+      .then(function(all) {
         var sample;
 
         // Complex column Keys
@@ -3186,9 +3208,9 @@ function column (service) {
           column.type = getType(sample);
         }
 
-        return dimension.make(column.key, column.type, column.complex)
+        return dimension.make(column.key, column.type, column.complex, column.missingValue)
       })
-      .then(function (dim) {
+      .then(function(dim) {
         column.dimension = dim;
         column.filterCount = 0;
         var stopListeningForData = service.onDataChange(buildColumnKeys);
@@ -3202,21 +3224,21 @@ function column (service) {
             return Promise.resolve()
           }
 
-          var accessor = dimension.makeAccessor(column.key, column.complex);
+          var accessor = dimension.makeAccessor(column.key, column.complex, column.missingValue);
           column.values = column.values || [];
 
-          return new Promise(function (resolve, reject) {
-            try {
-              if (changes && changes.added) {
-                resolve(changes.added);
-              } else {
-                resolve(column.dimension.bottom(Infinity));
+          return new Promise(function(resolve, reject) {
+              try {
+                if (changes && changes.added) {
+                  resolve(changes.added);
+                } else {
+                  resolve(column.dimension.bottom(Infinity));
+                }
+              } catch (err) {
+                reject(err);
               }
-            } catch (err) {
-              reject(err);
-            }
-          })
-            .then(function (rows) {
+            })
+            .then(function(rows) {
               var newValues;
               if (column.complex === 'string' || column.complex === 'function') {
                 newValues = _.map(rows, accessor);
@@ -3232,7 +3254,7 @@ function column (service) {
       });
 
     return column.promise
-      .then(function () {
+      .then(function() {
         return service
       })
   }
@@ -3265,7 +3287,7 @@ var rAggregators = {
 
 // Aggregators
 
-function $count$1(reducer/* , value */) {
+function $count$1(reducer /* , value */ ) {
   return reducer.count(true)
 }
 
@@ -3301,14 +3323,14 @@ function $valueList(reducer, value) {
   return reducer.valueList(value)
 }
 
-function $dataList(reducer/* , value */) {
+function $dataList(reducer /* , value */ ) {
   return reducer.dataList(true)
 }
 
 // TODO histograms
 // TODO exceptions
 
-function _reductiofy (service) {
+function _reductiofy(service) {
   var filters = _filters(service);
 
   return function reductiofy(query) {
@@ -3330,13 +3352,13 @@ function _reductiofy (service) {
     function aggregateOrNest(reducer, selects) {
       // Sort so nested values are calculated last by reductio's .value method
       var sortedSelectKeyValue = _.sortBy(
-        _.map(selects, function (val, key) {
+        _.map(selects, function(val, key) {
           return {
             key: key,
             value: val,
           }
         }),
-        function (s) {
+        function(s) {
           if (rAggregators.aggregators[s.key]) {
             return 0
           }
@@ -3344,7 +3366,7 @@ function _reductiofy (service) {
         });
 
       // dive into each key/value
-      return _.forEach(sortedSelectKeyValue, function (s) {
+      return _.forEach(sortedSelectKeyValue, function(s) {
         // Found a Reductio Aggregation
         if (rAggregators.aggregators[s.key]) {
           // Build the valueAccessorFunction
@@ -3368,7 +3390,7 @@ function _reductiofy (service) {
   }
 }
 
-function _postAggregation (/* service */) {
+function _postAggregation( /* service */ ) {
   return {
     post: post,
     sortByKey: sortByKey,
@@ -3385,7 +3407,7 @@ function _postAggregation (/* service */) {
 
   function sortByKey(query, parent, desc) {
     query.data = cloneIfLocked(parent);
-    query.data = _.sortBy(query.data, function (d) {
+    query.data = _.sortBy(query.data, function(d) {
       return d.key
     });
     if (desc) {
@@ -3416,9 +3438,9 @@ function _postAggregation (/* service */) {
       key: label || 'Other',
       value: {},
     };
-    _.recurseObject(aggObj, function (val, key, path) {
+    _.recurseObject(aggObj, function(val, key, path) {
       var items = [];
-      _.forEach(toSquash, function (record) {
+      _.forEach(toSquash, function(record) {
         items.push(_.get(record.value, path));
       });
       _.set(squashed.value, path, aggregation.aggregators[val](items));
@@ -3434,7 +3456,7 @@ function _postAggregation (/* service */) {
       key: [query.data[start].key, query.data[end].key],
       value: {},
     };
-    _.recurseObject(aggObj, function (val, key, path) {
+    _.recurseObject(aggObj, function(val, key, path) {
       var changePath = _.clone(path);
       changePath.pop();
       changePath.push(key + 'Change');
@@ -3446,7 +3468,7 @@ function _postAggregation (/* service */) {
   function changeMap(query, parent, aggObj, defaultNull) {
     defaultNull = _.isUndefined(defaultNull) ? 0 : defaultNull;
     query.data = cloneIfLocked(parent);
-    _.recurseObject(aggObj, function (val, key, path) {
+    _.recurseObject(aggObj, function(val, key, path) {
       var changePath = _.clone(path);
       var fromStartPath = _.clone(path);
       var fromEndPath = _.clone(path);
@@ -3462,7 +3484,7 @@ function _postAggregation (/* service */) {
       var start = _.get(query.data[0].value, path, defaultNull);
       var end = _.get(query.data[query.data.length - 1].value, path, defaultNull);
 
-      _.forEach(query.data, function (record, i) {
+      _.forEach(query.data, function(record, i) {
         var previous = query.data[i - 1] || query.data[0];
         _.set(query.data[i].value, changePath, _.get(record.value, path, defaultNull) - (previous ? _.get(previous.value, path, defaultNull) : defaultNull));
         _.set(query.data[i].value, fromStartPath, _.get(record.value, path, defaultNull) - start);
@@ -3476,7 +3498,7 @@ function cloneIfLocked(parent) {
   return parent.locked ? _.clone(parent.data) : parent.data
 }
 
-function query (service) {
+function query(service) {
   var reductiofy = _reductiofy(service);
   var filters = _filters(service);
   var postAggregation = _postAggregation();
@@ -3490,7 +3512,7 @@ function query (service) {
     for (var i = 0; i < service.columns.length; i++) {
       for (var j = 0; j < service.columns[i].queries.length; j++) {
         if (service.columns[i].queries[j].hash === queryHash) {
-          return new Promise(function (resolve, reject) { // eslint-disable-line no-loop-func
+          return new Promise(function(resolve, reject) { // eslint-disable-line no-loop-func
             try {
               resolve(service.columns[i].queries[j]);
             } catch (err) {
@@ -3532,16 +3554,17 @@ function query (service) {
     function createColumn(query) {
       // Ensure column is created
       return service.column({
-        key: query.original.groupBy,
-        type: _.isUndefined(query.type) ? null : query.type,
-        array: Boolean(query.array),
-      })
-        .then(function () {
-        // Attach the column to the query
+          key: query.original.groupBy,
+          type: _.isUndefined(query.type) ? null : query.type,
+          array: Boolean(query.array),
+          missingValue: query.original.missingValue
+        })
+        .then(function() {
+          // Attach the column to the query
           var column = service.column.find(query.original.groupBy);
           query.column = column;
           column.queries.push(query);
-          column.removeListeners.push(function () {
+          column.removeListeners.push(function() {
             return query.clear()
           });
           return query
@@ -3553,7 +3576,7 @@ function query (service) {
       // Using Promise Resolve allows support for crossfilter async
       // TODO check if query already exists, and use the same base query // if possible
       return Promise.resolve(query.column.dimension.group())
-        .then(function (g) {
+        .then(function(g) {
           query.group = g;
           return query
         })
@@ -3564,13 +3587,13 @@ function query (service) {
       // We need to scan the group for any filters that would require
       // the group to be rebuilt when data is added or removed in any way.
       if (requiredColumns.length) {
-        return Promise.all(_.map(requiredColumns, function (columnKey) {
-          return service.column({
-            key: columnKey,
-            dynamicReference: query.group,
-          })
-        }))
-          .then(function () {
+        return Promise.all(_.map(requiredColumns, function(columnKey) {
+            return service.column({
+              key: columnKey,
+              dynamicReference: query.group,
+            })
+          }))
+          .then(function() {
             return query
           })
       }
@@ -3580,14 +3603,14 @@ function query (service) {
     function setupDataListeners(query) {
       // Here, we create a listener to recreate and apply the reducer to
       // the group anytime underlying data changes
-      var stopDataListen = service.onDataChange(function () {
+      var stopDataListen = service.onDataChange(function() {
         return applyQuery(query)
       });
       query.removeListeners.push(stopDataListen);
 
       // This is a similar listener for filtering which will (if needed)
       // run any post aggregations on the data after each filter action
-      var stopFilterListen = service.onFilter(function () {
+      var stopFilterListen = service.onFilter(function() {
         return postAggregate(query)
       });
       query.removeListeners.push(stopFilterListen);
@@ -3604,7 +3627,7 @@ function query (service) {
 
     function buildReducer(query) {
       return reductiofy(query.original)
-        .then(function (reducer) {
+        .then(function(reducer) {
           query.reducer = reducer;
           return query
         })
@@ -3612,14 +3635,14 @@ function query (service) {
 
     function applyReducer(query) {
       return Promise.resolve(query.reducer(query.group))
-        .then(function () {
+        .then(function() {
           return query
         })
     }
 
     function attachData(query) {
       return Promise.resolve(query.group.all())
-        .then(function (data) {
+        .then(function(data) {
           query.data = data;
           return query
         })
@@ -3631,10 +3654,10 @@ function query (service) {
         // it against getting mutated by the post-aggregations
         query.locked = true;
       }
-      return Promise.all(_.map(query.postAggregations, function (post) {
-        return post()
-      }))
-        .then(function () {
+      return Promise.all(_.map(query.postAggregations, function(post) {
+          return post()
+        }))
+        .then(function() {
           return query
         })
     }
@@ -3677,7 +3700,7 @@ function query (service) {
         clear: clearQuery,
       });
 
-      _.forEach(postAggregationMethods, function (method) {
+      _.forEach(postAggregationMethods, function(method) {
         q[method] = postAggregateMethodWrap(postAggregation[method]);
       });
 
@@ -3696,36 +3719,36 @@ function query (service) {
       }
 
       function clearQuery() {
-        _.forEach(q.removeListeners, function (l) {
+        _.forEach(q.removeListeners, function(l) {
           l();
         });
-        return new Promise(function (resolve, reject) {
-          try {
-            resolve(q.group.dispose());
-          } catch (err) {
-            reject(err);
-          }
-        })
-          .then(function () {
+        return new Promise(function(resolve, reject) {
+            try {
+              resolve(q.group.dispose());
+            } catch (err) {
+              reject(err);
+            }
+          })
+          .then(function() {
             q.column.queries.splice(q.column.queries.indexOf(q), 1);
             // Automatically recycle the column if there are no queries active on it
             if (!q.column.queries.length) {
               return service.clear(q.column.key)
             }
           })
-          .then(function () {
+          .then(function() {
             return service
           })
       }
 
       function postAggregateMethodWrap(postMethod) {
-        return function () {
+        return function() {
           var args = Array.prototype.slice.call(arguments);
           var sub = {};
           newQueryObj(sub, q);
           args.unshift(sub, q);
 
-          q.postAggregations.push(function () {
+          q.postAggregations.push(function() {
             Promise.resolve(postMethod.apply(null, args))
               .then(postAggregateChildren);
           });
@@ -3735,7 +3758,7 @@ function query (service) {
 
           function postAggregateChildren() {
             return postAggregate(sub)
-              .then(function () {
+              .then(function() {
                 return sub
               })
           }
@@ -3815,15 +3838,15 @@ function clear(service) {
   }
 }
 
-function destroy (service) {
+function destroy(service) {
   return function destroy() {
     return service.clear()
-      .then(function () {
+      .then(function() {
         service.cf.dataListeners = [];
         service.cf.filterListeners = [];
         return Promise.resolve(service.cf.remove())
       })
-      .then(function () {
+      .then(function() {
         return service
       })
   }
@@ -3844,11 +3867,15 @@ function universe(data, options) {
   data = cf.generateColumns(data);
 
   return cf.build(data)
-    .then(function (data) {
+    .then(function(data) {
       service.cf = data;
       return Object.assign(service, {
         add: cf.add,
         remove: cf.remove,
+        size: cf.size,
+        all: cf.all,
+        allFiltered: cf.allFiltered,
+        isElementFiltered: cf.isElementFiltered,
         column: column(service),
         query: query(service),
         filter: filters.filter,
@@ -3863,14 +3890,14 @@ function universe(data, options) {
 
   function onDataChange(cb) {
     service.dataListeners.push(cb);
-    return function () {
+    return function() {
       service.dataListeners.splice(service.dataListeners.indexOf(cb), 1);
     }
   }
 
   function onFilter(cb) {
     service.filterListeners.push(cb);
-    return function () {
+    return function() {
       service.filterListeners.splice(service.filterListeners.indexOf(cb), 1);
     }
   }

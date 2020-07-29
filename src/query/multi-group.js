@@ -39,6 +39,7 @@ RegisterMixin(
     this.addEventListener('multi-select', this.onSelect);
     this.addEventListener('multi-clear', this.onClear);
   }
+  
   /**
    * `onSelect` filter the `universe` when a `multi-select` event is captured
    */

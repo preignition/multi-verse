@@ -95,14 +95,23 @@ const MultiVerseQuery = dedupingMixin(superClass => {
         keys: {
           type: Array,
           notify: true
-        }
+        },
+
+        /*
+         * `missingValue` key to use for missing value. 
+         * By default, universe has `__missing__`
+         */
+        missingValue: {
+          type: String,
+          attribute: 'missing-value'
+        },
       };
     }
 
 
     updated(props) {
       super.updated(props);
-      if (props.has('groupBy') || props.has('select') || props.has('filter')) {
+      if (props.has('groupBy') || props.has('select') || props.has('filter') || props.has('missingValue')) {
         this._observeForQueryObject();
       }
       if (props.has('universe') || props.has('queryObject')) {
@@ -121,9 +130,9 @@ const MultiVerseQuery = dedupingMixin(superClass => {
             this.queryResult = queryResult;
             this.data = queryResult.data;
             this.length = this.data.length;
-            if (!this.keys) {
-              this.keys = queryResult.data.map(d => d.key);
-            }
+            this.keys = queryResult.data.map(d => d.key);
+            // if (!this.keys) {
+            // }
             this.log && console.info('observeQueryObject Result', this.data, queryResult);
 
           })
@@ -146,6 +155,10 @@ const MultiVerseQuery = dedupingMixin(superClass => {
           const query = {
             groupBy: this.groupBy
           };
+
+          if (this.missingValue) {
+            query.missingValue = this.missingValue;
+          }
 
           let filter, select;
           if (this.filter) {

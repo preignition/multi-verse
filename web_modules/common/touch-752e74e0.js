@@ -1,4 +1,10 @@
-import { e as event, S as Selection, r as root } from './index-281dba67.js';
+import { S as Selection, r as root, e as event } from './index-281dba67.js';
+
+function select(selector) {
+  return typeof selector === "string"
+      ? new Selection([[document.querySelector(selector)]], [document.documentElement])
+      : new Selection([[selector]], root);
+}
 
 function sourceEvent() {
   var current = event, source;
@@ -44,4 +50,4 @@ function touch(node, touches, identifier) {
   return null;
 }
 
-export { sourceEvent as a, mouse as m, point as p, selectAll as s, touch as t };
+export { selectAll as a, sourceEvent as b, mouse as m, point as p, select as s, touch as t };

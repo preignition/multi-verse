@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit-element';
-// import { FormatMixim } from 'multi0-chart';
+import { FormatMixin } from '@preignition/multi-chart';
 
 
 /**
@@ -14,7 +14,7 @@ import { LitElement, html, css } from 'lit-element';
  * @appliesMixin MultiChart.mixin.D3Format
  * @demo
  **/
-class MultiSelectorDisplay extends LitElement {
+class MultiSelectorDisplay extends FormatMixin(LitElement) {
 
   static get styles() {
     return css `
@@ -36,10 +36,7 @@ class MultiSelectorDisplay extends LitElement {
     const selectedValues = this.selected ? [this.selected] : this.selectedValues || [];
     if (selectedValues && selectedValues.length) {
       return html `
-          ${this.isRange
-             ? html `<span>${this.selectedText} [${this.format(selectedValues[0])}-${this.format(this.selectedValues[1])}]</span>`
-             : html `<span>${this.selectedText} ${this.renderSelected(selectedValues)}</span>`
-           }
+           <span>${this.selectedText} ${this.renderSelected(selectedValues)}</span>
            <paper-icon-button @tap="${this.clear}" part="clear-icon" icon="cancel"></paper-icon-button>
       `;
     }
@@ -47,6 +44,9 @@ class MultiSelectorDisplay extends LitElement {
   }
 
   renderSelected(selectedValues) {
+    if (this.isRange) {
+      return `[${this._format(selectedValues[0])}-${this._format(selectedValues[1])}]`;
+    }
     if (this.labels) {
       const isFunction = this.labels && typeof this.labels === 'function';
       return selectedValues.map(k => {

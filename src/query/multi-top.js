@@ -108,14 +108,18 @@ RegisterableMixin(
     return 'multi-verse-added';
   }
 
+  // get unregisterEventDispatch() {
+  //   return 'multi-verse-removed';
+  // }
+
   updated(props) {
-    super.updated(props);
     if (props.has('column') || props.has('universe')) {
       this.dimension = this.getDimension();
     }
-    if (props.has('top') || props.has('offset')) {
+    if (props.has('top') || props.has('offset') || props.has('universe')) {
       this._computeTop();
     }
+    super.updated(props);
   }
 
   // _findDim(universe, column) {

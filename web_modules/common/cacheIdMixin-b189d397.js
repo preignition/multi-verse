@@ -1,3 +1,22 @@
+// import { select } from 'd3-selection';
+// import { transition } from 'd3-transition';
+
+// export const selectShadow = (selector, el) => {
+//   return select(el.renderRoot.querySelector(selector));
+// }
+const queryShadow = (selector, el) => {
+  return el.renderRoot.querySelector(selector);
+};
+
+// export default selectShadow;
+
+const selectMixin = (superclass) => class extends superclass {
+  
+  queryShadow(selector) {
+    return queryShadow(selector, this);
+  }
+};
+
 // import { dedupingMixin } from '@polymer/polymer/lib/utils/mixin.js';
 
 /**
@@ -14,11 +33,14 @@ const RelayTo = superClass => {
       
     }
 
-    relayTo(props, name) {
+    async relayTo(props, name) {
       if (!this[`__${name}`]) {
         this[`__${name}`] = this.queryShadow(`#${name}`);
         if (!this[`__${name}`]) {
-          throw new Error(`Failed to get ${name} from shadowDom!`)
+          console.warn(`Failed to get ${name} from shadowDom!`);
+          await this.updateComplete;
+          return this.relayTo(props, name);
+          // throw new Error(`Failed to get ${name} from shadowDom!`)
         }
       }
       props.forEach((value, key) => {
@@ -55,4 +77,4 @@ const CacheId = superClass => {
   };
 };
 
-export { CacheId as C, RelayTo as R };
+export { CacheId as C, RelayTo as R, selectMixin as s };

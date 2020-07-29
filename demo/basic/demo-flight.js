@@ -2,6 +2,7 @@
 import { LitElement, html, css } from 'lit-element';
 import {render} from 'lit-html';
 import * as format from 'd3-time-format';
+import * as time from 'd3-time';
 import { schemeCategory10 } from 'd3-scale-chromatic';
 import { scaleOrdinal } from 'd3-scale';
 
@@ -45,6 +46,12 @@ class DemoFlight extends LitElement {
           <multi-group .universe="${this.universe}" @data-changed="${e => this.dataDay = e.detail.value}" group-by="day">
             <multi-verse-bar left-axis bottom-axis .data="${this.dataDay}"  >
               <h3 slot="header">day (chart)</h3>
+            </multi-verse-bar>
+          </multi-group>
+           <!--multi-group .universe="${this.universe}" @data-changed="${e => this.dataDate = e.detail.value}" group-by="week"-->
+           <multi-group .universe="${this.universe}" @data-changed="${e => this.dataDate = e.detail.value}" .groupBy="${d => time.timeWeek(d.date)}">
+            <multi-verse-bar select-type="brush" left-axis bottom-axis bottom-scale-type="time" .data="${this.dataDate}"  >
+              <h3 slot="header">group by week</h3>
             </multi-verse-bar>
           </multi-group>
           <multi-group .universe="${this.universe}" @data-changed="${e => this.dataDay = e.detail.value}" group-by="day">
@@ -138,6 +145,7 @@ class DemoFlight extends LitElement {
       day: d => format.timeFormat('%A')(d.date),
       hour: d => Number(format.timeFormat('%H')(d.date)),
       dayOfWeek: d => format.timeFormat('%A')(d.date),
+      week: d => time.timeWeek(d.date),
       arrivalDelay: d => Math.floor(+d.delay / 30) * 30,
       distances: d => Math.floor(+d.distance / 200) * 200
     };

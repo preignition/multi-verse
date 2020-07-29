@@ -1,17 +1,16 @@
 import '../common/directive-5915da03.js';
 import '../common/boot-c9e09360.js';
 import { dedupingMixin } from '../@polymer/polymer/lib/utils/mixin.js';
-import { o as MultiDrawable, O as shapeProperties, p as MultiContainer } from '../common/multi-drawable-pie-4d3f0537.js';
+import { o as MultiDrawable, O as shapeProperties, p as MultiContainer } from '../common/multi-drawable-pie-71ca030e.js';
 import '../common/index-281dba67.js';
-import { s as select } from '../common/select-590e1e63.js';
-import '../common/touch-a2188ab8.js';
+import { s as select } from '../common/touch-752e74e0.js';
 import { h as html } from '../common/lit-html-b7332d35.js';
 import { LitElement, css } from '../lit-element.js';
 import { t as transition } from '../common/index-5180defa.js';
 import '../common/rgb-e876f481.js';
 import '../common/string-793e1444.js';
 import { d as defaultValue, a as doNotSetUndefinedValue } from '../common/defaultValueMixin-08d4cab8.js';
-import { C as CacheId, R as RelayTo } from '../common/cacheIdMixin-8becc002.js';
+import { C as CacheId, R as RelayTo } from '../common/cacheIdMixin-b189d397.js';
 
 /**
  * Returns the event name for the given property.
@@ -1025,7 +1024,9 @@ class MultiDrawableChoropleth extends MultiDrawableFeature {
 
   draw() {
     let chart = super.draw();
-    if (chart) {
+    // XXX(cg): adding this.data.get is preventing the chart to be redrawn
+    // with wrong data type. .
+    if (chart && this.data.get) {
 
       const map = this.data;
 
@@ -6181,10 +6182,11 @@ class MultiChartChoropleth extends MultiContainerGeo {
         ></multi-accessor>` : ''}    
 
         <!-- group of geo elements. When feature changes, contained elements will redraw -->
-          <multi-container-layer group="default">
+          <multi-container-layer _group="choropleth" sub-group="choropleth">
             
           <!-- draw features with with projected path-->
           <multi-drawable-choropleth 
+            group="choropleth"
             .log="${this.log}"
             ?auto-fit="${this.autoFit}"
             

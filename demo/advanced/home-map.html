@@ -79,9 +79,10 @@
           </app-toolbar>
         </widget-app-header>
       
-        <multi-group universe="[[universe]]" data="{{data-country}}" group-by="country">
+        <multi-group universe="[[universe]]" data="{{data-country}}" group-by="country" sub-group="choropleth">
            <multi-verse-choropleth 
                 enable-zoom
+                log
                 pattern
                 class$="[[selectedLayer]]"
 
@@ -117,12 +118,14 @@
                   </g>
                 </svg>
                  <multi-container-layer 
+                    log
                     layer="highlight"
                     highlighted-keys="[[countryKeys]]" 
                     multi-position="2"
                     
                     >
                   <multi-drawable-feature 
+                    log
                     layer-type="{{selectedLayer}}" 
                     path="[[path]]" 
                     projection="[[projection]]" 
