@@ -112,7 +112,7 @@ const MultiVerseQuery = dedupingMixin(superClass => {
     updated(props) {
       super.updated(props);
       if (props.has('groupBy') || props.has('select') || props.has('filter') || props.has('missingValue')) {
-        this._observeForQueryObject();
+        this._observeForQueryObject(props);
       }
       if (props.has('universe') || props.has('queryObject')) {
         this.observeQueryObject();
@@ -142,9 +142,15 @@ const MultiVerseQuery = dedupingMixin(superClass => {
       }
     }
 
-    _observeForQueryObject() {
+    _observeForQueryObject(props) {
 
       if (!this.groupBy) { return; }
+      // Note(cg): we skip group by functions being re-set to same value.
+      if (props.get('groupBy')
+         && typeof this.groupBy === 'function'
+         && JSON.stringify(props.get('groupBy')) === JSON.stringify(this.groupBy)) {
+        return;
+      }
 
       this._debounceMultiQuery = Debouncer.debounce(
         this._debounceMultiQuery, // initially undefined
