@@ -1,8 +1,8 @@
-import { n as namespace, m as matcher, a as selector, b as selectorAll, s as selection, d as styleValue } from './index-281dba67.js';
-import { c as color, i as interpolateRgb } from './rgb-e876f481.js';
-import { i as interpolateNumber, a as interpolateString } from './string-793e1444.js';
+import { n as namespace, m as matcher, b as selector, c as selectorAll, s as selection, d as styleValue } from './index-6ba82f3a.js';
+import { c as color, i as interpolateRgb } from './rgb-7b9e8ed5.js';
+import { i as interpolateNumber, a as interpolateString } from './string-25a4a3cd.js';
 
-var noop = {value: function() {}};
+var noop = {value: () => {}};
 
 function dispatch() {
   for (var i = 0, n = arguments.length, _ = {}, t; i < n; ++i) {
@@ -199,7 +199,7 @@ function sleep(time) {
 function timeout$1(callback, delay, time) {
   var t = new Timer;
   delay = delay == null ? 0 : +delay;
-  t.restart(function(elapsed) {
+  t.restart(elapsed => {
     t.stop();
     callback(elapsed + delay);
   }, delay, time);
@@ -413,19 +413,12 @@ function decompose(a, b, c, d, e, f) {
   };
 }
 
-var cssNode,
-    cssRoot,
-    cssView,
-    svgNode;
+var svgNode;
 
+/* eslint-disable no-undef */
 function parseCss(value) {
-  if (value === "none") return identity;
-  if (!cssNode) cssNode = document.createElement("DIV"), cssRoot = document.documentElement, cssView = document.defaultView;
-  cssNode.style.transform = value;
-  value = cssView.getComputedStyle(cssRoot.appendChild(cssNode), null).getPropertyValue("transform");
-  cssRoot.removeChild(cssNode);
-  value = value.slice(7, -1).split(",");
-  return decompose(+value[0], +value[1], +value[2], +value[3], +value[4], +value[5]);
+  const m = new (typeof DOMMatrix === "function" ? DOMMatrix : WebKitCSSMatrix)(value + "");
+  return m.isIdentity ? identity : decompose(m.a, m.b, m.c, m.d, m.e, m.f);
 }
 
 function parseSvg(value) {
@@ -762,6 +755,19 @@ function transition_ease(value) {
       : get$1(this.node(), id).ease;
 }
 
+function easeVarying(id, value) {
+  return function() {
+    var v = value.apply(this, arguments);
+    if (typeof v !== "function") throw new Error;
+    set$1(this, id).ease = v;
+  };
+}
+
+function transition_easeVarying(value) {
+  if (typeof value !== "function") throw new Error;
+  return this.each(easeVarying(this._id, value));
+}
+
 function transition_filter(match) {
   if (typeof match !== "function") match = matcher(match);
 
@@ -1073,6 +1079,9 @@ function transition_end() {
 
       schedule.on = on1;
     });
+
+    // The selection was empty, resolve end immediately
+    if (size === 0) resolve();
   });
 }
 
@@ -1121,7 +1130,9 @@ Transition.prototype = transition.prototype = {
   delay: transition_delay,
   duration: transition_duration,
   ease: transition_ease,
-  end: transition_end
+  easeVarying: transition_easeVarying,
+  end: transition_end,
+  [Symbol.iterator]: selection_prototype[Symbol.iterator]
 };
 
 function cubicInOut(t) {
@@ -1139,7 +1150,7 @@ function inherit(node, id) {
   var timing;
   while (!(timing = node.__transition) || !(timing = timing[id])) {
     if (!(node = node.parentNode)) {
-      return defaultTiming.time = now(), defaultTiming;
+      throw new Error(`transition ${id} not found`);
     }
   }
   return timing;

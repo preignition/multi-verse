@@ -1,11 +1,12 @@
 import { dedupingMixin } from '../@polymer/polymer/lib/utils/mixin.js';
-import { e as event, c as customEvent, s as selection } from './index-281dba67.js';
-import { s as select, t as touch, m as mouse, a as selectAll } from './touch-752e74e0.js';
-import { h as html$1 } from './lit-html-b7332d35.js';
+import { s as selection } from './index-6ba82f3a.js';
+import { s as select, p as pointer, a as selectAll } from './selectAll-d64cc7a5.js';
+import { h as html$1 } from './lit-html-f57783b7.js';
 import { LitElement, css } from '../lit-element.js';
-import { i as interrupt, t as transition } from './index-5180defa.js';
-import { d as defaultValue, a as doNotSetUndefinedValue } from './defaultValueMixin-08d4cab8.js';
-import { s as selectMixin, C as CacheId, R as RelayTo } from './cacheIdMixin-b189d397.js';
+import { i as interrupt, t as transition } from './index-39b8d771.js';
+import { d as defaultValue, a as doNotSetUndefinedValue } from './defaultValueMixin-cb2ff445.js';
+import { s as selectMixin, C as CacheId, R as RelayTo } from './cacheIdMixin-1fa4fd13.js';
+import { R as Resizable } from './resizable-mixin-496c6a25.js';
 
 /**
  * ## MultiRegister
@@ -164,74 +165,6 @@ const MultiRegister = dedupingMixin(superClass => {
   return Register;
 });
 
-// import { ResizeObserver as Polyfill } from "@juggle/resize-observer";
-// import { dedupingMixin } from '@polymer/lib/utils/mixin.js';
-
-/**
- * ##  Resizable
- * 
- * handles size and resizing
- * 
- * @memberof MultiChart.mixin
- * @polymer
- * @mixinFunction
- */
-
-// const ResizeObserver = window.ResizeObserver || Polyfill;
-const ResizeObserver = window.ResizeObserver ;
-const ro = new ResizeObserver((entries, observer) => {
-  entries.forEach((entry, index) => entry.target.onResize(entry, index));
-});
-
-const Resizable = dedupingMixin(superClass => {
-
-  /*
-   * @polymer
-   * @mixinClass
-   */
-  class Mixin extends superClass {
-
-
-    static get properties() {
-      
-      return {
-
-        ...super.properties,
-        /* 
-         * `width`  of SVG host
-         */
-        width: {
-          type: Number
-        },
-
-        /* 
-         * `height` of SVG host
-         */
-        height: {
-          type: Number
-        }
-
-      };
-    }
-
-    connectedCallback() {
-      super.connectedCallback();
-      ro.observe(this);
-    }
-    disconnectedCallback() {
-      super.disconnectedCallback();
-      ro.unobserve(this);
-    }
-    
-    onResize(entry, index) {
-      throw new Error('on resize need to be overridden ')
-    }
-
-  }
-
-  return Mixin;
-});
-
 /**
  * ##  Registerable
  * 
@@ -324,7 +257,8 @@ const Registerable = superClass => {
 
     connectedCallback() {
       super.connectedCallback();
-      if (this.registerAtConnected) {
+      if (this.registerAtConnected || this._registerableWasDisconnected) {
+        delete this._registerableWasDisconnected;
         this.dispatchEvent(new CustomEvent(this.registerEventDispatch, { detail: this.group, bubbles: true, composed: true }));
       }
     }
@@ -335,16 +269,23 @@ const Registerable = superClass => {
       // if (this.unregisterEventDispatch && this.parentNode && this.parentNode.host) {
       //   this.parentNode.host.dispatchEvent(new CustomEvent(this.unregisterEventDispatch, { detail: this.group, disconnected: this, bubbles: true, composed: true }));
       // }
+      this._registerableWasDisconnected = true;
       this.postRemove && this.postRemove();
       super.disconnectedCallback();
     }
   };
 };
 
+function formatDecimal(x) {
+  return Math.abs(x = Math.round(x)) >= 1e21
+      ? x.toLocaleString("en").replace(/,/g, "")
+      : x.toString(10);
+}
+
 // Computes the decimal coefficient and exponent of the specified number x with
 // significant digits p, where x is positive and p is in [1, 21] or undefined.
-// For example, formatDecimal(1.23) returns ["123", 0].
-function formatDecimal(x, p) {
+// For example, formatDecimalParts(1.23) returns ["123", 0].
+function formatDecimalParts(x, p) {
   if ((i = (x = p ? x.toExponential(p - 1) : x.toExponential()).indexOf("e")) < 0) return null; // NaN, ±Infinity
   var i, coefficient = x.slice(0, i);
 
@@ -357,7 +298,7 @@ function formatDecimal(x, p) {
 }
 
 function exponent(x) {
-  return x = formatDecimal(Math.abs(x)), x ? x[1] : NaN;
+  return x = formatDecimalParts(Math.abs(x)), x ? x[1] : NaN;
 }
 
 function formatGroup(grouping, thousands) {
@@ -450,7 +391,7 @@ function formatTrim(s) {
 var prefixExponent;
 
 function formatPrefixAuto(x, p) {
-  var d = formatDecimal(x, p);
+  var d = formatDecimalParts(x, p);
   if (!d) return x + "";
   var coefficient = d[0],
       exponent = d[1],
@@ -459,11 +400,11 @@ function formatPrefixAuto(x, p) {
   return i === n ? coefficient
       : i > n ? coefficient + new Array(i - n + 1).join("0")
       : i > 0 ? coefficient.slice(0, i) + "." + coefficient.slice(i)
-      : "0." + new Array(1 - i).join("0") + formatDecimal(x, Math.max(0, p + i - 1))[0]; // less than 1y!
+      : "0." + new Array(1 - i).join("0") + formatDecimalParts(x, Math.max(0, p + i - 1))[0]; // less than 1y!
 }
 
 function formatRounded(x, p) {
-  var d = formatDecimal(x, p);
+  var d = formatDecimalParts(x, p);
   if (!d) return x + "";
   var coefficient = d[0],
       exponent = d[1];
@@ -473,19 +414,19 @@ function formatRounded(x, p) {
 }
 
 var formatTypes = {
-  "%": function(x, p) { return (x * 100).toFixed(p); },
-  "b": function(x) { return Math.round(x).toString(2); },
-  "c": function(x) { return x + ""; },
-  "d": function(x) { return Math.round(x).toString(10); },
-  "e": function(x, p) { return x.toExponential(p); },
-  "f": function(x, p) { return x.toFixed(p); },
-  "g": function(x, p) { return x.toPrecision(p); },
-  "o": function(x) { return Math.round(x).toString(8); },
-  "p": function(x, p) { return formatRounded(x * 100, p); },
+  "%": (x, p) => (x * 100).toFixed(p),
+  "b": (x) => Math.round(x).toString(2),
+  "c": (x) => x + "",
+  "d": formatDecimal,
+  "e": (x, p) => x.toExponential(p),
+  "f": (x, p) => x.toFixed(p),
+  "g": (x, p) => x.toPrecision(p),
+  "o": (x) => Math.round(x).toString(8),
+  "p": (x, p) => formatRounded(x * 100, p),
   "r": formatRounded,
   "s": formatPrefixAuto,
-  "X": function(x) { return Math.round(x).toString(16).toUpperCase(); },
-  "x": function(x) { return Math.round(x).toString(16); }
+  "X": (x) => Math.round(x).toString(16).toUpperCase(),
+  "x": (x) => Math.round(x).toString(16)
 };
 
 function identity(x) {
@@ -502,7 +443,7 @@ function formatLocale(locale) {
       decimal = locale.decimal === undefined ? "." : locale.decimal + "",
       numerals = locale.numerals === undefined ? identity : formatNumerals(map.call(locale.numerals, String)),
       percent = locale.percent === undefined ? "%" : locale.percent + "",
-      minus = locale.minus === undefined ? "-" : locale.minus + "",
+      minus = locale.minus === undefined ? "−" : locale.minus + "",
       nan = locale.nan === undefined ? "NaN" : locale.nan + "";
 
   function newFormat(specifier) {
@@ -637,11 +578,9 @@ var format;
 var formatPrefix;
 
 defaultLocale({
-  decimal: ".",
   thousands: ",",
   grouping: [3],
-  currency: ["$", ""],
-  minus: "-"
+  currency: ["$", ""]
 });
 
 function defaultLocale(definition) {
@@ -793,15 +732,12 @@ var hour = newInterval(function(date) {
   return date.getHours();
 });
 
-var day = newInterval(function(date) {
-  date.setHours(0, 0, 0, 0);
-}, function(date, step) {
-  date.setDate(date.getDate() + step);
-}, function(start, end) {
-  return (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute) / durationDay;
-}, function(date) {
-  return date.getDate() - 1;
-});
+var day = newInterval(
+  date => date.setHours(0, 0, 0, 0),
+  (date, step) => date.setDate(date.getDate() + step),
+  (start, end) => (end - start - (end.getTimezoneOffset() - start.getTimezoneOffset()) * durationMinute) / durationDay,
+  date => date.getDate() - 1
+);
 
 function weekday(i) {
   return newInterval(function(date) {
@@ -989,6 +925,8 @@ function formatLocale$1(locale) {
     "d": formatDayOfMonth,
     "e": formatDayOfMonth,
     "f": formatMicroseconds,
+    "g": formatYearISO,
+    "G": formatFullYearISO,
     "H": formatHour24,
     "I": formatHour12,
     "j": formatDayOfYear,
@@ -1022,6 +960,8 @@ function formatLocale$1(locale) {
     "d": formatUTCDayOfMonth,
     "e": formatUTCDayOfMonth,
     "f": formatUTCMicroseconds,
+    "g": formatUTCYearISO,
+    "G": formatUTCFullYearISO,
     "H": formatUTCHour24,
     "I": formatUTCHour12,
     "j": formatUTCDayOfYear,
@@ -1055,6 +995,8 @@ function formatLocale$1(locale) {
     "d": parseDayOfMonth,
     "e": parseDayOfMonth,
     "f": parseMicroseconds,
+    "g": parseYear,
+    "G": parseFullYear,
     "H": parseHour24,
     "I": parseHour24,
     "j": parseDayOfYear,
@@ -1198,27 +1140,27 @@ function formatLocale$1(locale) {
 
   function parsePeriod(d, string, i) {
     var n = periodRe.exec(string.slice(i));
-    return n ? (d.p = periodLookup[n[0].toLowerCase()], i + n[0].length) : -1;
+    return n ? (d.p = periodLookup.get(n[0].toLowerCase()), i + n[0].length) : -1;
   }
 
   function parseShortWeekday(d, string, i) {
     var n = shortWeekdayRe.exec(string.slice(i));
-    return n ? (d.w = shortWeekdayLookup[n[0].toLowerCase()], i + n[0].length) : -1;
+    return n ? (d.w = shortWeekdayLookup.get(n[0].toLowerCase()), i + n[0].length) : -1;
   }
 
   function parseWeekday(d, string, i) {
     var n = weekdayRe.exec(string.slice(i));
-    return n ? (d.w = weekdayLookup[n[0].toLowerCase()], i + n[0].length) : -1;
+    return n ? (d.w = weekdayLookup.get(n[0].toLowerCase()), i + n[0].length) : -1;
   }
 
   function parseShortMonth(d, string, i) {
     var n = shortMonthRe.exec(string.slice(i));
-    return n ? (d.m = shortMonthLookup[n[0].toLowerCase()], i + n[0].length) : -1;
+    return n ? (d.m = shortMonthLookup.get(n[0].toLowerCase()), i + n[0].length) : -1;
   }
 
   function parseMonth(d, string, i) {
     var n = monthRe.exec(string.slice(i));
-    return n ? (d.m = monthLookup[n[0].toLowerCase()], i + n[0].length) : -1;
+    return n ? (d.m = monthLookup.get(n[0].toLowerCase()), i + n[0].length) : -1;
   }
 
   function parseLocaleDateTime(d, string, i) {
@@ -1326,9 +1268,7 @@ function formatRe(names) {
 }
 
 function formatLookup(names) {
-  var map = {}, i = -1, n = names.length;
-  while (++i < n) map[names[i].toLowerCase()] = i;
-  return map;
+  return new Map(names.map((name, i) => [name.toLowerCase(), i]));
 }
 
 function parseWeekdayNumberSunday(d, string, i) {
@@ -1476,9 +1416,13 @@ function formatWeekNumberSunday(d, p) {
   return pad(sunday.count(year(d) - 1, d), p, 2);
 }
 
-function formatWeekNumberISO(d, p) {
+function dISO(d) {
   var day = d.getDay();
-  d = (day >= 4 || day === 0) ? thursday(d) : thursday.ceil(d);
+  return (day >= 4 || day === 0) ? thursday(d) : thursday.ceil(d);
+}
+
+function formatWeekNumberISO(d, p) {
+  d = dISO(d);
   return pad(thursday.count(year(d), d) + (year(d).getDay() === 4), p, 2);
 }
 
@@ -1494,7 +1438,18 @@ function formatYear(d, p) {
   return pad(d.getFullYear() % 100, p, 2);
 }
 
+function formatYearISO(d, p) {
+  d = dISO(d);
+  return pad(d.getFullYear() % 100, p, 2);
+}
+
 function formatFullYear(d, p) {
+  return pad(d.getFullYear() % 10000, p, 4);
+}
+
+function formatFullYearISO(d, p) {
+  var day = d.getDay();
+  d = (day >= 4 || day === 0) ? thursday(d) : thursday.ceil(d);
   return pad(d.getFullYear() % 10000, p, 4);
 }
 
@@ -1550,9 +1505,13 @@ function formatUTCWeekNumberSunday(d, p) {
   return pad(utcSunday.count(utcYear(d) - 1, d), p, 2);
 }
 
-function formatUTCWeekNumberISO(d, p) {
+function UTCdISO(d) {
   var day = d.getUTCDay();
-  d = (day >= 4 || day === 0) ? utcThursday(d) : utcThursday.ceil(d);
+  return (day >= 4 || day === 0) ? utcThursday(d) : utcThursday.ceil(d);
+}
+
+function formatUTCWeekNumberISO(d, p) {
+  d = UTCdISO(d);
   return pad(utcThursday.count(utcYear(d), d) + (utcYear(d).getUTCDay() === 4), p, 2);
 }
 
@@ -1568,7 +1527,18 @@ function formatUTCYear(d, p) {
   return pad(d.getUTCFullYear() % 100, p, 2);
 }
 
+function formatUTCYearISO(d, p) {
+  d = UTCdISO(d);
+  return pad(d.getUTCFullYear() % 100, p, 2);
+}
+
 function formatUTCFullYear(d, p) {
+  return pad(d.getUTCFullYear() % 10000, p, 4);
+}
+
+function formatUTCFullYearISO(d, p) {
+  var day = d.getUTCDay();
+  d = (day >= 4 || day === 0) ? utcThursday(d) : utcThursday.ceil(d);
   return pad(d.getUTCFullYear() % 10000, p, 4);
 }
 
@@ -1651,7 +1621,8 @@ const Format = dedupingMixin(superClass => {
 /**
  * ##  DispatchSVG
  * 
- * dispatch template elements marked as slot-svg="svgID" to svgHost
+ * dispatch template elements marked as slot-svg="svgID" to svgHost.to
+ * Is mixed to multi-drawble;
  * 
  */
 
@@ -1705,7 +1676,7 @@ const DispatchSVG = dedupingMixin(superClass => {
             const position = node.dataset.multiPosition;
             const appended = [...parent.childNodes].some(n => {
               if (node.dataset.multiPosition >= position) {
-                parent.insertBefore(node,n);
+                parent.insertBefore(node, n);
                 return true;
               }
             });
@@ -1715,7 +1686,7 @@ const DispatchSVG = dedupingMixin(superClass => {
 
             // parent.appendChild(node);
             // Note(cg): reorder according to multi-position
-            return
+            return;
             // select(targetNode).selectAll('>*').sort((a,b) => a.dataset.multiPosition - b.dataset.multiPosition);
             // return;
           }
@@ -1723,6 +1694,7 @@ const DispatchSVG = dedupingMixin(superClass => {
         });
         this.setHostStyle(host, old);
       }
+      // Note(cg): .
       if (host === null && old) {
         Object.keys(this._hostedNodes).forEach(k => {
           this.renderRoot.appendChild(this._hostedNodes[k]);
@@ -1981,9 +1953,7 @@ function translateY(y) {
 }
 
 function number(scale) {
-  return function(d) {
-    return +scale(d);
-  };
+  return d => +scale(d);
 }
 
 function center(scale) {
@@ -2190,6 +2160,7 @@ class D3Axis extends LitElement {
   }
 
   update(props) {
+    let refreshed; 
     this.log && console.info(`d3-axis ${this.type} update`, props);
     if (!this.type && !props.has('type')) {
       this.type = 'bottom';
@@ -2200,20 +2171,20 @@ class D3Axis extends LitElement {
       this.ticks = this.ticks * 1;
     }
 
-    if (!this.axis || props.has('type')) {
+    if (this.axis || props.has('type')) {
       this.axis = axis$1[`axis${capitalize(this.type)}`]();
+      refreshed = true;
     }
 
     if (this.axis) {
-      this.updateWrapper(props);
+      this.updateWrapper(props, this.__init || refreshed);
     }
     super.update(props);
   }
 
-  updateWrapper(props) {
-    let shallNotify = this.__init;
-    props.forEach((value, key) => {
-      if ((this[key] !== undefined) && key !== 'axis' && this.axis[key]) {
+  updateWrapper(props, shallNotify) {
+    Object.keys(this.axis).forEach(key => {
+      if ((this[key] !== undefined)) {
         shallNotify = true;
         this.axis[key](this[key]);
       }
@@ -2265,40 +2236,75 @@ function ascending(a, b) {
   return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
 }
 
-function bisector(compare) {
-  if (compare.length === 1) compare = ascendingComparator(compare);
-  return {
-    left: function(a, x, lo, hi) {
-      if (lo == null) lo = 0;
-      if (hi == null) hi = a.length;
-      while (lo < hi) {
-        var mid = lo + hi >>> 1;
-        if (compare(a[mid], x) < 0) lo = mid + 1;
-        else hi = mid;
-      }
-      return lo;
-    },
-    right: function(a, x, lo, hi) {
-      if (lo == null) lo = 0;
-      if (hi == null) hi = a.length;
-      while (lo < hi) {
-        var mid = lo + hi >>> 1;
-        if (compare(a[mid], x) > 0) hi = mid;
-        else lo = mid + 1;
-      }
-      return lo;
+function bisector(f) {
+  let delta = f;
+  let compare = f;
+
+  if (f.length === 1) {
+    delta = (d, x) => f(d) - x;
+    compare = ascendingComparator(f);
+  }
+
+  function left(a, x, lo, hi) {
+    if (lo == null) lo = 0;
+    if (hi == null) hi = a.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >>> 1;
+      if (compare(a[mid], x) < 0) lo = mid + 1;
+      else hi = mid;
     }
-  };
+    return lo;
+  }
+
+  function right(a, x, lo, hi) {
+    if (lo == null) lo = 0;
+    if (hi == null) hi = a.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >>> 1;
+      if (compare(a[mid], x) > 0) hi = mid;
+      else lo = mid + 1;
+    }
+    return lo;
+  }
+
+  function center(a, x, lo, hi) {
+    if (lo == null) lo = 0;
+    if (hi == null) hi = a.length;
+    const i = left(a, x, lo, hi - 1);
+    return i > lo && delta(a[i - 1], x) > -delta(a[i], x) ? i - 1 : i;
+  }
+
+  return {left, center, right};
 }
 
 function ascendingComparator(f) {
-  return function(d, x) {
-    return ascending(f(d), x);
-  };
+  return (d, x) => ascending(f(d), x);
 }
 
-var ascendingBisect = bisector(ascending);
-var bisectRight = ascendingBisect.right;
+function number$1(x) {
+  return x === null ? NaN : +x;
+}
+
+function* numbers(values, valueof) {
+  if (valueof === undefined) {
+    for (let value of values) {
+      if (value != null && (value = +value) >= value) {
+        yield value;
+      }
+    }
+  } else {
+    let index = -1;
+    for (let value of values) {
+      if ((value = valueof(value, ++index, values)) != null && (value = +value) >= value) {
+        yield value;
+      }
+    }
+  }
+}
+
+const ascendingBisect = bisector(ascending);
+const bisectRight = ascendingBisect.right;
+const bisectCenter = bisector(number$1).center;
 
 function extent(values, valueof) {
   let min;
@@ -2330,20 +2336,6 @@ function extent(values, valueof) {
   return [min, max];
 }
 
-function range(start, stop, step) {
-  start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
-
-  var i = -1,
-      n = Math.max(0, Math.ceil((stop - start) / step)) | 0,
-      range = new Array(n);
-
-  while (++i < n) {
-    range[i] = start + i * step;
-  }
-
-  return range;
-}
-
 var e10 = Math.sqrt(50),
     e5 = Math.sqrt(10),
     e2 = Math.sqrt(2);
@@ -2366,10 +2358,11 @@ function ticks(start, stop, count) {
     ticks = new Array(n = Math.ceil(stop - start + 1));
     while (++i < n) ticks[i] = (start + i) * step;
   } else {
-    start = Math.floor(start * step);
-    stop = Math.ceil(stop * step);
-    ticks = new Array(n = Math.ceil(start - stop + 1));
-    while (++i < n) ticks[i] = (start - i) / step;
+    step = -step;
+    start = Math.ceil(start * step);
+    stop = Math.floor(stop * step);
+    ticks = new Array(n = Math.ceil(stop - start + 1));
+    while (++i < n) ticks[i] = (start + i) / step;
   }
 
   if (reverse) ticks.reverse();
@@ -2481,23 +2474,6 @@ function swap(array, i, j) {
   array[j] = t;
 }
 
-function* numbers(values, valueof) {
-  if (valueof === undefined) {
-    for (let value of values) {
-      if (value != null && (value = +value) >= value) {
-        yield value;
-      }
-    }
-  } else {
-    let index = -1;
-    for (let value of values) {
-      if ((value = valueof(value, ++index, values)) != null && (value = +value) >= value) {
-        yield value;
-      }
-    }
-  }
-}
-
 function quantile(values, p, valueof) {
   values = Float64Array.from(numbers(values, valueof));
   if (!(n = values.length)) return;
@@ -2509,6 +2485,32 @@ function quantile(values, p, valueof) {
       value0 = max(quickselect(values, i0).subarray(0, i0 + 1)),
       value1 = min(values.subarray(i0 + 1));
   return value0 + (value1 - value0) * (i - i0);
+}
+
+function quantileSorted(values, p, valueof = number$1) {
+  if (!(n = values.length)) return;
+  if ((p = +p) <= 0 || n < 2) return +valueof(values[0], 0, values);
+  if (p >= 1) return +valueof(values[n - 1], n - 1, values);
+  var n,
+      i = (n - 1) * p,
+      i0 = Math.floor(i),
+      value0 = +valueof(values[i0], i0, values),
+      value1 = +valueof(values[i0 + 1], i0 + 1, values);
+  return value0 + (value1 - value0) * (i - i0);
+}
+
+function range(start, stop, step) {
+  start = +start, stop = +stop, step = (n = arguments.length) < 2 ? (stop = start, start = 0, 1) : n < 3 ? 1 : +step;
+
+  var i = -1,
+      n = Math.max(0, Math.ceil((stop - start) / step)) | 0,
+      range = new Array(n);
+
+  while (++i < n) {
+    range[i] = start + i * step;
+  }
+
+  return range;
 }
 
 function initRange(domain, range) {
@@ -3062,11 +3064,7 @@ function hsl2rgb(h, m1, m2) {
       : m1) * 255;
 }
 
-function constant(x) {
-  return function() {
-    return x;
-  };
-}
+var constant = x => () => x;
 
 function linear(a, d) {
   return function(t) {
@@ -3261,10 +3259,7 @@ function interpolateRound(a, b) {
   };
 }
 
-var rho = Math.SQRT2,
-    rho2 = 2,
-    rho4 = 4,
-    epsilon2 = 1e-12;
+var epsilon2 = 1e-12;
 
 function cosh(x) {
   return ((x = Math.exp(x)) + 1 / x) / 2;
@@ -3278,70 +3273,81 @@ function tanh(x) {
   return ((x = Math.exp(2 * x)) - 1) / (x + 1);
 }
 
-// p0 = [ux0, uy0, w0]
-// p1 = [ux1, uy1, w1]
-function interpolateZoom(p0, p1) {
-  var ux0 = p0[0], uy0 = p0[1], w0 = p0[2],
-      ux1 = p1[0], uy1 = p1[1], w1 = p1[2],
-      dx = ux1 - ux0,
-      dy = uy1 - uy0,
-      d2 = dx * dx + dy * dy,
-      i,
-      S;
+var interpolateZoom = (function zoomRho(rho, rho2, rho4) {
 
-  // Special case for u0 ≅ u1.
-  if (d2 < epsilon2) {
-    S = Math.log(w1 / w0) / rho;
-    i = function(t) {
-      return [
-        ux0 + t * dx,
-        uy0 + t * dy,
-        w0 * Math.exp(rho * t * S)
-      ];
-    };
+  // p0 = [ux0, uy0, w0]
+  // p1 = [ux1, uy1, w1]
+  function zoom(p0, p1) {
+    var ux0 = p0[0], uy0 = p0[1], w0 = p0[2],
+        ux1 = p1[0], uy1 = p1[1], w1 = p1[2],
+        dx = ux1 - ux0,
+        dy = uy1 - uy0,
+        d2 = dx * dx + dy * dy,
+        i,
+        S;
+
+    // Special case for u0 ≅ u1.
+    if (d2 < epsilon2) {
+      S = Math.log(w1 / w0) / rho;
+      i = function(t) {
+        return [
+          ux0 + t * dx,
+          uy0 + t * dy,
+          w0 * Math.exp(rho * t * S)
+        ];
+      };
+    }
+
+    // General case.
+    else {
+      var d1 = Math.sqrt(d2),
+          b0 = (w1 * w1 - w0 * w0 + rho4 * d2) / (2 * w0 * rho2 * d1),
+          b1 = (w1 * w1 - w0 * w0 - rho4 * d2) / (2 * w1 * rho2 * d1),
+          r0 = Math.log(Math.sqrt(b0 * b0 + 1) - b0),
+          r1 = Math.log(Math.sqrt(b1 * b1 + 1) - b1);
+      S = (r1 - r0) / rho;
+      i = function(t) {
+        var s = t * S,
+            coshr0 = cosh(r0),
+            u = w0 / (rho2 * d1) * (coshr0 * tanh(rho * s + r0) - sinh(r0));
+        return [
+          ux0 + u * dx,
+          uy0 + u * dy,
+          w0 * coshr0 / cosh(rho * s + r0)
+        ];
+      };
+    }
+
+    i.duration = S * 1000 * rho / Math.SQRT2;
+
+    return i;
   }
 
-  // General case.
-  else {
-    var d1 = Math.sqrt(d2),
-        b0 = (w1 * w1 - w0 * w0 + rho4 * d2) / (2 * w0 * rho2 * d1),
-        b1 = (w1 * w1 - w0 * w0 - rho4 * d2) / (2 * w1 * rho2 * d1),
-        r0 = Math.log(Math.sqrt(b0 * b0 + 1) - b0),
-        r1 = Math.log(Math.sqrt(b1 * b1 + 1) - b1);
-    S = (r1 - r0) / rho;
-    i = function(t) {
-      var s = t * S,
-          coshr0 = cosh(r0),
-          u = w0 / (rho2 * d1) * (coshr0 * tanh(rho * s + r0) - sinh(r0));
-      return [
-        ux0 + u * dx,
-        uy0 + u * dy,
-        w0 * coshr0 / cosh(rho * s + r0)
-      ];
-    };
-  }
+  zoom.rho = function(_) {
+    var _1 = Math.max(1e-3, +_), _2 = _1 * _1, _4 = _2 * _2;
+    return zoomRho(_1, _2, _4);
+  };
 
-  i.duration = S * 1000;
+  return zoom;
+})(Math.SQRT2, 2, 4);
 
-  return i;
-}
-
-function piecewise(interpolate, values) {
+function piecewise(interpolate$1, values) {
+  if (values === undefined) values = interpolate$1, interpolate$1 = interpolate;
   var i = 0, n = values.length - 1, v = values[0], I = new Array(n < 0 ? 0 : n);
-  while (i < n) I[i] = interpolate(v, v = values[++i]);
+  while (i < n) I[i] = interpolate$1(v, v = values[++i]);
   return function(t) {
     var i = Math.max(0, Math.min(n - 1, Math.floor(t *= n)));
     return I[i](t - i);
   };
 }
 
-function constant$1(x) {
+function constants(x) {
   return function() {
     return x;
   };
 }
 
-function number$1(x) {
+function number$2(x) {
   return +x;
 }
 
@@ -3354,7 +3360,7 @@ function identity$2(x) {
 function normalize(a, b) {
   return (b -= (a = +a))
       ? function(x) { return (x - a) / b; }
-      : constant$1(isNaN(b) ? NaN : 0.5);
+      : constants(isNaN(b) ? NaN : 0.5);
 }
 
 function clamper(a, b) {
@@ -3433,7 +3439,7 @@ function transformer() {
   };
 
   scale.domain = function(_) {
-    return arguments.length ? (domain = Array.from(_, number$1), rescale()) : domain.slice();
+    return arguments.length ? (domain = Array.from(_, number$2), rescale()) : domain.slice();
   };
 
   scale.range = function(_) {
@@ -3509,38 +3515,36 @@ function linearish(scale) {
   scale.nice = function(count) {
     if (count == null) count = 10;
 
-    var d = domain(),
-        i0 = 0,
-        i1 = d.length - 1,
-        start = d[i0],
-        stop = d[i1],
-        step;
+    var d = domain();
+    var i0 = 0;
+    var i1 = d.length - 1;
+    var start = d[i0];
+    var stop = d[i1];
+    var prestep;
+    var step;
+    var maxIter = 10;
 
     if (stop < start) {
       step = start, start = stop, stop = step;
       step = i0, i0 = i1, i1 = step;
     }
-
-    step = tickIncrement(start, stop, count);
-
-    if (step > 0) {
-      start = Math.floor(start / step) * step;
-      stop = Math.ceil(stop / step) * step;
+    
+    while (maxIter-- > 0) {
       step = tickIncrement(start, stop, count);
-    } else if (step < 0) {
-      start = Math.ceil(start * step) / step;
-      stop = Math.floor(stop * step) / step;
-      step = tickIncrement(start, stop, count);
-    }
-
-    if (step > 0) {
-      d[i0] = Math.floor(start / step) * step;
-      d[i1] = Math.ceil(stop / step) * step;
-      domain(d);
-    } else if (step < 0) {
-      d[i0] = Math.ceil(start * step) / step;
-      d[i1] = Math.floor(stop * step) / step;
-      domain(d);
+      if (step === prestep) {
+        d[i0] = start;
+        d[i1] = stop;
+        return domain(d);
+      } else if (step > 0) {
+        start = Math.floor(start / step) * step;
+        stop = Math.ceil(stop / step) * step;
+      } else if (step < 0) {
+        start = Math.ceil(start * step) / step;
+        stop = Math.floor(stop * step) / step;
+      } else {
+        break;
+      }
+      prestep = step;
     }
 
     return scale;
@@ -3571,7 +3575,7 @@ function identity$3(domain) {
   scale.invert = scale;
 
   scale.domain = scale.range = function(_) {
-    return arguments.length ? (domain = Array.from(_, number$1), scale) : domain.slice();
+    return arguments.length ? (domain = Array.from(_, number$2), scale) : domain.slice();
   };
 
   scale.unknown = function(_) {
@@ -3582,7 +3586,7 @@ function identity$3(domain) {
     return identity$3(domain).unknown(unknown);
   };
 
-  domain = arguments.length ? Array.from(domain, number$1) : [0, 1];
+  domain = arguments.length ? Array.from(domain, number$2) : [0, 1];
 
   return linearish(scale);
 }
@@ -3854,7 +3858,7 @@ function radial() {
   };
 
   scale.range = function(_) {
-    return arguments.length ? (squared.range((range = Array.from(_, number$1)).map(square)), scale) : range.slice();
+    return arguments.length ? (squared.range((range = Array.from(_, number$2)).map(square)), scale) : range.slice();
   };
 
   scale.rangeRound = function(_) {
@@ -3894,7 +3898,7 @@ function quantile$1() {
   function rescale() {
     var i = 0, n = Math.max(1, range.length);
     thresholds = new Array(n - 1);
-    while (++i < n) thresholds[i - 1] = quantile(domain, i / n);
+    while (++i < n) thresholds[i - 1] = quantileSorted(domain, i / n);
     return scale;
   }
 
@@ -4042,7 +4046,7 @@ function date$1(t) {
   return new Date(t);
 }
 
-function number$2(t) {
+function number$3(t) {
   return t instanceof Date ? +t : +new Date(+t);
 }
 
@@ -4123,7 +4127,7 @@ function calendar(year, month, week, day, hour, minute, second, millisecond, for
   };
 
   scale.domain = function(_) {
-    return arguments.length ? domain(Array.from(_, number$2)) : domain().map(date$1);
+    return arguments.length ? domain(Array.from(_, number$3)) : domain().map(date$1);
   };
 
   scale.ticks = function(interval) {
@@ -4481,6 +4485,7 @@ class D3Scale extends LitElement {
         type: Array,
         hasChanged: hasChanged
       },
+      
       range: {
         type: Array,
         hasChanged: hasChanged
@@ -4515,12 +4520,18 @@ class D3Scale extends LitElement {
     super.update(props);
   }
 
-  updateWrapper(props) {
-    let shallNotify = this.__init;
-    props.forEach((value, key) => {
-      if ((this[key] !== undefined) && key !== 'scale' && key !== 'scaleType' && this.scale[key]) {
+  updateWrapper(props, shallNotify) {
+    // let shallNotify = this.__init;
+    // props.forEach((value, key) => {
+    //   if ((this[key] !== undefined) && key !== 'scale' && key !== 'scaleType' && this.scale[key]) {
+    //     shallNotify = true;
+    //     this.log && console.info(`d3-scale ${this.type} updates ${key} to ${JSON.stringify(this[key])}`);
+    //     this.scale[key](this[key]);
+    //   }
+    // });
+    Object.keys(this.scale).filter(key => key !== 'scaleType' && key !== 'category').forEach(key => {
+      if ((this[key] !== undefined)) {
         shallNotify = true;
-        this.log && console.info(`d3-scale ${this.type} updates ${key} to ${JSON.stringify(this[key])}`);
         this.scale[key](this[key]);
       }
     });
@@ -5881,7 +5892,7 @@ define$1(Cubehelix, cubehelix, extend$1(Color$1, {
   }
 }));
 
-function constant$2(x) {
+function constant$1(x) {
   return function() {
     return x;
   };
@@ -5901,18 +5912,18 @@ function exponential$1(a, b, y) {
 
 function hue(a, b) {
   var d = b - a;
-  return d ? linear$2(a, d > 180 || d < -180 ? d - 360 * Math.round(d / 360) : d) : constant$2(isNaN(a) ? b : a);
+  return d ? linear$2(a, d > 180 || d < -180 ? d - 360 * Math.round(d / 360) : d) : constant$1(isNaN(a) ? b : a);
 }
 
 function gamma$1(y) {
   return (y = +y) === 1 ? nogamma$1 : function(a, b) {
-    return b - a ? exponential$1(a, b, y) : constant$2(isNaN(a) ? b : a);
+    return b - a ? exponential$1(a, b, y) : constant$1(isNaN(a) ? b : a);
   };
 }
 
 function nogamma$1(a, b) {
   var d = b - a;
-  return d ? linear$2(a, d) : constant$2(isNaN(a) ? b : a);
+  return d ? linear$2(a, d) : constant$1(isNaN(a) ? b : a);
 }
 
 var rgb$3 = (function rgbGamma(y) {
@@ -6068,7 +6079,7 @@ function string$1(a, b) {
 
 function interpolateValue(a, b) {
   var t = typeof b, c;
-  return b == null || t === "boolean" ? constant$2(b)
+  return b == null || t === "boolean" ? constant$1(b)
       : (t === "number" ? reinterpolate
       : t === "string" ? ((c = color$1(b)) ? (b = c, rgb$3) : string$1)
       : b instanceof color$1 ? rgb$3
@@ -6112,13 +6123,13 @@ function cubehelix$1(hue) {
 cubehelix$1(hue);
 var cubehelixLong = cubehelix$1(nogamma$1);
 
-function constant$3(x) {
+function constant$2(x) {
   return function() {
     return x;
   };
 }
 
-function number$3(x) {
+function number$4(x) {
   return +x;
 }
 
@@ -6127,7 +6138,7 @@ var unit$1 = [0, 1];
 function deinterpolateLinear(a, b) {
   return (b -= (a = +a))
       ? function(x) { return (x - a) / b; }
-      : constant$3(b);
+      : constant$2(b);
 }
 
 function deinterpolateClamp(deinterpolate) {
@@ -6208,7 +6219,7 @@ function continuous$1(deinterpolate, reinterpolate) {
   };
 
   scale.domain = function(_) {
-    return arguments.length ? (domain = map$2.call(_, number$3), rescale()) : domain.slice();
+    return arguments.length ? (domain = map$2.call(_, number$4), rescale()) : domain.slice();
   };
 
   scale.range = function(_) {
@@ -7278,7 +7289,7 @@ class D3Legend extends LitElement {
   }
 }
 
-var noop$1 = {value: function() {}};
+var noop$1 = {value: () => {}};
 
 function dispatch$1() {
   for (var i = 0, n = arguments.length, _ = {}, t; i < n; ++i) {
@@ -7361,7 +7372,7 @@ function set$2(type, name, callback) {
   return type;
 }
 
-function noevent() {
+function noevent(event) {
   event.preventDefault();
   event.stopImmediatePropagation();
 }
@@ -7392,23 +7403,30 @@ function yesdrag(view, noclick) {
   }
 }
 
-function constant$4(x) {
-  return function() {
-    return x;
-  };
+var constant$3 = x => () => x;
+
+function BrushEvent(type, {
+  sourceEvent,
+  target,
+  selection,
+  mode,
+  dispatch
+}) {
+  Object.defineProperties(this, {
+    type: {value: type, enumerable: true, configurable: true},
+    sourceEvent: {value: sourceEvent, enumerable: true, configurable: true},
+    target: {value: target, enumerable: true, configurable: true},
+    selection: {value: selection, enumerable: true, configurable: true},
+    mode: {value: mode, enumerable: true, configurable: true},
+    _: {value: dispatch}
+  });
 }
 
-function BrushEvent(target, type, selection) {
-  this.target = target;
-  this.type = type;
-  this.selection = selection;
-}
-
-function nopropagation() {
+function nopropagation(event) {
   event.stopImmediatePropagation();
 }
 
-function noevent$1() {
+function noevent$1(event) {
   event.preventDefault();
   event.stopImmediatePropagation();
 }
@@ -7418,18 +7436,14 @@ var MODE_DRAG = {name: "drag"},
     MODE_HANDLE = {name: "handle"},
     MODE_CENTER = {name: "center"};
 
+const {abs, max: max$2, min: min$1} = Math;
+
 function number1(e) {
   return [+e[0], +e[1]];
 }
 
 function number2(e) {
   return [number1(e[0]), number1(e[1])];
-}
-
-function toucher(identifier) {
-  return function(target) {
-    return touch(target, event.touches, identifier);
-  };
 }
 
 var X = {
@@ -7515,7 +7529,7 @@ function type(t) {
 }
 
 // Ignore right-click, since that should open the context menu.
-function defaultFilter() {
+function defaultFilter(event) {
   return !event.ctrlKey && !event.button;
 }
 
@@ -7622,10 +7636,10 @@ function brush$1(dim) {
   }
 
   brush.move = function(group, selection) {
-    if (group.selection) {
+    if (group.tween) {
       group
-          .on("start.brush", function() { emitter(this, arguments).beforestart().start(); })
-          .on("interrupt.brush end.brush", function() { emitter(this, arguments).end(); })
+          .on("start.brush", function(event) { emitter(this, arguments).beforestart().start(event); })
+          .on("interrupt.brush end.brush", function(event) { emitter(this, arguments).end(event); })
           .tween("brush", function() {
             var that = this,
                 state = that.__brush,
@@ -7694,14 +7708,16 @@ function brush$1(dim) {
   }
 
   function emitter(that, args, clean) {
-    return (!clean && that.__brush.emitter) || new Emitter(that, args);
+    var emit = that.__brush.emitter;
+    return emit && (!clean || !emit.clean) ? emit : new Emitter(that, args, clean);
   }
 
-  function Emitter(that, args) {
+  function Emitter(that, args, clean) {
     this.that = that;
     this.args = args;
     this.state = that.__brush;
     this.active = 0;
+    this.clean = clean;
   }
 
   Emitter.prototype = {
@@ -7709,25 +7725,37 @@ function brush$1(dim) {
       if (++this.active === 1) this.state.emitter = this, this.starting = true;
       return this;
     },
-    start: function() {
-      if (this.starting) this.starting = false, this.emit("start");
-      else this.emit("brush");
+    start: function(event, mode) {
+      if (this.starting) this.starting = false, this.emit("start", event, mode);
+      else this.emit("brush", event);
       return this;
     },
-    brush: function() {
-      this.emit("brush");
+    brush: function(event, mode) {
+      this.emit("brush", event, mode);
       return this;
     },
-    end: function() {
-      if (--this.active === 0) delete this.state.emitter, this.emit("end");
+    end: function(event, mode) {
+      if (--this.active === 0) delete this.state.emitter, this.emit("end", event, mode);
       return this;
     },
-    emit: function(type) {
-      customEvent(new BrushEvent(brush, type, dim.output(this.state.selection)), listeners.apply, listeners, [type, this.that, this.args]);
+    emit: function(type, event, mode) {
+      var d = select(this.that).datum();
+      listeners.call(
+        type,
+        this.that,
+        new BrushEvent(type, {
+          sourceEvent: event,
+          target: brush,
+          selection: dim.output(this.state.selection),
+          mode,
+          dispatch: listeners
+        }),
+        d
+      );
     }
   };
 
-  function started() {
+  function started(event) {
     if (touchending && !event.touches) return;
     if (!filter.apply(this, arguments)) return;
 
@@ -7749,17 +7777,25 @@ function brush$1(dim) {
         shifting = signX && signY && keys && event.shiftKey,
         lockX,
         lockY,
-        pointer = event.touches ? toucher(event.changedTouches[0].identifier) : mouse,
-        point0 = pointer(that),
-        point = point0,
-        emit = emitter(that, arguments, true).beforestart();
+        points = Array.from(event.touches || [event], t => {
+          const i = t.identifier;
+          t = pointer(t, that);
+          t.point0 = t.slice();
+          t.identifier = i;
+          return t;
+        });
 
     if (type === "overlay") {
       if (selection) moving = true;
-      state.selection = selection = [
-        [w0 = dim === Y ? W : point0[0], n0 = dim === X ? N : point0[1]],
-        [e0 = dim === Y ? E : w0, s0 = dim === X ? S : n0]
-      ];
+      const pts = [points[0], points[1] || points[0]];
+      state.selection = selection = [[
+          w0 = dim === Y ? W : min$1(pts[0][0], pts[1][0]),
+          n0 = dim === X ? N : min$1(pts[0][1], pts[1][1])
+        ], [
+          e0 = dim === Y ? E : max$2(pts[0][0], pts[1][0]),
+          s0 = dim === X ? S : max$2(pts[0][1], pts[1][1])
+        ]];
+      if (points.length > 1) move();
     } else {
       w0 = selection[0][0];
       n0 = selection[0][1];
@@ -7778,6 +7814,9 @@ function brush$1(dim) {
     var overlay = group.selectAll(".overlay")
         .attr("cursor", cursors[type]);
 
+    interrupt(that);
+    var emit = emitter(that, arguments, true).beforestart();
+
     if (event.touches) {
       emit.moved = moved;
       emit.ended = ended;
@@ -7792,24 +7831,30 @@ function brush$1(dim) {
       dragDisable(event.view);
     }
 
-    nopropagation();
-    interrupt(that);
     redraw.call(that);
-    emit.start();
+    emit.start(event, mode.name);
 
-    function moved() {
-      var point1 = pointer(that);
-      if (shifting && !lockX && !lockY) {
-        if (Math.abs(point1[0] - point[0]) > Math.abs(point1[1] - point[1])) lockY = true;
-        else lockX = true;
+    function moved(event) {
+      for (const p of event.changedTouches || [event]) {
+        for (const d of points)
+          if (d.identifier === p.identifier) d.cur = pointer(p, that);
       }
-      point = point1;
+      if (shifting && !lockX && !lockY && points.length === 1) {
+        const point = points[0];
+        if (abs(point.cur[0] - point[0]) > abs(point.cur[1] - point[1]))
+          lockY = true;
+        else
+          lockX = true;
+      }
+      for (const point of points)
+        if (point.cur) point[0] = point.cur[0], point[1] = point.cur[1];
       moving = true;
-      noevent$1();
-      move();
+      noevent$1(event);
+      move(event);
     }
 
-    function move() {
+    function move(event) {
+      const point = points[0], point0 = point.point0;
       var t;
 
       dx = point[0] - point0[0];
@@ -7818,20 +7863,25 @@ function brush$1(dim) {
       switch (mode) {
         case MODE_SPACE:
         case MODE_DRAG: {
-          if (signX) dx = Math.max(W - w0, Math.min(E - e0, dx)), w1 = w0 + dx, e1 = e0 + dx;
-          if (signY) dy = Math.max(N - n0, Math.min(S - s0, dy)), n1 = n0 + dy, s1 = s0 + dy;
+          if (signX) dx = max$2(W - w0, min$1(E - e0, dx)), w1 = w0 + dx, e1 = e0 + dx;
+          if (signY) dy = max$2(N - n0, min$1(S - s0, dy)), n1 = n0 + dy, s1 = s0 + dy;
           break;
         }
         case MODE_HANDLE: {
-          if (signX < 0) dx = Math.max(W - w0, Math.min(E - w0, dx)), w1 = w0 + dx, e1 = e0;
-          else if (signX > 0) dx = Math.max(W - e0, Math.min(E - e0, dx)), w1 = w0, e1 = e0 + dx;
-          if (signY < 0) dy = Math.max(N - n0, Math.min(S - n0, dy)), n1 = n0 + dy, s1 = s0;
-          else if (signY > 0) dy = Math.max(N - s0, Math.min(S - s0, dy)), n1 = n0, s1 = s0 + dy;
+          if (points[1]) {
+            if (signX) w1 = max$2(W, min$1(E, points[0][0])), e1 = max$2(W, min$1(E, points[1][0])), signX = 1;
+            if (signY) n1 = max$2(N, min$1(S, points[0][1])), s1 = max$2(N, min$1(S, points[1][1])), signY = 1;
+          } else {
+            if (signX < 0) dx = max$2(W - w0, min$1(E - w0, dx)), w1 = w0 + dx, e1 = e0;
+            else if (signX > 0) dx = max$2(W - e0, min$1(E - e0, dx)), w1 = w0, e1 = e0 + dx;
+            if (signY < 0) dy = max$2(N - n0, min$1(S - n0, dy)), n1 = n0 + dy, s1 = s0;
+            else if (signY > 0) dy = max$2(N - s0, min$1(S - s0, dy)), n1 = n0, s1 = s0 + dy;
+          }
           break;
         }
         case MODE_CENTER: {
-          if (signX) w1 = Math.max(W, Math.min(E, w0 - dx * signX)), e1 = Math.max(W, Math.min(E, e0 + dx * signX));
-          if (signY) n1 = Math.max(N, Math.min(S, n0 - dy * signY)), s1 = Math.max(N, Math.min(S, s0 + dy * signY));
+          if (signX) w1 = max$2(W, min$1(E, w0 - dx * signX)), e1 = max$2(W, min$1(E, e0 + dx * signX));
+          if (signY) n1 = max$2(N, min$1(S, n0 - dy * signY)), s1 = max$2(N, min$1(S, s0 + dy * signY));
           break;
         }
       }
@@ -7860,12 +7910,12 @@ function brush$1(dim) {
           || selection[1][1] !== s1) {
         state.selection = [[w1, n1], [e1, s1]];
         redraw.call(that);
-        emit.brush();
+        emit.brush(event, mode.name);
       }
     }
 
-    function ended() {
-      nopropagation();
+    function ended(event) {
+      nopropagation(event);
       if (event.touches) {
         if (event.touches.length) return;
         if (touchending) clearTimeout(touchending);
@@ -7878,10 +7928,10 @@ function brush$1(dim) {
       overlay.attr("cursor", cursors.overlay);
       if (state.selection) selection = state.selection; // May be set by brush.move (on start)!
       if (empty(selection)) state.selection = null, redraw.call(that);
-      emit.end();
+      emit.end(event, mode.name);
     }
 
-    function keydowned() {
+    function keydowned(event) {
       switch (event.keyCode) {
         case 16: { // SHIFT
           shifting = signX && signY;
@@ -7908,10 +7958,10 @@ function brush$1(dim) {
         }
         default: return;
       }
-      noevent$1();
+      noevent$1(event);
     }
 
-    function keyupped() {
+    function keyupped(event) {
       switch (event.keyCode) {
         case 16: { // SHIFT
           if (shifting) {
@@ -7947,16 +7997,16 @@ function brush$1(dim) {
         }
         default: return;
       }
-      noevent$1();
+      noevent$1(event);
     }
   }
 
-  function touchmoved() {
-    emitter(this, arguments).moved();
+  function touchmoved(event) {
+    emitter(this, arguments).moved(event);
   }
 
-  function touchended() {
-    emitter(this, arguments).ended();
+  function touchended(event) {
+    emitter(this, arguments).ended(event);
   }
 
   function initialize() {
@@ -7967,15 +8017,15 @@ function brush$1(dim) {
   }
 
   brush.extent = function(_) {
-    return arguments.length ? (extent = typeof _ === "function" ? _ : constant$4(number2(_)), brush) : extent;
+    return arguments.length ? (extent = typeof _ === "function" ? _ : constant$3(number2(_)), brush) : extent;
   };
 
   brush.filter = function(_) {
-    return arguments.length ? (filter = typeof _ === "function" ? _ : constant$4(!!_), brush) : filter;
+    return arguments.length ? (filter = typeof _ === "function" ? _ : constant$3(!!_), brush) : filter;
   };
 
   brush.touchable = function(_) {
-    return arguments.length ? (touchable = typeof _ === "function" ? _ : constant$4(!!_), brush) : touchable;
+    return arguments.length ? (touchable = typeof _ === "function" ? _ : constant$3(!!_), brush) : touchable;
   };
 
   brush.handleSize = function(_) {
@@ -8051,7 +8101,7 @@ class D3Brush extends LitElement {
         this.brush[key](this[key]);
       }
     });
-    if(shallNotify) {
+    if (shallNotify) {
       this.dispatchEvent(new CustomEvent(`brush-changed`, { detail: { value: this.brush, type: this.type }, bubbles: true, composed: true }));
        delete this.__init;
     }
@@ -8323,10 +8373,10 @@ let debouncerQueue = new Set();
 
 /**
  * ##  Draw
- * 
+ *
  * handles drawable drawing mechanism
  *
- * @memberof MultiChart.mixin   
+ * @memberof MultiChart.mixin
  * @polymer
  * @mixinFunction
  */
@@ -8335,43 +8385,55 @@ const Draw = superClass => {
   return class extends superClass {
 
     static get properties() {
-      
+
       return {
 
         ...super.properties,
 
-        /* 
+        /*
          * `data`  to draw the chart from
          */
         data: {
           type: Array
         },
 
-        /* 
+        /*
          * `transition` a transition composer function
          */
         transition: {
           type: Function,
           value: function() {
-              return function(transition) {
-                return transition.duration(200);
-              }
+            return function(transition) {
+              return transition.duration(200);
+            };
           }
         },
 
-        /* 
+        /*
          * `filter` a way to filter data passed to draw method
-         * 
+         *
          */
-         filter : {
-           type:  Function
-           }
+        filter: {
+          type: Function
+        },
+
+        /*
+         * `decorate` the chart once drawn
+         */
+        decorate: {
+          type: Function
+        }
 
       };
     }
 
-    /* 
-     * `getDrawable` allows to specify which data to use for generating the chart. 
+    constructor() {
+      super();
+      super.decorate = chart => chart;
+    }
+
+    /*
+     * `getDrawable` allows to specify which data to use for generating the chart.
      * This is usefull for multi-geo where chart is generated by topojson feature and not by raw data.
      */
     get drawableData() {
@@ -8379,27 +8441,18 @@ const Draw = superClass => {
     }
 
     setData(data) {
-       if (data) {
-        // Note(cg): filter allows to dispay only a subset of the data. 
-        // This is usefull for instance when we want to display multiple groups. 
-        if(this.filter) {
+      if (data) {
+        // Note(cg): filter allows to dispay only a subset of the data.
+        // This is usefull for instance when we want to display multiple groups.
+        if (this.filter) {
           this.data = data.filter(this.filter);
-        }
-        else {this.data = data ;}
+        } else { this.data = data; }
       }
     }
 
-    // get propertiesToDraw() {
-    //   return ['data'];
-    // }
-
-    // shallDraw(changedProperties) {
-    //   return this.propertiesToDraw.some(k=> changedProperties.has(k))
-    // }
-
     update(props) {
       this.log && console.info('update props', props, this);
-      if(props.has('data')) {
+      if (props.has('data')) {
         this._shaped = this.shape(this.data);
       }
       super.update(props);
@@ -8411,7 +8464,7 @@ const Draw = superClass => {
       super.updated(props);
     }
 
-    /* 
+    /*
      * `shape` some charts are easier to draw is data is reshaped (for instance, stack chart)
      */
     shape(data) {
@@ -8419,27 +8472,30 @@ const Draw = superClass => {
     }
 
     debounceDraw() {
-      this.log && console.info('debounce',  this);
+      this.log && console.info('debounce', this);
       this._debounceDraw = Debouncer.debounce(
         this._debounceDraw, // initially undefined
         timeOut.after(10),
         () => {
-          this.log && console.info('debounced',  this);
+          this.log && console.info('debounced', this);
           const isDrawn = this.draw();
           this._isDrawn = !!isDrawn;
-          this.dispatchEvent(new CustomEvent('multi-drawn', {detail: {}, bubbles: true, composed: true})); 
+          if (this.decorate && this._isDrawn) {
+            this.decorate(isDrawn, this.drawableData);
+          }
+          this.dispatchEvent(new CustomEvent('multi-drawn', { detail: {}, bubbles: true, composed: true }));
         });
     }
 
-    /* 
+    /*
      * `draw` this is where do the work !
      */
     draw() {
       this.log && console.error(`draw method shall be overriden in subClasses.`);
     }
-    
-    /* 
-     * `shallTransition` called within the draw function to know if transition shall be applied 
+
+    /*
+     * `shallTransition` called within the draw function to know if transition shall be applied
      */
     get shallTransition() {
       // Note(cg): by default, we skip the transition for first draw.
@@ -8448,14 +8504,13 @@ const Draw = superClass => {
 
     dataChanged(data, transition) {
       this.log && console.info('dataChanged', this.data === data);
-      this.data = data; 
-      if(transition) {
+      this.data = data;
+      if (transition) {
         this.transition = transition;
       }
-      // this._shaped = null;
-      // this.render(data, transition);
+
     }
-    /* 
+    /*
      * `applyTransition`  applies a transition to chart
      */
     applyTransition(chart, transition) {
@@ -8523,7 +8578,7 @@ const LitNotify = (baseElement) => class NotifyingElement extends baseElement {
  **/
 
 const deep = (action, obj, keys, id, key) => {
-  keys = keys.split(".");
+  keys = keys.split('.');
   id = keys.splice(-1, 1);
   for (key in keys) obj = obj[keys[key]] = obj[keys[key]] || {};
   return action(obj, id);
@@ -8590,15 +8645,6 @@ var schemeCategory10 = colors$1("1f77b4ff7f0e2ca02cd627289467bd8c564be377c27f7f7
  *
  * `<multi-drawable>` it a base Class for chart element that can be drawn (e.g. line, circle ...)
  *
- * @memberof MultiChart
- * @customElement
- * @polymer
- * @appliesMixin MultiChart.mixin.SVGHelper
- * @appliesMixin MultiChart.mixin.MultiRegisterable
- * @appliesMixin MultiChart.mixin.DispatchSVG
- * @appliesMixin MultiChart.mixin.Resizable
- * @appliesMixin MultiChart.mixin.Draw
- * @appliesMixin MultiChart.mixin.Accessor
  **/
 class MultiDrawable extends(
     DispatchSVG(
@@ -8611,21 +8657,14 @@ class MultiDrawable extends(
     return css`
      :host {
         display: none;
-      }`
+      }`;
     }
     
     // Note(cg): Hack allowing extend multi-container
-    // in other libraries 
+    // in other libraries
     get html() {
-      return html$1
+      return html$1;
     }
-
-  // Note(cg): Hack allowing extend multi-drawable
-  // in other libraries 
-  // get css() {
-  //   return css;
-  // } 
-
 
   static get properties() {
 
@@ -8710,6 +8749,8 @@ var axisProps = {
   y: { type: String },
   xText: { type: String, attribute: 'x-text' },
   yText: { type: String, attribute: 'y-text' },
+
+  decorate: {type: Function}
 };
 
 class MultiAxis extends 
@@ -8831,6 +8872,7 @@ class MultiAxis extends
       } else {
         sel.call(this.axis.scale(this.scale));
       }
+      return sel;
     }
   }
 
@@ -9206,7 +9248,16 @@ const MultiDrawableSerie = dedupingMixin( superClass => {
         selectSerie: {
           type: Boolean,
           attribute: 'select-serie'
-        }
+        },
+
+        /*
+         * `colorSerie` if true, all elements of the serie will have the same color.
+         * Otherwise, will color serie elements individually
+         */
+        // colorSerie: {
+        //   type: Boolean,
+        //   attribute: 'color-serie'
+        // }
       };
     }
 
@@ -9247,7 +9298,6 @@ const MultiDrawableSerie = dedupingMixin( superClass => {
         chart = this.applyTransition(chart, transition$1);
       }
       return chart;
-
     }
 
     /*
@@ -9307,7 +9357,7 @@ const Shaper = dedupingMixin( superClass => {
   };
 });
 
-var pi = Math.PI,
+const pi = Math.PI,
     tau = 2 * pi,
     epsilon$1 = 1e-6,
     tauEpsilon = tau - epsilon$1;
@@ -9436,17 +9486,17 @@ Path.prototype = path.prototype = {
   }
 };
 
-function constant$5(x) {
+function constant$4(x) {
   return function constant() {
     return x;
   };
 }
 
-var abs = Math.abs;
+var abs$1 = Math.abs;
 var atan2 = Math.atan2;
 var cos = Math.cos;
-var max$2 = Math.max;
-var min$1 = Math.min;
+var max$3 = Math.max;
+var min$2 = Math.min;
 var sin = Math.sin;
 var sqrt$1 = Math.sqrt;
 
@@ -9511,7 +9561,7 @@ function cornerTangents(x0, y0, x1, y1, r1, rc, cw) {
       d2 = dx * dx + dy * dy,
       r = r1 - rc,
       D = x11 * y10 - x10 * y11,
-      d = (dy < 0 ? -1 : 1) * sqrt$1(max$2(0, r * r * d2 - D * D)),
+      d = (dy < 0 ? -1 : 1) * sqrt$1(max$3(0, r * r * d2 - D * D)),
       cx0 = (D * dy - dx * d) / d2,
       cy0 = (-D * dx - dy * d) / d2,
       cx1 = (D * dy + dx * d) / d2,
@@ -9538,7 +9588,7 @@ function cornerTangents(x0, y0, x1, y1, r1, rc, cw) {
 function arc() {
   var innerRadius = arcInnerRadius,
       outerRadius = arcOuterRadius,
-      cornerRadius = constant$5(0),
+      cornerRadius = constant$4(0),
       padRadius = null,
       startAngle = arcStartAngle,
       endAngle = arcEndAngle,
@@ -9552,7 +9602,7 @@ function arc() {
         r1 = +outerRadius.apply(this, arguments),
         a0 = startAngle.apply(this, arguments) - halfPi,
         a1 = endAngle.apply(this, arguments) - halfPi,
-        da = abs(a1 - a0),
+        da = abs$1(a1 - a0),
         cw = a1 > a0;
 
     if (!context) context = buffer = path();
@@ -9583,7 +9633,7 @@ function arc() {
           da1 = da,
           ap = padAngle.apply(this, arguments) / 2,
           rp = (ap > epsilon$2) && (padRadius ? +padRadius.apply(this, arguments) : sqrt$1(r0 * r0 + r1 * r1)),
-          rc = min$1(abs(r1 - r0) / 2, +cornerRadius.apply(this, arguments)),
+          rc = min$2(abs$1(r1 - r0) / 2, +cornerRadius.apply(this, arguments)),
           rc0 = rc,
           rc1 = rc,
           t0,
@@ -9620,8 +9670,8 @@ function arc() {
               by = y11 - oc[1],
               kc = 1 / sin(acos((ax * bx + ay * by) / (sqrt$1(ax * ax + ay * ay) * sqrt$1(bx * bx + by * by))) / 2),
               lc = sqrt$1(oc[0] * oc[0] + oc[1] * oc[1]);
-          rc0 = min$1(rc, (r0 - lc) / (kc - 1));
-          rc1 = min$1(rc, (r1 - lc) / (kc + 1));
+          rc0 = min$2(rc, (r0 - lc) / (kc - 1));
+          rc1 = min$2(rc, (r1 - lc) / (kc + 1));
         }
       }
 
@@ -9687,31 +9737,31 @@ function arc() {
   };
 
   arc.innerRadius = function(_) {
-    return arguments.length ? (innerRadius = typeof _ === "function" ? _ : constant$5(+_), arc) : innerRadius;
+    return arguments.length ? (innerRadius = typeof _ === "function" ? _ : constant$4(+_), arc) : innerRadius;
   };
 
   arc.outerRadius = function(_) {
-    return arguments.length ? (outerRadius = typeof _ === "function" ? _ : constant$5(+_), arc) : outerRadius;
+    return arguments.length ? (outerRadius = typeof _ === "function" ? _ : constant$4(+_), arc) : outerRadius;
   };
 
   arc.cornerRadius = function(_) {
-    return arguments.length ? (cornerRadius = typeof _ === "function" ? _ : constant$5(+_), arc) : cornerRadius;
+    return arguments.length ? (cornerRadius = typeof _ === "function" ? _ : constant$4(+_), arc) : cornerRadius;
   };
 
   arc.padRadius = function(_) {
-    return arguments.length ? (padRadius = _ == null ? null : typeof _ === "function" ? _ : constant$5(+_), arc) : padRadius;
+    return arguments.length ? (padRadius = _ == null ? null : typeof _ === "function" ? _ : constant$4(+_), arc) : padRadius;
   };
 
   arc.startAngle = function(_) {
-    return arguments.length ? (startAngle = typeof _ === "function" ? _ : constant$5(+_), arc) : startAngle;
+    return arguments.length ? (startAngle = typeof _ === "function" ? _ : constant$4(+_), arc) : startAngle;
   };
 
   arc.endAngle = function(_) {
-    return arguments.length ? (endAngle = typeof _ === "function" ? _ : constant$5(+_), arc) : endAngle;
+    return arguments.length ? (endAngle = typeof _ === "function" ? _ : constant$4(+_), arc) : endAngle;
   };
 
   arc.padAngle = function(_) {
-    return arguments.length ? (padAngle = typeof _ === "function" ? _ : constant$5(+_), arc) : padAngle;
+    return arguments.length ? (padAngle = typeof _ === "function" ? _ : constant$4(+_), arc) : padAngle;
   };
 
   arc.context = function(_) {
@@ -9719,6 +9769,14 @@ function arc() {
   };
 
   return arc;
+}
+
+var slice$2 = Array.prototype.slice;
+
+function array$1(x) {
+  return typeof x === "object" && "length" in x
+    ? x // Array, TypedArray, NodeList, array-like
+    : Array.from(x); // Map, Set, iterable, string, or anything else
 }
 
 function Linear(context) {
@@ -9761,17 +9819,18 @@ function y(p) {
   return p[1];
 }
 
-function line() {
-  var x$1 = x,
-      y$1 = y,
-      defined = constant$5(true),
+function line(x$1, y$1) {
+  var defined = constant$4(true),
       context = null,
       curve = curveLinear,
       output = null;
 
+  x$1 = typeof x$1 === "function" ? x$1 : (x$1 === undefined) ? x : constant$4(x$1);
+  y$1 = typeof y$1 === "function" ? y$1 : (y$1 === undefined) ? y : constant$4(y$1);
+
   function line(data) {
     var i,
-        n = data.length,
+        n = (data = array$1(data)).length,
         d,
         defined0 = false,
         buffer;
@@ -9790,15 +9849,15 @@ function line() {
   }
 
   line.x = function(_) {
-    return arguments.length ? (x$1 = typeof _ === "function" ? _ : constant$5(+_), line) : x$1;
+    return arguments.length ? (x$1 = typeof _ === "function" ? _ : constant$4(+_), line) : x$1;
   };
 
   line.y = function(_) {
-    return arguments.length ? (y$1 = typeof _ === "function" ? _ : constant$5(+_), line) : y$1;
+    return arguments.length ? (y$1 = typeof _ === "function" ? _ : constant$4(+_), line) : y$1;
   };
 
   line.defined = function(_) {
-    return arguments.length ? (defined = typeof _ === "function" ? _ : constant$5(!!_), line) : defined;
+    return arguments.length ? (defined = typeof _ === "function" ? _ : constant$4(!!_), line) : defined;
   };
 
   line.curve = function(_) {
@@ -9812,21 +9871,22 @@ function line() {
   return line;
 }
 
-function area() {
-  var x0 = x,
-      x1 = null,
-      y0 = constant$5(0),
-      y1 = y,
-      defined = constant$5(true),
+function area(x0, y0, y1) {
+  var x1 = null,
+      defined = constant$4(true),
       context = null,
       curve = curveLinear,
       output = null;
+
+  x0 = typeof x0 === "function" ? x0 : (x0 === undefined) ? x : constant$4(+x0);
+  y0 = typeof y0 === "function" ? y0 : (y0 === undefined) ? constant$4(0) : constant$4(+y0);
+  y1 = typeof y1 === "function" ? y1 : (y1 === undefined) ? y : constant$4(+y1);
 
   function area(data) {
     var i,
         j,
         k,
-        n = data.length,
+        n = (data = array$1(data)).length,
         d,
         defined0 = false,
         buffer,
@@ -9865,27 +9925,27 @@ function area() {
   }
 
   area.x = function(_) {
-    return arguments.length ? (x0 = typeof _ === "function" ? _ : constant$5(+_), x1 = null, area) : x0;
+    return arguments.length ? (x0 = typeof _ === "function" ? _ : constant$4(+_), x1 = null, area) : x0;
   };
 
   area.x0 = function(_) {
-    return arguments.length ? (x0 = typeof _ === "function" ? _ : constant$5(+_), area) : x0;
+    return arguments.length ? (x0 = typeof _ === "function" ? _ : constant$4(+_), area) : x0;
   };
 
   area.x1 = function(_) {
-    return arguments.length ? (x1 = _ == null ? null : typeof _ === "function" ? _ : constant$5(+_), area) : x1;
+    return arguments.length ? (x1 = _ == null ? null : typeof _ === "function" ? _ : constant$4(+_), area) : x1;
   };
 
   area.y = function(_) {
-    return arguments.length ? (y0 = typeof _ === "function" ? _ : constant$5(+_), y1 = null, area) : y0;
+    return arguments.length ? (y0 = typeof _ === "function" ? _ : constant$4(+_), y1 = null, area) : y0;
   };
 
   area.y0 = function(_) {
-    return arguments.length ? (y0 = typeof _ === "function" ? _ : constant$5(+_), area) : y0;
+    return arguments.length ? (y0 = typeof _ === "function" ? _ : constant$4(+_), area) : y0;
   };
 
   area.y1 = function(_) {
-    return arguments.length ? (y1 = _ == null ? null : typeof _ === "function" ? _ : constant$5(+_), area) : y1;
+    return arguments.length ? (y1 = _ == null ? null : typeof _ === "function" ? _ : constant$4(+_), area) : y1;
   };
 
   area.lineX0 =
@@ -9902,7 +9962,7 @@ function area() {
   };
 
   area.defined = function(_) {
-    return arguments.length ? (defined = typeof _ === "function" ? _ : constant$5(!!_), area) : defined;
+    return arguments.length ? (defined = typeof _ === "function" ? _ : constant$4(!!_), area) : defined;
   };
 
   area.curve = function(_) {
@@ -9928,13 +9988,13 @@ function pie() {
   var value = identity$5,
       sortValues = descending,
       sort = null,
-      startAngle = constant$5(0),
-      endAngle = constant$5(tau$1),
-      padAngle = constant$5(0);
+      startAngle = constant$4(0),
+      endAngle = constant$4(tau$1),
+      padAngle = constant$4(0);
 
   function pie(data) {
     var i,
-        n = data.length,
+        n = (data = array$1(data)).length,
         j,
         k,
         sum = 0,
@@ -9973,7 +10033,7 @@ function pie() {
   }
 
   pie.value = function(_) {
-    return arguments.length ? (value = typeof _ === "function" ? _ : constant$5(+_), pie) : value;
+    return arguments.length ? (value = typeof _ === "function" ? _ : constant$4(+_), pie) : value;
   };
 
   pie.sortValues = function(_) {
@@ -9985,15 +10045,15 @@ function pie() {
   };
 
   pie.startAngle = function(_) {
-    return arguments.length ? (startAngle = typeof _ === "function" ? _ : constant$5(+_), pie) : startAngle;
+    return arguments.length ? (startAngle = typeof _ === "function" ? _ : constant$4(+_), pie) : startAngle;
   };
 
   pie.endAngle = function(_) {
-    return arguments.length ? (endAngle = typeof _ === "function" ? _ : constant$5(+_), pie) : endAngle;
+    return arguments.length ? (endAngle = typeof _ === "function" ? _ : constant$4(+_), pie) : endAngle;
   };
 
   pie.padAngle = function(_) {
-    return arguments.length ? (padAngle = typeof _ === "function" ? _ : constant$5(+_), pie) : padAngle;
+    return arguments.length ? (padAngle = typeof _ === "function" ? _ : constant$4(+_), pie) : padAngle;
   };
 
   return pie;
@@ -10081,8 +10141,6 @@ function pointRadial(x, y) {
   return [(y = +y) * Math.cos(x -= Math.PI / 2), y * Math.sin(x)];
 }
 
-var slice$2 = Array.prototype.slice;
-
 function linkSource(d) {
   return d.source;
 }
@@ -10114,11 +10172,11 @@ function link(curve) {
   };
 
   link.x = function(_) {
-    return arguments.length ? (x$1 = typeof _ === "function" ? _ : constant$5(+_), link) : x$1;
+    return arguments.length ? (x$1 = typeof _ === "function" ? _ : constant$4(+_), link) : x$1;
   };
 
   link.y = function(_) {
-    return arguments.length ? (y$1 = typeof _ === "function" ? _ : constant$5(+_), link) : y$1;
+    return arguments.length ? (y$1 = typeof _ === "function" ? _ : constant$4(+_), link) : y$1;
   };
 
   link.context = function(_) {
@@ -10284,10 +10342,10 @@ var symbols = [
   wye
 ];
 
-function symbol$1() {
-  var type = constant$5(circle),
-      size = constant$5(64),
-      context = null;
+function symbol$1(type, size) {
+  var context = null;
+  type = typeof type === "function" ? type : constant$4(type || circle);
+  size = typeof size === "function" ? size : constant$4(size === undefined ? 64 : +size);
 
   function symbol() {
     var buffer;
@@ -10297,11 +10355,11 @@ function symbol$1() {
   }
 
   symbol.type = function(_) {
-    return arguments.length ? (type = typeof _ === "function" ? _ : constant$5(_), symbol) : type;
+    return arguments.length ? (type = typeof _ === "function" ? _ : constant$4(_), symbol) : type;
   };
 
   symbol.size = function(_) {
-    return arguments.length ? (size = typeof _ === "function" ? _ : constant$5(+_), symbol) : size;
+    return arguments.length ? (size = typeof _ === "function" ? _ : constant$4(+_), symbol) : size;
   };
 
   symbol.context = function(_) {
@@ -11163,29 +11221,30 @@ function stackValue(d, key) {
   return d[key];
 }
 
+function stackSeries(key) {
+  const series = [];
+  series.key = key;
+  return series;
+}
+
 function stack() {
-  var keys = constant$5([]),
+  var keys = constant$4([]),
       order = none$1,
       offset = none,
       value = stackValue;
 
   function stack(data) {
-    var kz = keys.apply(this, arguments),
-        i,
-        m = data.length,
-        n = kz.length,
-        sz = new Array(n),
+    var sz = Array.from(keys.apply(this, arguments), stackSeries),
+        i, n = sz.length, j = -1,
         oz;
 
-    for (i = 0; i < n; ++i) {
-      for (var ki = kz[i], si = sz[i] = new Array(m), j = 0, sij; j < m; ++j) {
-        si[j] = sij = [0, +value(data[j], ki, j, data)];
-        sij.data = data[j];
+    for (const d of data) {
+      for (i = 0, ++j; i < n; ++i) {
+        (sz[i][j] = [0, +value(d, sz[i].key, j, data)]).data = d;
       }
-      si.key = ki;
     }
 
-    for (i = 0, oz = order(sz); i < n; ++i) {
+    for (i = 0, oz = array$1(order(sz)); i < n; ++i) {
       sz[oz[i]].index = i;
     }
 
@@ -11194,15 +11253,15 @@ function stack() {
   }
 
   stack.keys = function(_) {
-    return arguments.length ? (keys = typeof _ === "function" ? _ : constant$5(slice$2.call(_)), stack) : keys;
+    return arguments.length ? (keys = typeof _ === "function" ? _ : constant$4(Array.from(_)), stack) : keys;
   };
 
   stack.value = function(_) {
-    return arguments.length ? (value = typeof _ === "function" ? _ : constant$5(+_), stack) : value;
+    return arguments.length ? (value = typeof _ === "function" ? _ : constant$4(+_), stack) : value;
   };
 
   stack.order = function(_) {
-    return arguments.length ? (order = _ == null ? none$1 : typeof _ === "function" ? _ : constant$5(slice$2.call(_)), stack) : order;
+    return arguments.length ? (order = _ == null ? none$1 : typeof _ === "function" ? _ : constant$4(Array.from(_)), stack) : order;
   };
 
   stack.offset = function(_) {
@@ -11466,8 +11525,10 @@ class MultiDrawableRadar extends
     static get hostStyles() {
       return css`
         
-        #drawable.line .shape {
+        #drawable.line .shape:not([fill]) {
           fill: var(--drawable-line-fill);
+        }
+        #drawable.line .shape:not([stroke]) {
           stroke: var(--drawable-line-stroke);
         }
       `;
@@ -11692,7 +11753,7 @@ class MultiDrawablePie extends
           <g id="drawable" 
             slot-svg="slot-chart" 
             class="drawable pie" 
-            transform="translate(${this.width / 2 || 0}, ${this.height /2 || 0})"></g>
+            transform="translate(${this.width / 2 || 0}, ${this.height / 2 || 0})"></g>
         </svg>
     `;
   }
@@ -11816,12 +11877,14 @@ class MultiDrawableLine extends
     static get hostStyles() {
       return css`
         
-        #drawable.line .shape {
+        #drawable.line .shape:not([fill])  {
           fill: var(--drawable-line-fill);
+        }
+        #drawable.line .shape:not([stroke])  {
           stroke: var(--drawable-line-stroke);
         }
       `;
-    } ;
+    };
 
   render() {
     return html$1`
@@ -11950,11 +12013,12 @@ class MultiDrawableBubble extends
 
   static get hostStyles() {
     return css `
-      #drawable.bubble .shape {
+      #drawable.bubble .shape:not([fill]) {
         fill: var(--drawable-bubble-fill);
+      }
+      #drawable.bubble .shape:not([stroke]) {
         stroke: var(--drawable-bubble-stroke);
       }
-      
     `;
   }
   render() {
@@ -12050,12 +12114,13 @@ MultiDrawableSerie(
 
   static get hostStyles() {
     return css `
-      
-      #drawable.bar .shape {
+      #drawable.bar .shape:not([fill]) {
         fill: var(--drawable-bar-fill);
-        stroke: var(--drawable-bar-stroke);
       }
       
+      #drawable.bar .shape:not([stroke]) {
+        stroke: var(--drawable-bar-stroke);
+      }
     `;
   }
   render() {
@@ -12109,7 +12174,7 @@ MultiDrawableSerie(
        valuePath: {
          type: String,
          attribute: 'value-path'
-         },
+        },
     };
   }
 
@@ -12125,10 +12190,9 @@ MultiDrawableSerie(
   drawSerieElement(chart, data) {
 
     chart
-      .attr('fill', d => this.colorScale(d.key))
       .attr('class', `${this.shapeClass} ${this.selectSerie ? 'selectable' : ''}`)
+      .attr('fill', d => this.colorScale(d.key))
       .attr('key', d => d.key);
-
 
     chart = this.drawSerieGroup(data, 'rect', this.shapeClass, chart, this.transition);
 
@@ -12144,22 +12208,32 @@ MultiDrawableSerie(
     const xScale = this.xScale;
     // we might have an x-scale that does not have a bandwidth, e.g. when we have date on x-axis and use a timeScale
     if (!bandwidth) {
-      bandwidth = band().domain(data[0].map((d, i) => this.xScale(d[3] || i))).range(this.xScale.range()).padding(0.2).bandwidth;
+      if (xScale.interval && xScale.interval.range) {
+        const d = xScale.domain();
+        bandwidth = band().domain(xScale.interval.range(d[0], d[1]))
+          .range(xScale.range())
+          .padding(0.2)
+          .bandwidth;
+      } else {
+        bandwidth = band().domain(data[0].map((d, i) => xScale(d[3] || i)))
+          .range(xScale.range())
+          .padding(0.2)
+          .bandwidth;
+      }
       align = bandwidth() / 2;
     }
 
     if (this.stacked) {
       chart = chart
-        .attr('y', d => this.yScale(d[1]) || 0)
-        .attr('height', d => this.yScale(d[0]) - this.yScale(d[1]) || 0);
+            .attr('y', d => this.yScale(d[1]) || 0)
+            .attr('height', d => this.yScale(d[0]) - this.yScale(d[1]) || 0);
 
-      return chart
-        .attr('x', (d, i) => {
-          return xScale(d[3] || i) - align;
-        })
-        .attr('width', bandwidth())
-        .attr('key', d => d[3]);
-      // .attr('index', (d,i) => i);
+     return chart
+          .attr('x', (d, i) => {
+            return xScale(d[3] || i) - align;
+          })
+          .attr('width', bandwidth())
+          .attr('key', d => d[3]);
     }
 
     const n = data.length;
@@ -12171,6 +12245,79 @@ MultiDrawableSerie(
     return chart
       .attr('y', d => this.yScale(d[1] - d[0]) || 0)
       .attr('height', d => this.yScale(0) - this.yScale(d[1] - d[0]) || 0)
+      .attr('index', (d, i) => i);
+
+  }
+}
+
+/** ## MultiDrawableBarHorizontal
+ *
+ * `<multi-drawable-bar>` draws bar as in https://github.com/d3/d3-shape#bar
+ * 
+ */
+  
+class MultiDrawableBarHorizontal extends MultiDrawableBar {
+
+
+  drawSerieElement(chart, data) {
+
+    chart
+      .attr('fill', d => this.colorScale(d.key))
+      .attr('class', `${this.shapeClass} ${this.selectSerie ? 'selectable' : ''}`)
+      .attr('key', d => d.key);
+
+    
+    chart = this.drawSerieGroup(data, 'rect', this.shapeClass, chart, this.transition);
+
+    // Note(cg): we add selectable to shape only if selectSerie is not true.
+    if (!this.selectSerie) {
+      chart instanceof transition
+      ? chart.selection().classed('selectable', true)
+      : chart.classed('selectable', true);
+    }
+
+    let bandwidth = this.yScale.bandwidth;
+    let align = 0;
+    const yScale = this.yScale;
+    // we might have an x-scale that does not have a bandwidth, e.g. when we have date on x-axis and use a timeScale
+    if (!bandwidth) {
+      if (yScale.interval && yScale.interval.range) {
+        const d = yScale.domain();
+        bandwidth = band().domain(yScale.interval.range(d[0], d[1]))
+          .range(yScale.range())
+          .padding(0.2)
+          .bandwidth;
+      } else {
+        bandwidth = band().domain(data[0].map((d, i) => yScale(d[3] || i)))
+          .range(yScale.range())
+          .padding(0.2)
+          .bandwidth;
+      }
+      align = bandwidth() / 2;
+    }
+
+    if (this.stacked) {
+      chart = chart
+            .attr('x', d => this.xScale(d[0]) || 0)
+            .attr('width', d => (this.xScale(d[1]) - this.xScale(d[0])) || 0);
+      
+     return chart
+          .attr('y', (d, i) => {
+            return yScale(d[3] || i) - align;
+          })
+          .attr('height', bandwidth())
+          .attr('key', d => d[3]);
+    }
+
+    const n = data.length;
+    chart = chart
+      .attr('y', (d, i) => yScale(d[3] || i) + bandwidth() / n * d[2] - align)
+      .attr('height', bandwidth() / n)
+      .attr('key', d => d[3]);
+
+    return chart
+      .attr('x', d => this.xScale(0))
+      .attr('width', d => this.xScale(d[1] - d[0]) || 0)
       .attr('index', (d, i) => i);
 
   }
@@ -12228,6 +12375,11 @@ const value= (d) => {return d.value;};
         }
       }
 
+      disconnectedCallback() {
+        this._wasDisconnected = true;
+        super.disconnectedCallback();
+      }
+
       _onMultiSerieGroupRegister(e) {
         e.stopPropagation();
         const serieGroup = e.composedPath()[0];
@@ -12236,9 +12388,12 @@ const value= (d) => {return d.value;};
         if (!group) {
           throw new Error(`serieGroup must have a group`);
         }
-        if (this._serieGroup[group]) {
-          throw new Error(`serieGroup with group name ${group } has already been registered. Choose another group name.`);
+
+        // Note(cg): we cn only register once.
+        if (this._serieGroup[group] && !this._wasDisconnected) {
+          throw new Error(`serieGroup with group name ${group} has already been registered. Choose another group name.`);
         }
+        delete this._wasDisconnected;
 
         if (!this[`_series.${group}`]) {
           this[`_series.${group}`] = [];
@@ -12247,7 +12402,7 @@ const value= (d) => {return d.value;};
           this[`_registeredItems.${group}`] = [];
         }
         serieGroup.series = this[`_series.${group}`];
-        // XXX(cg): the consequence of this is that all registered items for a chart 
+        // XXX(cg): the consequence of this is that all registered items for a chart
         // ends up being registered for the serieGroup (multi-data-group).
         serieGroup._registeredItems = this[`_registeredItems.${group}`];
         this._serieGroup[group] = serieGroup;
@@ -12348,16 +12503,21 @@ var zoomableProperty = {
   }
 };
 
-function constant$6(x) {
-  return function() {
-    return x;
-  };
-}
+var constant$5 = x => () => x;
 
-function ZoomEvent(target, type, transform) {
-  this.target = target;
-  this.type = type;
-  this.transform = transform;
+function ZoomEvent(type, {
+  sourceEvent,
+  target,
+  transform,
+  dispatch
+}) {
+  Object.defineProperties(this, {
+    type: {value: type, enumerable: true, configurable: true},
+    sourceEvent: {value: sourceEvent, enumerable: true, configurable: true},
+    target: {value: target, enumerable: true, configurable: true},
+    transform: {value: transform, enumerable: true, configurable: true},
+    _: {value: dispatch}
+  });
 }
 
 function Transform(k, x, y) {
@@ -12405,18 +12565,19 @@ Transform.prototype = {
 
 var identity$6 = new Transform(1, 0, 0);
 
-function nopropagation$1() {
+function nopropagation$1(event) {
   event.stopImmediatePropagation();
 }
 
-function noevent$2() {
+function noevent$2(event) {
   event.preventDefault();
   event.stopImmediatePropagation();
 }
 
 // Ignore right-click, since that should open the context menu.
-function defaultFilter$1() {
-  return !event.ctrlKey && !event.button;
+// except for pinch-to-zoom, which is sent as a wheel+ctrlKey event
+function defaultFilter$1(event) {
+  return (!event.ctrlKey || event.type === 'wheel') && !event.button;
 }
 
 function defaultExtent$1() {
@@ -12436,8 +12597,8 @@ function defaultTransform() {
   return this.__zoom || identity$6;
 }
 
-function defaultWheelDelta() {
-  return -event.deltaY * (event.deltaMode === 1 ? 0.05 : event.deltaMode ? 1 : 0.002);
+function defaultWheelDelta(event) {
+  return -event.deltaY * (event.deltaMode === 1 ? 0.05 : event.deltaMode ? 1 : 0.002) * (event.ctrlKey ? 10 : 1);
 }
 
 function defaultTouchable$1() {
@@ -12467,10 +12628,12 @@ function zoom() {
       interpolate = interpolateZoom,
       listeners = dispatch$1("start", "zoom", "end"),
       touchstarting,
+      touchfirst,
       touchending,
       touchDelay = 500,
       wheelDelay = 150,
-      clickDistance2 = 0;
+      clickDistance2 = 0,
+      tapDistance = 10;
 
   function zoom(selection) {
     selection
@@ -12482,34 +12645,34 @@ function zoom() {
         .on("touchstart.zoom", touchstarted)
         .on("touchmove.zoom", touchmoved)
         .on("touchend.zoom touchcancel.zoom", touchended)
-        .style("touch-action", "none")
         .style("-webkit-tap-highlight-color", "rgba(0,0,0,0)");
   }
 
-  zoom.transform = function(collection, transform, point) {
+  zoom.transform = function(collection, transform, point, event) {
     var selection = collection.selection ? collection.selection() : collection;
     selection.property("__zoom", defaultTransform);
     if (collection !== selection) {
-      schedule(collection, transform, point);
+      schedule(collection, transform, point, event);
     } else {
       selection.interrupt().each(function() {
         gesture(this, arguments)
-            .start()
-            .zoom(null, typeof transform === "function" ? transform.apply(this, arguments) : transform)
-            .end();
+          .event(event)
+          .start()
+          .zoom(null, typeof transform === "function" ? transform.apply(this, arguments) : transform)
+          .end();
       });
     }
   };
 
-  zoom.scaleBy = function(selection, k, p) {
+  zoom.scaleBy = function(selection, k, p, event) {
     zoom.scaleTo(selection, function() {
       var k0 = this.__zoom.k,
           k1 = typeof k === "function" ? k.apply(this, arguments) : k;
       return k0 * k1;
-    }, p);
+    }, p, event);
   };
 
-  zoom.scaleTo = function(selection, k, p) {
+  zoom.scaleTo = function(selection, k, p, event) {
     zoom.transform(selection, function() {
       var e = extent.apply(this, arguments),
           t0 = this.__zoom,
@@ -12517,19 +12680,19 @@ function zoom() {
           p1 = t0.invert(p0),
           k1 = typeof k === "function" ? k.apply(this, arguments) : k;
       return constrain(translate(scale(t0, k1), p0, p1), e, translateExtent);
-    }, p);
+    }, p, event);
   };
 
-  zoom.translateBy = function(selection, x, y) {
+  zoom.translateBy = function(selection, x, y, event) {
     zoom.transform(selection, function() {
       return constrain(this.__zoom.translate(
         typeof x === "function" ? x.apply(this, arguments) : x,
         typeof y === "function" ? y.apply(this, arguments) : y
       ), extent.apply(this, arguments), translateExtent);
-    });
+    }, null, event);
   };
 
-  zoom.translateTo = function(selection, x, y, p) {
+  zoom.translateTo = function(selection, x, y, p, event) {
     zoom.transform(selection, function() {
       var e = extent.apply(this, arguments),
           t = this.__zoom,
@@ -12538,7 +12701,7 @@ function zoom() {
         typeof x === "function" ? -x.apply(this, arguments) : -x,
         typeof y === "function" ? -y.apply(this, arguments) : -y
       ), e, translateExtent);
-    }, p);
+    }, p, event);
   };
 
   function scale(transform, k) {
@@ -12555,14 +12718,14 @@ function zoom() {
     return [(+extent[0][0] + +extent[1][0]) / 2, (+extent[0][1] + +extent[1][1]) / 2];
   }
 
-  function schedule(transition, transform, point) {
+  function schedule(transition, transform, point, event) {
     transition
-        .on("start.zoom", function() { gesture(this, arguments).start(); })
-        .on("interrupt.zoom end.zoom", function() { gesture(this, arguments).end(); })
+        .on("start.zoom", function() { gesture(this, arguments).event(event).start(); })
+        .on("interrupt.zoom end.zoom", function() { gesture(this, arguments).event(event).end(); })
         .tween("zoom", function() {
           var that = this,
               args = arguments,
-              g = gesture(that, args),
+              g = gesture(that, args).event(event),
               e = extent.apply(that, args),
               p = point == null ? centroid(e) : typeof point === "function" ? point.apply(that, args) : point,
               w = Math.max(e[1][0] - e[0][0], e[1][1] - e[0][1]),
@@ -12585,11 +12748,16 @@ function zoom() {
     this.that = that;
     this.args = args;
     this.active = 0;
+    this.sourceEvent = null;
     this.extent = extent.apply(that, args);
     this.taps = 0;
   }
 
   Gesture.prototype = {
+    event: function(event) {
+      if (event) this.sourceEvent = event;
+      return this;
+    },
     start: function() {
       if (++this.active === 1) {
         this.that.__zooming = this;
@@ -12613,16 +12781,28 @@ function zoom() {
       return this;
     },
     emit: function(type) {
-      customEvent(new ZoomEvent(zoom, type, this.that.__zoom), listeners.apply, listeners, [type, this.that, this.args]);
+      var d = select(this.that).datum();
+      listeners.call(
+        type,
+        this.that,
+        new ZoomEvent(type, {
+          sourceEvent: this.sourceEvent,
+          target: zoom,
+          type,
+          transform: this.that.__zoom,
+          dispatch: listeners
+        }),
+        d
+      );
     }
   };
 
-  function wheeled() {
+  function wheeled(event, ...args) {
     if (!filter.apply(this, arguments)) return;
-    var g = gesture(this, arguments),
+    var g = gesture(this, args).event(event),
         t = this.__zoom,
         k = Math.max(scaleExtent[0], Math.min(scaleExtent[1], t.k * Math.pow(2, wheelDelta.apply(this, arguments)))),
-        p = mouse(this);
+        p = pointer(event);
 
     // If the mouse is in the same location as before, reuse it.
     // If there were recent wheel events, reset the wheel idle timeout.
@@ -12643,7 +12823,7 @@ function zoom() {
       g.start();
     }
 
-    noevent$2();
+    noevent$2(event);
     g.wheel = setTimeout(wheelidled, wheelDelay);
     g.zoom("mouse", constrain(translate(scale(t, k), g.mouse[0], g.mouse[1]), g.extent, translateExtent));
 
@@ -12653,60 +12833,62 @@ function zoom() {
     }
   }
 
-  function mousedowned() {
+  function mousedowned(event, ...args) {
     if (touchending || !filter.apply(this, arguments)) return;
-    var g = gesture(this, arguments, true),
+    var g = gesture(this, args, true).event(event),
         v = select(event.view).on("mousemove.zoom", mousemoved, true).on("mouseup.zoom", mouseupped, true),
-        p = mouse(this),
+        p = pointer(event, currentTarget),
+        currentTarget = event.currentTarget,
         x0 = event.clientX,
         y0 = event.clientY;
 
     dragDisable(event.view);
-    nopropagation$1();
+    nopropagation$1(event);
     g.mouse = [p, this.__zoom.invert(p)];
     interrupt(this);
     g.start();
 
-    function mousemoved() {
-      noevent$2();
+    function mousemoved(event) {
+      noevent$2(event);
       if (!g.moved) {
         var dx = event.clientX - x0, dy = event.clientY - y0;
         g.moved = dx * dx + dy * dy > clickDistance2;
       }
-      g.zoom("mouse", constrain(translate(g.that.__zoom, g.mouse[0] = mouse(g.that), g.mouse[1]), g.extent, translateExtent));
+      g.event(event)
+       .zoom("mouse", constrain(translate(g.that.__zoom, g.mouse[0] = pointer(event, currentTarget), g.mouse[1]), g.extent, translateExtent));
     }
 
-    function mouseupped() {
+    function mouseupped(event) {
       v.on("mousemove.zoom mouseup.zoom", null);
       yesdrag(event.view, g.moved);
-      noevent$2();
-      g.end();
+      noevent$2(event);
+      g.event(event).end();
     }
   }
 
-  function dblclicked() {
+  function dblclicked(event, ...args) {
     if (!filter.apply(this, arguments)) return;
     var t0 = this.__zoom,
-        p0 = mouse(this),
+        p0 = pointer(event.changedTouches ? event.changedTouches[0] : event, this),
         p1 = t0.invert(p0),
         k1 = t0.k * (event.shiftKey ? 0.5 : 2),
-        t1 = constrain(translate(scale(t0, k1), p0, p1), extent.apply(this, arguments), translateExtent);
+        t1 = constrain(translate(scale(t0, k1), p0, p1), extent.apply(this, args), translateExtent);
 
-    noevent$2();
-    if (duration > 0) select(this).transition().duration(duration).call(schedule, t1, p0);
-    else select(this).call(zoom.transform, t1);
+    noevent$2(event);
+    if (duration > 0) select(this).transition().duration(duration).call(schedule, t1, p0, event);
+    else select(this).call(zoom.transform, t1, p0, event);
   }
 
-  function touchstarted() {
+  function touchstarted(event, ...args) {
     if (!filter.apply(this, arguments)) return;
     var touches = event.touches,
         n = touches.length,
-        g = gesture(this, arguments, event.changedTouches.length === n),
+        g = gesture(this, args, event.changedTouches.length === n).event(event),
         started, i, t, p;
 
-    nopropagation$1();
+    nopropagation$1(event);
     for (i = 0; i < n; ++i) {
-      t = touches[i], p = touch(this, touches, t.identifier);
+      t = touches[i], p = pointer(t, this);
       p = [p, this.__zoom.invert(p), t.identifier];
       if (!g.touch0) g.touch0 = p, started = true, g.taps = 1 + !!touchstarting;
       else if (!g.touch1 && g.touch0[2] !== p[2]) g.touch1 = p, g.taps = 0;
@@ -12715,23 +12897,21 @@ function zoom() {
     if (touchstarting) touchstarting = clearTimeout(touchstarting);
 
     if (started) {
-      if (g.taps < 2) touchstarting = setTimeout(function() { touchstarting = null; }, touchDelay);
+      if (g.taps < 2) touchfirst = p[0], touchstarting = setTimeout(function() { touchstarting = null; }, touchDelay);
       interrupt(this);
       g.start();
     }
   }
 
-  function touchmoved() {
+  function touchmoved(event, ...args) {
     if (!this.__zooming) return;
-    var g = gesture(this, arguments),
+    var g = gesture(this, args).event(event),
         touches = event.changedTouches,
         n = touches.length, i, t, p, l;
 
-    noevent$2();
-    if (touchstarting) touchstarting = clearTimeout(touchstarting);
-    g.taps = 0;
+    noevent$2(event);
     for (i = 0; i < n; ++i) {
-      t = touches[i], p = touch(this, touches, t.identifier);
+      t = touches[i], p = pointer(t, this);
       if (g.touch0 && g.touch0[2] === t.identifier) g.touch0[0] = p;
       else if (g.touch1 && g.touch1[2] === t.identifier) g.touch1[0] = p;
     }
@@ -12747,16 +12927,17 @@ function zoom() {
     }
     else if (g.touch0) p = g.touch0[0], l = g.touch0[1];
     else return;
+
     g.zoom("touch", constrain(translate(t, p, l), g.extent, translateExtent));
   }
 
-  function touchended() {
+  function touchended(event, ...args) {
     if (!this.__zooming) return;
-    var g = gesture(this, arguments),
+    var g = gesture(this, args).event(event),
         touches = event.changedTouches,
         n = touches.length, i, t;
 
-    nopropagation$1();
+    nopropagation$1(event);
     if (touchending) clearTimeout(touchending);
     touchending = setTimeout(function() { touchending = null; }, touchDelay);
     for (i = 0; i < n; ++i) {
@@ -12770,26 +12951,29 @@ function zoom() {
       g.end();
       // If this was a dbltap, reroute to the (optional) dblclick.zoom handler.
       if (g.taps === 2) {
-        var p = select(this).on("dblclick.zoom");
-        if (p) p.apply(this, arguments);
+        t = pointer(t, this);
+        if (Math.hypot(touchfirst[0] - t[0], touchfirst[1] - t[1]) < tapDistance) {
+          var p = select(this).on("dblclick.zoom");
+          if (p) p.apply(this, arguments);
+        }
       }
     }
   }
 
   zoom.wheelDelta = function(_) {
-    return arguments.length ? (wheelDelta = typeof _ === "function" ? _ : constant$6(+_), zoom) : wheelDelta;
+    return arguments.length ? (wheelDelta = typeof _ === "function" ? _ : constant$5(+_), zoom) : wheelDelta;
   };
 
   zoom.filter = function(_) {
-    return arguments.length ? (filter = typeof _ === "function" ? _ : constant$6(!!_), zoom) : filter;
+    return arguments.length ? (filter = typeof _ === "function" ? _ : constant$5(!!_), zoom) : filter;
   };
 
   zoom.touchable = function(_) {
-    return arguments.length ? (touchable = typeof _ === "function" ? _ : constant$6(!!_), zoom) : touchable;
+    return arguments.length ? (touchable = typeof _ === "function" ? _ : constant$5(!!_), zoom) : touchable;
   };
 
   zoom.extent = function(_) {
-    return arguments.length ? (extent = typeof _ === "function" ? _ : constant$6([[+_[0][0], +_[0][1]], [+_[1][0], +_[1][1]]]), zoom) : extent;
+    return arguments.length ? (extent = typeof _ === "function" ? _ : constant$5([[+_[0][0], +_[0][1]], [+_[1][0], +_[1][1]]]), zoom) : extent;
   };
 
   zoom.scaleExtent = function(_) {
@@ -12821,6 +13005,10 @@ function zoom() {
     return arguments.length ? (clickDistance2 = (_ = +_) * _, zoom) : Math.sqrt(clickDistance2);
   };
 
+  zoom.tapDistance = function(_) {
+    return arguments.length ? (tapDistance = +_, zoom) : tapDistance;
+  };
+
   return zoom;
 }
 
@@ -12837,7 +13025,7 @@ function zoom() {
  */
 const Zoomable = superClass => {
 
-  return class extends superClass { 
+  return class extends superClass {
 
     static get properties() {
 
@@ -12847,7 +13035,7 @@ const Zoomable = superClass => {
 
         ...zoomableProperty,
 
-        /* 
+        /*
          * `enableZoom` set true to enable zoom behaviors
          */
         enableZoom: {
@@ -12883,8 +13071,8 @@ const Zoomable = superClass => {
 
     _observeEnableZoom(enable) {
       if (enable) {
-        const zoomed = () => {
-          this.zoomedEl.attr('transform', event.transform);
+        const zoomed = ({transform}) => {
+          this.zoomedEl.attr('transform', transform);
         };
 
         this._zoom = zoom().on('zoom', zoomed);
@@ -12996,7 +13184,27 @@ const props$4 = {
    * `continuous` true to set continuous ordinal domain for this group
    * For instance, time series are continusou
    */
-  continuous: { type: Boolean }
+  continuous: { type: Boolean },
+
+  /*
+   * `adjustOrdinalDomain` a function to re-adjust  ordinal domain
+   * for instance when time axis is too small
+   */
+  adjustOrdinalDomain: {
+    type: Function,
+    attribute: 'adjust-ordinal-domain',
+    value: () => (domain) => domain
+   },
+
+   /*
+    * `ordinalScaleInterval` interval for the ordinal scale. 
+    * This is usefull when we have a timescale and set the interval as
+    * time.timeDay 
+    */
+   ordinalScaleInterval: {
+     attribute: 'ordinal-scale-interval',
+     type: Object,
+   },
 };
 
 // Note(cg): setting default values for some properties .
@@ -13099,9 +13307,7 @@ MultiData(
     `;
   }
 
-
   render() {
-
     return html$1 `
       <slot name="header"></slot>
       <div id="observedNode">
@@ -13114,12 +13320,23 @@ MultiData(
           .valueAccessor="${this.valueAccessor}"
           .keyAccessor="${this.keyAccessor}"
           .stacked="${this.stacked}"
+          .adjustOrdinalDomain="${this.adjustOrdinalDomain}"
+          .ordinalScaleInterval="${this.ordinalScaleInterval}"
           .min="${this.min}"
           .max="${this.max}"
           .data="${this.data}"
           ></multi-data-group>
         <slot></slot>
       </div>
+      ${this.renderSVG()}
+      <slot name="footer"></slot>
+      <slot name="svg"></slot>
+      ${this.pattern ? pattern : ''}
+    `;
+  }
+
+  renderSVG() {
+    return html$1 `
       <svg id="svg" part="svg">
         <g transform="translate(${this.leftMargin || 0}, ${this.topMargin || 0})">
           <g id="slot-background" part="background">
@@ -13134,11 +13351,7 @@ MultiData(
           </g>
         </g>
         <g id="slot-legend" part="legend"></g>
-      </svg>
-      <slot name="footer"></slot>
-      <slot name="svg"></slot>
-      ${this.pattern ? pattern : ''}
-    `;
+      </svg>`;
   }
 
   /**
@@ -13175,6 +13388,8 @@ MultiData(
       rightMargin: { type: Number, attribute: 'right-margin' },
       bottomMargin: { type: Number, attribute: 'bottom-margin' },
       leftMargin: { type: Number, attribute: 'left-margin' },
+
+
 
       /*
        * `width`  of the chart area. Equals actual width of component - margins
@@ -13218,6 +13433,14 @@ MultiData(
         attribute: 'process-type'
       },
 
+      /*
+       * `decorate` the chart once drawn in draw-mixin. This will be passed to drawable 
+       * elements
+       */
+      decorate: {
+        type: Function
+      }
+
     };
   }
 
@@ -13248,7 +13471,7 @@ MultiData(
     this.assignSlottedSVG();
     super.firstUpdated(changedProperties);
   }
-  
+
   // disconnectedCallback() {
   //   // TODO(cg): replace multi-removed -> multi-verse-remover
   //   // XXX(cg): this event will never be caught! unregister from host instead like for drawablse
@@ -13560,11 +13783,16 @@ class MultiContainerAxis extends ScaleRender(MultiContainer) {
     };
   }
 
+  getAxis(type) {
+    return this.renderRoot.querySelector(`multi-axis[type=${type}]`);
+  }
+
   getAxisRender(type) {
     // const tagName = `d3-axis-${type}`;
     return html$1 `
       <multi-axis 
         type="${type}"
+        .decorate="${this[`${type}Decorate`]}"
         .scale="${this[`${type}Scale`]}" 
         .xText="${this[`${type}XText`]}" 
         .yText="${this[`${type}YText`]}" 
@@ -13980,7 +14208,7 @@ Registerable(
   _debouceDataChanged() {
     this._debounceDataChanged = Debouncer.debounce(
       this._debounceDataChanged, // initially undefined
-      timeOut.after(10),
+      timeOut.after(40),
       () => {
         this._processDataChanged();
       });
@@ -14017,7 +14245,6 @@ Registerable(
   _processByType(processType, data) {
 
     if (processType === 'stack') {
-
       const keyAccessor = this.keyAccessor;
 
         // Note(cg): series and shaper stack data.
@@ -14039,12 +14266,15 @@ Registerable(
         this._max = this.max ? this.max : tmpMax;
         this._stackedMax = this.max ? this.max : max(_multiData[_multiData.length - 1], d => d[1]);
 
-      // this.setHostDomain(this.keyPosition, this.getOrdinalDomain(this.data, keyAccessor, serie.accessor, serie.continuous););
       const valueScale = this.getHostValue(`${this.valuePosition}Scale`);
       const keyScale = this.getHostValue(`${this.keyPosition}Scale`);
       const isContinuous = keyScale.category === 'continuous';
+      
+      if (this.ordinalScaleInterval) {
+        keyScale.interval = this.ordinalScaleInterval;
+      }
 
-      this.setHostDomain(this.keyPosition, this.getOrdinalDomain(this.data, this.keyAccessor, this.accessor, isContinuous));
+      this.setHostDomain(this.keyPosition, this.adjustOrdinalDomain(this.getOrdinalDomain(this.data, this.keyAccessor, this.accessor, isContinuous)));
       this.setHostDomain(this.valuePosition, [0, this.stacked ? this._stackedMax : this._max]);
 
       this.dispatchEvent(new CustomEvent('data-group-rescaled', {
@@ -14254,6 +14484,7 @@ class MultiChartPie extends MultiContainer {
       return html$1`
         <multi-drawable-pie 
           .log="${this.log}"
+          .decorate="${this.decorate}"
           .transition="${this.transition}" 
           .value="${this.value}" 
           .valuePath="${this.valuePath}" 
@@ -14330,6 +14561,7 @@ class MultiChartLine extends MultiContainerAxis {
       ${super.getContentRender()}
       <multi-drawable-line 
          id="drawable"
+         .decorate="${this.decorate}"
          .log="${this.log}"
          .colorScale="${this.colorScale}"
          .x="${this.x}"
@@ -14431,6 +14663,7 @@ class MultiChartLine$1 extends MultiContainerAxis {
      ></multi-accessor>
       <multi-drawable-bubble 
          id="drawable"
+         .decorate="${this.decorate}"
          .log="${this.log}"
          .colorScale="${this.colorScale}"
          .x="${this.x}"
@@ -14509,25 +14742,50 @@ class MultiChartLine$1 extends MultiContainerAxis {
  * @element multi-chart-bar
 
  **/
-class MultiBarLine extends MultiContainerAxis {
+class MultiChartBar extends MultiContainerAxis {
   
   getContentRender() {
     return html$1`
       ${super.getContentRender()}
-      <multi-drawable-bar 
-         id="drawable"
-         .log="${this.log}"
-         .colorScale="${this.colorScale}"
-         .value="${this.value}" 
-         .valuePath="${this.valuePath}" 
-         .keys="${this.keys}" 
-         .order="${this.order}" 
-         .offset="${this.offset}" 
-         .stacked="${this.stacked}"
-         .xScale="${this.xScale}"
-         .yScale="${this.yScale}"
-      ></multi-drawable-bar>
-    `
+      ${this.orientation === 'horizontal' 
+        ? html$1 `
+            <multi-drawable-bar-horizontal 
+               id="drawable"
+               .log="${this.log}"
+               .decorate="${this.decorate}"
+               .colorScale="${this.colorScale}"
+               .colorSerie="${this.colorSerie}"
+               .value="${this.value}" 
+               .valuePath="${this.valuePath}" 
+               .keys="${this.keys}" 
+               .order="${this.order}" 
+               .offset="${this.offset}" 
+               .stacked="${this.stacked}"
+               .orientation="${this.orientation}"
+               .xScale="${this.yScale}"
+               .yScale="${this.xScale}"
+            ></multi-drawable-bar-horizontal>
+           `
+        : html$1 `
+            <multi-drawable-bar 
+               id="drawable"
+               .log="${this.log}"
+               .decorate="${this.decorate}"
+               .colorScale="${this.colorScale}"
+               .colorSerie="${this.colorSerie}"
+               .value="${this.value}" 
+               .valuePath="${this.valuePath}" 
+               .keys="${this.keys}" 
+               .order="${this.order}" 
+               .offset="${this.offset}" 
+               .stacked="${this.stacked}"
+               .orientation="${this.orientation}"
+               .xScale="${this.xScale}"
+               .yScale="${this.yScale}"
+            ></multi-drawable-bar>
+           `
+    }
+    `;
   }
 
   constructor() {
@@ -14539,6 +14797,17 @@ class MultiBarLine extends MultiContainerAxis {
     this.log && console.log('data-group-rescaled for Bar', e);
     this.xScale = e.detail.xScale;
     this.yScale = e.detail.yScale;
+  }
+
+  updated(props) {
+    if (props.has('keyPosition')) {
+      // Note(cg): we set scaletype for key scale to band by default 
+      // if none is set
+      if (this.keyPosition && !this[`${this.keyPosition}ScaleType`]) {
+        this[`${this.keyPosition}ScaleType`] = 'band';
+      }
+    }
+    super.updated(props);
   }
 
   static get properties() {
@@ -14561,16 +14830,13 @@ class MultiBarLine extends MultiContainerAxis {
         type: String,
         attribute: 'value-path'
       },
-
-      /**
-       * scale type for bottom axis. For a bar chart, it is 
-       * set as `band` as default.
+      /*
+       * `orientation` {'vertical'|'horizontal'}
        */
-      bottomScaleType: {
-        type: String,
-        value: 'band',
-        attribute: 'bottom-scale-type'
-      }
+      orientation: {
+        value: 'vertical',
+        type: String
+      },
     };
   }
 
@@ -14590,6 +14856,7 @@ class MultiChartRadar extends MultiContainerRadar {
        ${super.getContentRender()}
        <multi-drawable-radar 
          id="drawable"
+         .decorate="${this.decorate}"
          .log="${this.log}"
          .colorScale="${this.colorScale}"
          .angle="${this.angle}"
@@ -14912,6 +15179,7 @@ function image(input, init) {
 
 function responseJson(response) {
   if (!response.ok) throw new Error(response.status + " " + response.statusText);
+  if (response.status === 204 || response.status === 205) return;
   return response.json();
 }
 
@@ -14920,11 +15188,8 @@ function json(input, init) {
 }
 
 function parser(type) {
-  return function(input, init)  {
-    return text(input, init).then(function(text) {
-      return (new DOMParser).parseFromString(text, type);
-    });
-  };
+  return (input, init) => text(input, init)
+    .then(text => (new DOMParser).parseFromString(text, type));
 }
 
 var xml = parser("application/xml");
@@ -15047,15 +15312,15 @@ Registerable(
     doNotSetUndefinedValue(
       LitElement))) {
 
-  /* 
-   * `registerEventDispatch`  the name of the event to be fired when connected. 
-   * A container with multi-register-mixin applied 
+  /*
+   * `registerEventDispatch`  the name of the event to be fired when connected.
+   * A container with multi-register-mixin applied
    * will listen to this event to register the component.
    *
    * @override Registerable
    */
   get registerEventDispatch() {
-    return 'multi-serie-register'
+    return 'multi-serie-register';
   }
 
   render() {
@@ -15067,7 +15332,7 @@ Registerable(
   getPathRender() {
     return html$1 `
        <multi-accessor 
-        @accessor-changed="${ e => {this.accessor = e.detail.value;}}"
+        @accessor-changed="${e => this.accessor = e.detail.value}"
         path="${this.path}" 
         ></multi-accessor>
     `;
@@ -15075,7 +15340,7 @@ Registerable(
   getKeyPathRender() {
     return html$1 `
        <multi-accessor 
-        @accessor-changed="${ e => this.keyAccessor = e.detail.value}"
+        @accessor-changed="${e => this.keyAccessor = e.detail.value}"
         path="${this.keyPath}" 
         ></multi-accessor>
     `;
@@ -15088,13 +15353,13 @@ Registerable(
 
       ...super.properties,
 
-      /* 
+      /*
        * `key` the key used for this data serie
        */
       key: { type: String },
 
 
-      /* 
+      /*
        * `label` a label describing the serie
        */
       label: { type: String },
@@ -15103,14 +15368,14 @@ Registerable(
        * `path` the path from which the value accessor function is built
        * For instance `+value.count` will create `d => {return +d.value.count}` function.
        */
-      path: { type: String , reflect: true},
+      path: { type: String, reflect: true },
 
       subPath: { type: Boolean },
 
-      /* 
-       * `accessor` the accessor function for transforming data. 
+      /*
+       * `accessor` the accessor function for transforming data.
        */
-      accessor: { 
+      accessor: {
         type: Function
       },
 
@@ -15123,8 +15388,8 @@ Registerable(
         attribute: 'key-path'
       },
 
-      /* 
-       * `keyAccessor` the accessor function for accessiong key. 
+      /*
+       * `keyAccessor` the accessor function for accessiong key.
        * Data will be reshaped as  `[{key: key, label: label, value: data.map(d=>accessor(d))}]
        */
       keyAccessor: {
@@ -15132,12 +15397,10 @@ Registerable(
         attribute: 'key-accessor'
       },
 
-      /* 
-       * `group` name of the group against which this serie is registeredthe serie
+      /*
+       * `group` name of the group against which this serie is registered
        */
       group: { type: String }
-
-
     };
   }
 }
@@ -16019,17 +16282,16 @@ DispatchSVG(
   }
 
   onMultiBrush() {
-    if (!event.sourceEvent || this._clearing) {
+    if (this._clearing) {
       return;
     }
-    const selection = event.selection;
+    const selection = brushSelection(this.targetElement);
 
     if (!selection) {
       return this.clearSelection();
     }
 
     let scale = this.effectiveScale;
-    // var isRange = false;
 
     const xScale = this.xScale;
     let sel;
@@ -16065,7 +16327,7 @@ DispatchSVG(
   }
 
   onMultiBrushEnd() {
-    if (!event.selection && !this._clearing) {
+    if (brushSelection(this.targetElement) && !this._clearing) {
       this._clearing = true;
       this.clearSelection();
     }
@@ -16099,7 +16361,7 @@ DispatchSVG(
 }
 
 const define$2 = (name, cls) => {
-  if(customElements.get(name)) {
+  if (customElements.get(name)) {
     return console.warn(`custom element ${name} has already been registered`);
   }
   customElements.define(name, cls);
@@ -16170,7 +16432,7 @@ define$2(`${d3}-shape-area`, Area);
 
 define$2(`${d3}-transition`, Transition);
 
-define$2(`${multi}-chart-bar`, MultiBarLine);
+define$2(`${multi}-chart-bar`, MultiChartBar);
 
 define$2(`${multi}-container-axis`, MultiContainerAxis);
 
@@ -16178,6 +16440,8 @@ define$2(`${multi}-container-radar`, MultiContainerRadar);
 
 define$2(`${multi}-drawable-bar`, MultiDrawableBar);
 
+define$2(`${multi}-drawable-bar-horizontal`, MultiDrawableBarHorizontal);
+
 define$2(`${multi}-drawable-pie`, MultiDrawablePie);
 
-export { Fetch as A, MultiAccessor as B, MultiSerie as C, DispatchSVG as D, ExtendProperty as E, Format as F, MultiLegend as G, MultiSelect as H, MultiBrush as I, fitTo as J, capitalize as K, camelToDashCase as L, MultiRegister as M, dashToCamelCase as N, shapeProperties as O, wrap as P, Resizable as R, Transition as T, Registerable as a, D3Axis as b, D3Scale as c, define$2 as d, D3Legend as e, D3Brush as f, MultiAxis as g, MultiRadarAxes as h, MultiDrawableRadar as i, MultiDrawablePie as j, MultiDrawableLine as k, MultiDrawableLinePath as l, MultiDrawableBubble as m, MultiDrawableBar as n, MultiDrawable as o, MultiContainer as p, MultiContainerAxis as q, MultiContainerRadar as r, MultiContainerLayer as s, MultiSerieGroup as t, MultiChartPie as u, MultiChartLine as v, MultiChartLine$1 as w, MultiBarLine as x, MultiChartRadar as y, D3Format as z };
+export { Fetch as A, MultiAccessor as B, MultiSerie as C, DispatchSVG as D, ExtendProperty as E, Format as F, MultiLegend as G, MultiSelect as H, MultiBrush as I, fitTo as J, capitalize as K, camelToDashCase as L, MultiRegister as M, dashToCamelCase as N, shapeProperties as O, wrap as P, Registerable as R, Transition as T, D3Axis as a, D3Scale as b, D3Legend as c, define$2 as d, D3Brush as e, MultiAxis as f, MultiRadarAxes as g, MultiDrawableRadar as h, MultiDrawablePie as i, MultiDrawableLine as j, MultiDrawableLinePath as k, MultiDrawableBubble as l, MultiDrawableBar as m, MultiDrawableBarHorizontal as n, MultiDrawable as o, MultiContainer as p, MultiContainerAxis as q, MultiContainerRadar as r, MultiContainerLayer as s, MultiSerieGroup as t, MultiChartPie as u, MultiChartLine as v, MultiChartLine$1 as w, MultiChartBar as x, MultiChartRadar as y, D3Format as z };

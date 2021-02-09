@@ -28,12 +28,13 @@ export default {
   },
 
   leftTickArguments: {
-    type: String,
-    attribute: 'left-tick-format',
+    type: Array,
+    attribute: 'left-tick-arguments',
     value: [5, '.1s']
   },
 
   leftMargin: {
+    attribute: 'left-margin',
     type: Number,
     value: 40
   }

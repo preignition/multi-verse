@@ -3,7 +3,7 @@ import { microTask, idlePeriod, timeOut } from '../@polymer/polymer/lib/utils/as
 import { dashToCamelCase, camelToDashCase } from '../@polymer/polymer/lib/utils/case-map.js';
 import { dedupingMixin } from '../@polymer/polymer/lib/utils/mixin.js';
 import { flushDebouncers, Debouncer, enqueueDebouncer } from '../@polymer/polymer/lib/utils/debounce.js';
-import { w as wrap$1, F as FlattenedNodesObserver, c as calculateSplices } from '../common/flattened-nodes-observer-c3df971e.js';
+import { w as wrap$1, F as FlattenedNodesObserver, c as calculateSplices } from '../common/flattened-nodes-observer-2f22b362.js';
 
 class Lumo extends HTMLElement {
   static get version() {

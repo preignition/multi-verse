@@ -1,10 +1,10 @@
-import { a as constant$1, c as color, i as interpolateRgb } from './common/rgb-e876f481.js';
-import { i as interpolateNumber, a as interpolateString } from './common/string-793e1444.js';
-import { s as sequence, b as bisectRight, t as tickStep, h as ticks, i as tickIncrement, a as ascending, q as quantile$1, d as bisector } from './common/quantile-a7047d6c.js';
-import { c as formatSpecifier, p as precisionFixed, g as precisionRound, e as precisionPrefix, a as formatPrefix, f as format } from './common/precisionRound-0953ea20.js';
-import { d as day, s as sunday, y as year, u as utcDay, a as utcSunday, b as utcYear } from './common/utcYear-07e3c0ef.js';
-import { m as millisecond, s as second, a as minute, h as hour, b as month, u as utcMinute, c as utcHour, d as utcMonth } from './common/utcMonth-ba113139.js';
-import { t as timeFormat, u as utcFormat } from './common/defaultLocale-723337ea.js';
+import { a as constant, c as color, i as interpolateRgb } from './common/rgb-7b9e8ed5.js';
+import { i as interpolateNumber, a as interpolateString } from './common/string-25a4a3cd.js';
+import { s as sequence, b as bisectRight, j as tickStep, a as ticks, t as tickIncrement, c as ascending, h as quantileSorted, f as bisector, q as quantile$1 } from './common/range-b63a2053.js';
+import { c as formatSpecifier, p as precisionFixed, g as precisionRound, e as precisionPrefix, a as formatPrefix, f as format } from './common/precisionRound-bde32877.js';
+import { d as day, s as sunday, y as year, u as utcDay, a as utcSunday, b as utcYear } from './common/utcYear-e8da0d00.js';
+import { m as millisecond, s as second, a as minute, h as hour, b as month, u as utcMinute, c as utcHour, d as utcMonth } from './common/utcMonth-602e59f7.js';
+import { t as timeFormat, u as utcFormat } from './common/defaultLocale-4a49c9cd.js';
 
 function numberArray(a, b) {
   if (!b) b = [];
@@ -68,7 +68,7 @@ function object(a, b) {
 
 function interpolate(a, b) {
   var t = typeof b, c;
-  return b == null || t === "boolean" ? constant$1(b)
+  return b == null || t === "boolean" ? constant(b)
       : (t === "number" ? interpolateNumber
       : t === "string" ? ((c = color(b)) ? (b = c, interpolateRgb) : interpolateString)
       : b instanceof color ? interpolateRgb
@@ -85,9 +85,10 @@ function interpolateRound(a, b) {
   };
 }
 
-function piecewise(interpolate, values) {
+function piecewise(interpolate$1, values) {
+  if (values === undefined) values = interpolate$1, interpolate$1 = interpolate;
   var i = 0, n = values.length - 1, v = values[0], I = new Array(n < 0 ? 0 : n);
-  while (i < n) I[i] = interpolate(v, v = values[++i]);
+  while (i < n) I[i] = interpolate$1(v, v = values[++i]);
   return function(t) {
     var i = Math.max(0, Math.min(n - 1, Math.floor(t *= n)));
     return I[i](t - i);
@@ -264,7 +265,7 @@ function point() {
   return pointish(band.apply(null, arguments).paddingInner(1));
 }
 
-function constant(x) {
+function constants(x) {
   return function() {
     return x;
   };
@@ -283,7 +284,7 @@ function identity(x) {
 function normalize(a, b) {
   return (b -= (a = +a))
       ? function(x) { return (x - a) / b; }
-      : constant(isNaN(b) ? NaN : 0.5);
+      : constants(isNaN(b) ? NaN : 0.5);
 }
 
 function clamper(a, b) {
@@ -438,38 +439,36 @@ function linearish(scale) {
   scale.nice = function(count) {
     if (count == null) count = 10;
 
-    var d = domain(),
-        i0 = 0,
-        i1 = d.length - 1,
-        start = d[i0],
-        stop = d[i1],
-        step;
+    var d = domain();
+    var i0 = 0;
+    var i1 = d.length - 1;
+    var start = d[i0];
+    var stop = d[i1];
+    var prestep;
+    var step;
+    var maxIter = 10;
 
     if (stop < start) {
       step = start, start = stop, stop = step;
       step = i0, i0 = i1, i1 = step;
     }
-
-    step = tickIncrement(start, stop, count);
-
-    if (step > 0) {
-      start = Math.floor(start / step) * step;
-      stop = Math.ceil(stop / step) * step;
+    
+    while (maxIter-- > 0) {
       step = tickIncrement(start, stop, count);
-    } else if (step < 0) {
-      start = Math.ceil(start * step) / step;
-      stop = Math.floor(stop * step) / step;
-      step = tickIncrement(start, stop, count);
-    }
-
-    if (step > 0) {
-      d[i0] = Math.floor(start / step) * step;
-      d[i1] = Math.ceil(stop / step) * step;
-      domain(d);
-    } else if (step < 0) {
-      d[i0] = Math.ceil(start * step) / step;
-      d[i1] = Math.floor(stop * step) / step;
-      domain(d);
+      if (step === prestep) {
+        d[i0] = start;
+        d[i1] = stop;
+        return domain(d);
+      } else if (step > 0) {
+        start = Math.floor(start / step) * step;
+        stop = Math.ceil(stop / step) * step;
+      } else if (step < 0) {
+        start = Math.ceil(start * step) / step;
+        stop = Math.floor(stop * step) / step;
+      } else {
+        break;
+      }
+      prestep = step;
     }
 
     return scale;
@@ -823,7 +822,7 @@ function quantile() {
   function rescale() {
     var i = 0, n = Math.max(1, range.length);
     thresholds = new Array(n - 1);
-    while (++i < n) thresholds[i - 1] = quantile$1(domain, i / n);
+    while (++i < n) thresholds[i - 1] = quantileSorted(domain, i / n);
     return scale;
   }
 

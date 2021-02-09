@@ -1,17 +1,8 @@
-// import { select } from 'd3-selection';
-// import { transition } from 'd3-transition';
-
-// export const selectShadow = (selector, el) => {
-//   return select(el.renderRoot.querySelector(selector));
-// }
 const queryShadow = (selector, el) => {
   return el.renderRoot.querySelector(selector);
 };
 
-// export default selectShadow;
-
 const selectMixin = (superclass) => class extends superclass {
-  
   queryShadow(selector) {
     return queryShadow(selector, this);
   }
@@ -26,11 +17,11 @@ const selectMixin = (superclass) => class extends superclass {
 const RelayTo = superClass => {
 
   return class extends superClass {
-    
+
     shallRelayTo() {
       this.log && console.warn(`shallPassTo method has to be overriden`);
       return false;
-      
+
     }
 
     async relayTo(props, name) {
@@ -50,7 +41,7 @@ const RelayTo = superClass => {
         }
       });
     }
-  }
+  };
 
 };
 

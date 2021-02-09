@@ -1,7 +1,7 @@
-import { R as Rgb, r as rgbConvert, d as define, e as extend, C as Color, b as brighter, f as darker, n as nogamma, h as hue, g as rgbBasis, j as rgb } from './common/rgb-e876f481.js';
+import { R as Rgb, r as rgbConvert, d as define, e as extend, C as Color, b as brighter, f as darker, n as nogamma, h as hue, g as rgbBasis, j as rgb } from './common/rgb-7b9e8ed5.js';
 
-var deg2rad = Math.PI / 180;
-var rad2deg = 180 / Math.PI;
+const radians = Math.PI / 180;
+const degrees = 180 / Math.PI;
 
 var A = -0.14861,
     B = +1.78277,
@@ -22,7 +22,7 @@ function cubehelixConvert(o) {
       bl = b - l,
       k = (E * (g - l) - C * bl) / D,
       s = Math.sqrt(k * k + bl * bl) / (E * l * (1 - l)), // NaN if l=0 or l=1
-      h = s ? Math.atan2(k, bl) * rad2deg - 120 : NaN;
+      h = s ? Math.atan2(k, bl) * degrees - 120 : NaN;
   return new Cubehelix(h < 0 ? h + 360 : h, s, l, o.opacity);
 }
 
@@ -47,7 +47,7 @@ define(Cubehelix, cubehelix, extend(Color, {
     return new Cubehelix(this.h, this.s, this.l * k, this.opacity);
   },
   rgb: function() {
-    var h = isNaN(this.h) ? 0 : (this.h + 120) * deg2rad,
+    var h = isNaN(this.h) ? 0 : (this.h + 120) * radians,
         l = +this.l,
         a = isNaN(this.s) ? 0 : this.s * l * (1 - l),
         cosh = Math.cos(h),
@@ -114,9 +114,7 @@ var Set3 = colors("8dd3c7ffffb3bebadafb807280b1d3fdb462b3de69fccde5d9d9d9bc80bdc
 
 var Tableau10 = colors("4e79a7f28e2ce1575976b7b259a14fedc949af7aa1ff9da79c755fbab0ab");
 
-function ramp(scheme) {
-  return rgbBasis(scheme[scheme.length - 1]);
-}
+var ramp = scheme => rgbBasis(scheme[scheme.length - 1]);
 
 var scheme = new Array(3).concat(
   "d8b365f5f5f55ab4ac",

@@ -1,4 +1,4 @@
-import { n as newInterval, f as durationSecond, g as durationMinute, h as durationHour } from './utcYear-07e3c0ef.js';
+import { n as newInterval, f as durationSecond, g as durationMinute, h as durationHour } from './utcYear-e8da0d00.js';
 
 var millisecond = newInterval(function() {
   // noop

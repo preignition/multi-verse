@@ -399,11 +399,7 @@ function basis$1(values) {
   };
 }
 
-function constant(x) {
-  return function() {
-    return x;
-  };
-}
+var constant = x => () => x;
 
 function linear(a, d) {
   return function(t) {

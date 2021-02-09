@@ -1,4 +1,4 @@
-import { i as isDirective } from './directive-5915da03.js';
+import { i as isDirective } from './directive-651fd9cf.js';
 
 /**
  * @license
@@ -427,6 +427,16 @@ class TemplateInstance {
  * subject to an additional IP rights grant found at
  * http://polymer.github.io/PATENTS.txt
  */
+/**
+ * Our TrustedTypePolicy for HTML which is declared using the html template
+ * tag function.
+ *
+ * That HTML is a developer-authored constant, and is parsed with innerHTML
+ * before any untrusted expressions have been mixed in. Therefor it is
+ * considered safe by construction.
+ */
+const policy = window.trustedTypes &&
+    trustedTypes.createPolicy('lit-html', { createHTML: (s) => s });
 const commentMarker = ` ${marker} `;
 /**
  * The return type of `html`, which holds a Template and the values from
@@ -497,7 +507,15 @@ class TemplateResult {
     }
     getTemplateElement() {
         const template = document.createElement('template');
-        template.innerHTML = this.getHTML();
+        let value = this.getHTML();
+        if (policy !== undefined) {
+            // this is secure because `this.strings` is a TemplateStringsArray.
+            // TODO: validate this when
+            // https://github.com/tc39/proposal-array-is-template-object is
+            // implemented.
+            value = policy.createHTML(value);
+        }
+        template.innerHTML = value;
         return template;
     }
 }
@@ -569,10 +587,33 @@ class AttributeCommitter {
     _getValue() {
         const strings = this.strings;
         const l = strings.length - 1;
+        const parts = this.parts;
+        // If we're assigning an attribute via syntax like:
+        //    attr="${foo}"  or  attr=${foo}
+        // but not
+        //    attr="${foo} ${bar}" or attr="${foo} baz"
+        // then we don't want to coerce the attribute value into one long
+        // string. Instead we want to just return the value itself directly,
+        // so that sanitizeDOMValue can get the actual value rather than
+        // String(value)
+        // The exception is if v is an array, in which case we do want to smash
+        // it together into a string without calling String() on the array.
+        //
+        // This also allows trusted values (when using TrustedTypes) being
+        // assigned to DOM sinks without being stringified in the process.
+        if (l === 1 && strings[0] === '' && strings[1] === '') {
+            const v = parts[0].value;
+            if (typeof v === 'symbol') {
+                return String(v);
+            }
+            if (typeof v === 'string' || !isIterable(v)) {
+                return v;
+            }
+        }
         let text = '';
         for (let i = 0; i < l; i++) {
             text += strings[i];
-            const part = this.parts[i];
+            const part = parts[i];
             if (part !== undefined) {
                 const v = part.value;
                 if (isPrimitive(v) || !isIterable(v)) {
@@ -1124,7 +1165,7 @@ const defaultTemplateProcessor = new DefaultTemplateProcessor();
 // This line will be used in regexes to search for lit-html usage.
 // TODO(justinfagnani): inject version number at build time
 if (typeof window !== 'undefined') {
-    (window['litHtmlVersions'] || (window['litHtmlVersions'] = [])).push('1.2.1');
+    (window['litHtmlVersions'] || (window['litHtmlVersions'] = [])).push('1.3.0');
 }
 /**
  * Interprets a template literal as an HTML template that can efficiently
@@ -1137,4 +1178,4 @@ const html = (strings, ...values) => new TemplateResult(strings, values, 'html',
  */
 const svg = (strings, ...values) => new SVGTemplateResult(strings, values, 'svg', defaultTemplateProcessor);
 
-export { AttributePart as A, BooleanAttributePart as B, DefaultTemplateProcessor as D, EventPart as E, NodePart as N, PropertyPart as P, SVGTemplateResult as S, Template as T, TemplateInstance as a, removeNodes as b, TemplateResult as c, isPrimitive as d, reparentNodes as e, noChange as f, templateFactory as g, html as h, isTemplatePartActive as i, defaultTemplateProcessor as j, AttributeCommitter as k, isIterable as l, marker as m, nothing as n, PropertyCommitter as o, parts as p, createMarker as q, render as r, svg as s, templateCaches as t };
+export { AttributePart as A, BooleanAttributePart as B, DefaultTemplateProcessor as D, EventPart as E, NodePart as N, PropertyPart as P, SVGTemplateResult as S, Template as T, TemplateInstance as a, removeNodes as b, TemplateResult as c, isPrimitive as d, reparentNodes as e, defaultTemplateProcessor as f, noChange as g, html as h, isTemplatePartActive as i, AttributeCommitter as j, isIterable as k, PropertyCommitter as l, marker as m, nothing as n, templateFactory as o, parts as p, createMarker as q, render as r, svg as s, templateCaches as t };

@@ -1,7 +1,7 @@
-import { f as creator } from './common/index-281dba67.js';
-export { f as creator, c as customEvent, e as event, m as matcher, n as namespace, g as namespaces, s as selection, a as selector, b as selectorAll, d as style, h as window } from './common/index-281dba67.js';
-import { s as select, b as sourceEvent, p as point } from './common/touch-752e74e0.js';
-export { p as clientPoint, m as mouse, s as select, a as selectAll, t as touch } from './common/touch-752e74e0.js';
+import { e as creator } from './common/index-6ba82f3a.js';
+export { e as creator, m as matcher, n as namespace, f as namespaces, s as selection, b as selector, c as selectorAll, d as style, g as window } from './common/index-6ba82f3a.js';
+import { s as select, b as sourceEvent, p as pointer } from './common/selectAll-d64cc7a5.js';
+export { p as pointer, s as select, a as selectAll } from './common/selectAll-d64cc7a5.js';
 
 function create(name) {
   return select(creator(name).call(document.documentElement));
@@ -35,14 +35,13 @@ Local.prototype = local.prototype = {
   }
 };
 
-function touches(node, touches) {
-  if (touches == null) touches = sourceEvent().touches;
-
-  for (var i = 0, n = touches ? touches.length : 0, points = new Array(n); i < n; ++i) {
-    points[i] = point(node, touches[i]);
+function pointers(events, node) {
+  if (events.target) { // i.e., instanceof Event, not TouchList or iterable
+    events = sourceEvent(events);
+    if (node === undefined) node = events.currentTarget;
+    events = events.touches || [events];
   }
-
-  return points;
+  return Array.from(events, event => pointer(event, node));
 }
 
-export { create, local, touches };
+export { create, local, pointers };

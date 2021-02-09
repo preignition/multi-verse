@@ -148,7 +148,7 @@ const MultiVerseQuery = dedupingMixin(superClass => {
       // Note(cg): we skip group by functions being re-set to same value.
       if (props.get('groupBy')
          && typeof this.groupBy === 'function'
-         && JSON.stringify(props.get('groupBy')) === JSON.stringify(this.groupBy)) {
+         && props.get('groupBy').toString() === this.groupBy.toString()) {
         return;
       }
 

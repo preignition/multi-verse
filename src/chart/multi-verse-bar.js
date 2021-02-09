@@ -14,16 +14,17 @@ class MultiVerseBar extends Bar {
   getContentRender() {
     return this.html `
       ${super.getContentRender()}
-      <multi-serie .label="${this.serieLabel}" .path="${this.valuePath}" .keyPath="${this.keyPath}"></multi-serie>
       ${this.selectType === 'brush'
         ? this.html `<multi-brush
-            @xContinuous 
+            id="selector"
+            x-continuous=""
             .log="${this.log}"
             .xScale="${this.bottomScale}" 
-            
+            .preventClear="${this.preventClear}"
             @selected-values-changed="${e => this.selectedValues = e.detail.value}"
           ></multi-brush>`
         : this.html `<multi-select 
+            id="selector"
             .multi="${this.multi}" 
             .trackHover="${this.trackHover}" 
             .selectedItems="${this.selectedItems}" 
@@ -35,6 +36,14 @@ class MultiVerseBar extends Bar {
           ></multi-select>`
       }
     `;
+  }
+
+  get selector() {
+    return this.renderRoot.querySelector('#selector');
+  }
+
+  clearSelection() {
+    this.selector && this.selector.clearSelection()
   }
 
   static get properties() {
@@ -62,7 +71,15 @@ class MultiVerseBar extends Bar {
         type: Number,
         attribute: 'bottom-padding',
         value: 0.3
-      }
+      },
+      
+      /*
+       * `preventClear` set true to prevent selection to cleat on brush end
+       */
+      preventClear: {
+        type: Boolean,
+        attribute: 'prevent-clear'
+      },
     };
   }
 
