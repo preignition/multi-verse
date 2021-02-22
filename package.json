@@ -34,7 +34,6 @@
   "main": "index.js",
   "module": "index.js",
   "dependencies": {
-    "@morbidick/lit-element-notify": "^1.1.1",
     "@polymer/polymer": "^3.4.1",
     "@preignition/multi-chart": "file:../multi-chart",
     "@preignition/multi-geo": "file:../multi-geo",

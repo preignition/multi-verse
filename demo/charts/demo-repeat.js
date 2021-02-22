@@ -1,6 +1,5 @@
 import { LitElement, html } from 'lit-element';
 import { SelectMixin, DefaultValueMixin, DoNotSetUndefinedValue } from '@preignition/preignition-mixin';
-import { LitNotify, LitSync } from '@morbidick/lit-element-notify';
 
 class DemoRepeat extends DefaultValueMixin(LitElement) {
 
